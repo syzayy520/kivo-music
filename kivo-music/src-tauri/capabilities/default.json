@@ -47,6 +47,7 @@
           "path": "$APPDATA/**"
         }
       ]
-    }
+    },
+    "fs:allow-copy-file"
   ]
 }

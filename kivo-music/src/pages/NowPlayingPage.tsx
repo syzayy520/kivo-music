@@ -4,6 +4,7 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { usePlayerStore } from "../store/player";
 import { saveLibrary } from "../persistence/LibraryPersistence";
+import { setCoverForTrack } from "../persistence/CoverCache";
 
 function formatTime(value: number | undefined): string {
   if (!value || !Number.isFinite(value)) return "0:00";
@@ -48,62 +49,55 @@ function guessCoverPathFromFilePath(filePath: string | undefined): string | null
   const baseName = fileName.replace(/\.[^.]+$/, "");
 
   const candidates = [
-        "cover.jpg",
-        "cover.png",
-        "folder.jpg",
-        "folder.png",
-        "front.jpg",
-        "front.png",
-        `${baseName}.jpg`,
-        `${baseName}.png`,
-      ];
+    "cover.jpg",
+    "cover.png",
+    "folder.jpg",
+    "folder.png",
+    "front.jpg",
+    "front.png",
+    `${baseName}.jpg`,
+    `${baseName}.png`,
+  ];
 
-  const sep =
-    dir.endsWith("\\") || dir.endsWith("/")
-      ? ""
-      : str.includes("\\")
-      ? "\\"
-      : "/";
+  for (const name of candidates) {
+    const guess =
+      dir.length > 0 ? `${dir}/${name}` : name;
 
-  return dir ? `${dir}${sep}${candidates[0]}` : candidates[0];
+    // 这里先直接返回路径，交给 AudioEngine / 浏览器去加载.
+    // 后续 B2 阶段会改成「按目录缓存 + 减少 500 spam」。
+    return guess;
+  }
+
+  return null;
 }
 
 const NowPlayingPage: React.FC = () => {
-  const playlist = usePlayerStore(
-    (s: any) => s.playlist ?? s.tracks ?? [],
-  );
-  const currentIndex = usePlayerStore(
-    (s: any) => s.currentIndex ?? -1,
-  );
-  const currentTime = usePlayerStore(
-    (s: any) => s.currentTime ?? 0,
-  );
-  const duration = usePlayerStore(
-    (s: any) => s.duration ?? 0,
-  );
-  const isPlaying = usePlayerStore(
-    (s: any) => s.isPlaying ?? false,
-  );
-  const togglePlay = usePlayerStore(
-    (s: any) => s.togglePlay ?? (() => {}),
-  );
-  const next = usePlayerStore((s: any) => s.next ?? (() => {}));
-  const prev = usePlayerStore((s: any) => s.prev ?? (() => {}));
+  const playlist = usePlayerStore((s) => s.playlist ?? s.tracks ?? []);
+  const currentIndex = usePlayerStore((s) => s.currentIndex ?? 0);
+  const isPlaying = usePlayerStore((s) => s.isPlaying ?? false);
+  const currentTime = usePlayerStore((s) => s.currentTime ?? 0);
+  const duration = usePlayerStore((s) => s.duration ?? 0);
+  const seek = usePlayerStore((s) => s.seek ?? (() => {}));
+  const togglePlay = usePlayerStore((s) => s.togglePlay ?? (() => {}));
+  const next = usePlayerStore((s) => s.next ?? (() => {}));
+  const prev = usePlayerStore((s) => s.prev ?? (() => {}));
   const setPlaylist = usePlayerStore(
-    (s: any) => s.setPlaylist ?? s.setTracks ?? (() => {}),
+    (s) => s.setPlaylist ?? s.setTracks ?? (() => {}),
   );
 
-  const track = playlist[currentIndex] ?? null;
+  const track = playlist && playlist.length > 0
+    ? playlist[currentIndex] ?? null
+    : null;
 
-  // 当前封面是否加载失败（比如我们猜的 cover.jpg 不存在）
   const [coverError, setCoverError] = useState(false);
+
   useEffect(() => {
-    // 切歌时重置错误状态
+    // 切歌时重置封面错误状态
     setCoverError(false);
-  }, [currentIndex]);
+  }, [track && track.id, currentIndex]);
 
   const coverSrc = useMemo(() => {
-    if (!track) return null;
+    if (!track || coverError) return null;
 
     // 1. 手动选过封面：优先用
     if (track.coverPath) {
@@ -119,7 +113,7 @@ const NowPlayingPage: React.FC = () => {
     }
 
     return null;
-  }, [track]);
+  }, [track, coverError]);
 
   const [g1, g2] = pickGradientForKey(
     track?.id ?? track?.title ?? track?.filePath,
@@ -144,17 +138,22 @@ const NowPlayingPage: React.FC = () => {
       const path = Array.isArray(result) ? result[0] : result;
       const fullPath = String(path);
 
-      // 更新内存中的 playlist
+      // 通过 CoverCache 把图片复制到 AppData 封面仓库，
+      // 返回一个 coverPath 已经指向缓存文件的新 track
+      const updatedTrack = await setCoverForTrack(track as any, fullPath);
+
+      // 更新内存中的 playlist，只改当前这条
       const updated = playlist.map((t: any, idx: number) =>
-        idx === currentIndex ? { ...t, coverPath: fullPath } : t,
+        idx === currentIndex ? { ...t, coverPath: updatedTrack.coverPath } : t,
       );
 
       setPlaylist(updated);
+      setCoverError(false);
 
       // 同步写回 JSON 库文件
       try {
         await saveLibrary(updated as any[]);
-        console.info("[NowPlaying] saveLibrary with cover ok");
+        console.info("[NowPlaying] saveLibrary with cached cover ok");
       } catch (error) {
         console.error("[NowPlaying] saveLibrary failed:", error);
       }
@@ -172,7 +171,16 @@ const NowPlayingPage: React.FC = () => {
           color: "#6b7280",
         }}
       >
-        当前没有正在播放的歌曲。你可以先到「资料库」中导入并播放一首歌，然后再回到这里查看正在播放视图。
+        <div
+          style={{
+            padding: 16,
+            borderRadius: 8,
+            border: "1px dashed #d1d5db",
+            background: "#f9fafb",
+          }}
+        >
+          当前没有正在播放的歌曲。你可以先到「资料库」中导入并播放一首歌，然后再回到这里查看正在播放视图。
+        </div>
       </div>
     );
   }
@@ -200,99 +208,89 @@ const NowPlayingPage: React.FC = () => {
       >
         正在播放
       </h2>
-
       <div
         style={{
           display: "flex",
-          gap: 32,
-          alignItems: "flex-start",
-          flexWrap: "wrap",
+          gap: 24,
+          alignItems: "stretch",
         }}
       >
-        {/* 左侧：大封面卡片 */}
+        {/* 左边：封面区 */}
         <div
           style={{
-            width: 260,
-            height: 260,
+            width: 320,
+            height: 320,
             borderRadius: 24,
-            background: coverSrc && !coverError
-              ? "#000000"
-              : `linear-gradient(135deg, ${g1}, ${g2})`,
-            boxShadow: "0 18px 40px rgba(15,23,42,0.28)",
             overflow: "hidden",
+            background: `linear-gradient(135deg, ${g1}, ${g2})`,
+            boxShadow:
+              "0 18px 45px rgba(15,23,42,0.25)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             position: "relative",
           }}
         >
           {coverSrc && !coverError ? (
             <img
               src={coverSrc}
-              alt=""
+              alt={title}
               style={{
                 width: "100%",
                 height: "100%",
                 objectFit: "cover",
               }}
-              onError={() => setCoverError(true)}
+              onError={() => {
+                console.warn("[NowPlaying] cover load error");
+                setCoverError(true);
+              }}
             />
           ) : (
             <div
               style={{
-                position: "absolute",
-                inset: 0,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "white",
-                textShadow: "0 2px 6px rgba(0,0,0,0.4)",
-                padding: "0 32px",
+                padding: 16,
                 textAlign: "center",
+                color: "#f9fafb",
               }}
             >
               <div
                 style={{
-                  fontSize: 16,
-                  fontWeight: 600,
-                  marginBottom: 6,
+                  fontSize: 18,
+                  fontWeight: 500,
+                  marginBottom: 8,
                 }}
               >
-                封面图
+                暂无封面图片
               </div>
               <div
                 style={{
                   fontSize: 12,
-                  opacity: 0.9,
-                  lineHeight: 1.4,
+                  opacity: 0.85,
+                  lineHeight: 1.5,
                 }}
               >
-                如果同目录下存在 cover.jpg / folder.jpg 等文件，会尝试自动作为封面。
-                你也可以在右侧手动选择一张图片。
+                你可以点击右侧的「选择封面图片…」按钮手动设置，
+                <br />
+                或者在歌曲所在文件夹中放置
+                <code style={{ margin: "0 4px" }}>cover.jpg</code>、
+                <code style={{ margin: "0 4px" }}>folder.jpg</code>
+                等文件，系统会尝试自动识别。
               </div>
             </div>
           )}
         </div>
 
-        {/* 右侧：信息 + 操作 */}
+        {/* 右边：信息 + 控制区 */}
         <div
           style={{
             flex: 1,
-            minWidth: 260,
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
           }}
         >
-          <div
-            style={{
-              marginBottom: 12,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 13,
-                color: "#9ca3af",
-                marginBottom: 4,
-              }}
-            >
-              正在播放：
-            </div>
+          {/* 标题 / 艺人 / 专辑 */}
+          <div>
             <div
               style={{
                 fontSize: 22,
@@ -313,32 +311,49 @@ const NowPlayingPage: React.FC = () => {
             </div>
           </div>
 
-          <div
-            style={{
-              marginBottom: 12,
-              fontSize: 13,
-              color: "#6b7280",
-            }}
-          >
-            {timeText}
+          {/* 时间进度 */}
+          <div>
+            <div
+              style={{
+                fontSize: 12,
+                color: "#6b7280",
+                marginBottom: 4,
+              }}
+            >
+              {timeText}
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={duration || 0}
+              step={1}
+              value={Math.min(currentTime || 0, duration || 0)}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                if (Number.isFinite(value)) {
+                  seek(value);
+                }
+              }}
+              style={{ width: "100%" }}
+            />
           </div>
 
+          {/* 控制按钮 */}
           <div
             style={{
               display: "flex",
-              gap: 8,
-              marginBottom: 16,
-              flexWrap: "wrap",
+              alignItems: "center",
+              gap: 12,
             }}
           >
             <button
               onClick={prev}
               style={{
                 padding: "6px 10px",
-                borderRadius: 6,
+                fontSize: 13,
+                borderRadius: 999,
                 border: "1px solid #e5e7eb",
                 background: "#ffffff",
-                fontSize: 13,
                 cursor: "pointer",
               }}
             >
@@ -347,13 +362,14 @@ const NowPlayingPage: React.FC = () => {
             <button
               onClick={togglePlay}
               style={{
-                padding: "6px 10px",
-                borderRadius: 6,
-                border: "1px solid #2563eb",
-                background: "#2563eb",
+                padding: "6px 16px",
+                fontSize: 14,
+                borderRadius: 999,
+                border: "1px solid #1d4ed8",
+                background: "#1d4ed8",
                 color: "#ffffff",
-                fontSize: 13,
                 cursor: "pointer",
+                minWidth: 90,
               }}
             >
               {isPlaying ? "⏸ 暂停" : "▶ 播放"}
@@ -362,10 +378,10 @@ const NowPlayingPage: React.FC = () => {
               onClick={next}
               style={{
                 padding: "6px 10px",
-                borderRadius: 6,
+                fontSize: 13,
+                borderRadius: 999,
                 border: "1px solid #e5e7eb",
                 background: "#ffffff",
-                fontSize: 13,
                 cursor: "pointer",
               }}
             >
@@ -373,29 +389,24 @@ const NowPlayingPage: React.FC = () => {
             </button>
           </div>
 
+          {/* 底部：封面操作 */}
           <div
             style={{
-              marginBottom: 16,
-              fontSize: 13,
-              color: "#6b7280",
-            }}
-          >
-            正在播放中，你可以在底部进度条拖动 / 切歌、调整音量。
-          </div>
-
-          <div
-            style={{
-              marginTop: 12,
+              marginTop: "auto",
+              paddingTop: 16,
+              borderTop: "1px solid #e5e7eb",
+              display: "flex",
+              alignItems: "center",
             }}
           >
             <button
               onClick={handlePickCover}
               style={{
                 padding: "6px 12px",
-                borderRadius: 6,
-                border: "1px solid #e5e7eb",
-                background: "#ffffff",
                 fontSize: 13,
+                borderRadius: 999,
+                border: "1px solid #e5e7eb",
+                background: "#f9fafb",
                 cursor: "pointer",
               }}
             >
@@ -408,8 +419,8 @@ const NowPlayingPage: React.FC = () => {
                 color: "#9ca3af",
               }}
             >
-              （当前版本会直接记住你选择的图片路径；
-              后面我们会把封面复制到 AppData 的封面缓存目录里。）
+              （现在会把你选择的封面复制到 AppData/com.administrator.kivo-music/covers 里，
+              原图删掉或挪走也不影响显示。）
             </span>
           </div>
         </div>
