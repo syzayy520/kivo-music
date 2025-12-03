@@ -4,6 +4,7 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { usePlayerStore } from "../store/player";
 import { saveLibrary } from "../persistence/LibraryPersistence";
+import { setCoverForTrack, getCachedCoverPath } from "../persistence/CoverCache";
 
 function formatTime(value: number | undefined): string {
   if (!value || !Number.isFinite(value)) return "0:00";
@@ -13,346 +14,439 @@ function formatTime(value: number | undefined): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-function getTrackDisplayTitle(track: any | null): string {
-  if (!track) return "暂无播放";
-  if (track.title && String(track.title).trim().length > 0) {
-    return String(track.title);
-  }
-  const filePath = track.filePath ? String(track.filePath) : "";
-  const parts = filePath.split(/[/\\]/);
-  const name = parts[parts.length - 1] || "";
-  return name || "未知曲目";
-}
-
-function getTrackDisplayArtist(track: any | null): string {
-  if (!track) return "";
-  if (track.artist && String(track.artist).trim().length > 0) {
-    return String(track.artist);
-  }
-  return "未知艺人";
-}
-
-function getInitialsFromTitle(title: string): string {
-  const t = title.trim();
-  if (!t) return "♪";
-  // 中文歌名直接拿前两个字；其他语言拿第一个字符
-  if (/[\u4e00-\u9fa5]/.test(t[0]) && t.length >= 2) {
-    return t.slice(0, 2);
-  }
-  return t[0].toUpperCase();
-}
-
 const NowPlayingPage: React.FC = () => {
   const playlist = usePlayerStore((s: any) => s.playlist ?? s.tracks ?? []);
   const currentIndex = usePlayerStore((s: any) => s.currentIndex ?? -1);
   const currentTime = usePlayerStore((s: any) => s.currentTime ?? 0);
   const duration = usePlayerStore((s: any) => s.duration ?? 0);
   const isPlaying = usePlayerStore((s: any) => s.isPlaying ?? false);
-  const togglePlay = usePlayerStore(
-    (s: any) => s.togglePlay ?? (() => {}),
-  );
+  const togglePlay = usePlayerStore((s: any) => s.togglePlay ?? (() => {}));
   const next = usePlayerStore((s: any) => s.next ?? (() => {}));
   const prev = usePlayerStore((s: any) => s.prev ?? (() => {}));
-  const setPlaylist = usePlayerStore(
-    (s: any) => s.setPlaylist ?? s.setTracks ?? (() => {}),
-  ) as (tracks: any[]) => void;
+  const seek = usePlayerStore((s: any) => s.seek ?? (() => {}));
+  const setPlaylist = usePlayerStore((s: any) => s.setPlaylist ?? (() => {}));
 
-  const hasTrack =
-    Array.isArray(playlist) &&
-    playlist.length > 0 &&
-    currentIndex >= 0 &&
-    currentIndex < playlist.length;
+  const track = playlist[currentIndex] ?? null;
 
-  const track = hasTrack ? playlist[currentIndex] : null;
+  const [seeking, setSeeking] = useState(false);
+  const [seekValue, setSeekValue] = useState(0);
 
-  // 当前封面是否加载失败（例如封面文件被删除）
+  // 真正用于渲染封面的路径
+  const [resolvedCoverPath, setResolvedCoverPath] = useState<string | null>(null);
   const [coverError, setCoverError] = useState(false);
 
-  // 每次切歌时重置封面错误标记
+  // 当前曲目变化时，尝试自动补齐封面：
+  // 1. track.coverPath 已经有 → 直接用
+  // 2. 否则从 CoverCache 索引里查一遍（covers.json）
   useEffect(() => {
+    let cancelled = false;
     setCoverError(false);
-  }, [track && (track.id ?? track.filePath)]);
+
+    (async () => {
+      if (!track) {
+        setResolvedCoverPath(null);
+        return;
+      }
+
+      // 优先用 track 自己的 coverPath
+      if (track.coverPath) {
+        setResolvedCoverPath(track.coverPath);
+        return;
+      }
+
+      try {
+        const cached = await getCachedCoverPath(track);
+        if (!cached || cancelled) return;
+
+        setResolvedCoverPath(cached);
+
+        // 顺便把 playlist + 库里的 coverPath 补上，避免以后再丢
+        const updated = playlist.map((t: any, idx: number) =>
+          idx === currentIndex ? { ...t, coverPath: cached } : t,
+        );
+        setPlaylist(updated);
+        try {
+          await saveLibrary(updated as any[]);
+        } catch (err) {
+          console.error(
+            "[NowPlayingPage] saveLibrary after getCachedCoverPath error:",
+            err,
+          );
+        }
+      } catch (err) {
+        console.error("[NowPlayingPage] getCachedCoverPath error:", err);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [track && (track.id ?? track.filePath), currentIndex, playlist, setPlaylist]);
 
   const coverSrc = useMemo(() => {
-    if (!track || coverError) return null;
-
-    // 只使用记录在库里的 coverPath；如果文件被删除，这里会返回 null，
-    // 封面卡片会显示默认渐变背景。
-    if (track.coverPath) {
-      try {
-        return convertFileSrc(String(track.coverPath));
-      } catch {
-        return null;
-      }
+    if (!resolvedCoverPath || coverError) return null;
+    try {
+      return convertFileSrc(String(resolvedCoverPath));
+    } catch (err) {
+      console.error("[NowPlayingPage] convertFileSrc error:", err);
+      return null;
     }
+  }, [resolvedCoverPath, coverError]);
 
-    return null;
-  }, [track, coverError]);
+  const handleSeekChange = (value: number) => {
+    setSeeking(true);
+    setSeekValue(value);
+  };
 
-  const title = getTrackDisplayTitle(track);
-  const artist = getTrackDisplayArtist(track);
-  const album =
-    track && track.album && String(track.album).trim().length > 0
-      ? String(track.album)
-      : "";
-
-  const displayInitials = getInitialsFromTitle(title);
+  const handleSeekCommit = (value: number) => {
+    setSeeking(false);
+    seek(value);
+  };
 
   const handlePickCover = async () => {
-    if (!track || !hasTrack) return;
+    if (!track) return;
+
+    const selected = await open({
+      multiple: false,
+      directory: false,
+      filters: [{ name: "Images", extensions: ["jpg", "jpeg", "png", "webp"] }],
+    });
+
+    if (!selected || Array.isArray(selected)) return;
+
+    const imagePath = String(selected);
 
     try {
-      const result = await open({
-        multiple: false,
-        filters: [
-          {
-            name: "Image",
-            extensions: ["jpg", "jpeg", "png", "webp", "bmp"],
-          },
-        ],
-      });
-
-      if (!result) return;
-
-      const path = Array.isArray(result) ? result[0] : result;
-      const fullPath = String(path);
+      const cachedPath = await setCoverForTrack(track, imagePath);
+      if (!cachedPath) return;
 
       const updated = playlist.map((t: any, idx: number) =>
-        idx === currentIndex ? { ...t, coverPath: fullPath } : t,
+        idx === currentIndex ? { ...t, coverPath: cachedPath } : t,
       );
-
       setPlaylist(updated);
 
       try {
         await saveLibrary(updated as any[]);
-        console.info("[NowPlaying] saveLibrary with cover ok");
-      } catch (error) {
-        console.error("[NowPlaying] saveLibrary failed:", error);
+      } catch (err) {
+        console.error(
+          "[NowPlayingPage] saveLibrary after setCoverForTrack error:",
+          err,
+        );
       }
-    } catch (error) {
-      console.error("[NowPlaying] pick cover failed:", error);
+
+      setResolvedCoverPath(cachedPath);
+      setCoverError(false);
+    } catch (err) {
+      console.error("[NowPlayingPage] handlePickCover error:", err);
     }
   };
 
-  const indexText = hasTrack
-    ? `来自当前播放列表：第 ${currentIndex + 1} / ${playlist.length} 首`
-    : "当前没有正在播放的歌曲";
+  const title = track?.title || "暂无正在播放";
+  const artist = track?.artist || "未知艺人";
+  const album = track?.album || "";
+
+  const currentTimeDisplay = formatTime(currentTime);
+  const durationDisplay = formatTime(duration);
 
   return (
     <div
       style={{
         height: "100%",
         display: "flex",
-        gap: 24,
+        flexDirection: "column",
+        padding: "16px 24px",
+        boxSizing: "border-box",
       }}
     >
-      {/* 左侧大封面卡片 */}
-      <div
-        style={{
-          flex: "0 0 320px",
-          display: "flex",
-          flexDirection: "column",
-          borderRadius: 16,
-          padding: 16,
-          background:
-            "radial-gradient(circle at top left, #1d4ed8 0, #020617 45%, #020617 100%)",
-          color: "#e5e7eb",
-          boxShadow: "0 18px 45px rgba(15,23,42,0.55)",
-        }}
-      >
-        <div
-          style={{
-            flex: 1,
-            borderRadius: 12,
-            background: "linear-gradient(145deg, #020617, #0f172a)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            overflow: "hidden",
-            marginBottom: 16,
-          }}
-        >
-          {coverSrc && !coverError ? (
-            <img
-              src={coverSrc}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-              }}
-              onError={() => setCoverError(true)}
-            />
-          ) : (
-            <div
-              style={{
-                fontSize: 40,
-                fontWeight: 700,
-                letterSpacing: 4,
-              }}
-            >
-              {displayInitials}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <div
-            style={{
-              fontSize: 16,
-              fontWeight: 600,
-              marginBottom: 4,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {title}
-          </div>
-          <div
-            style={{
-              fontSize: 13,
-              color: "#9ca3af",
-              marginBottom: 12,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {artist}
-            {album ? ` · ${album}` : ""}
-          </div>
-
-          <button
-            onClick={handlePickCover}
-            style={{
-              padding: "6px 10px",
-              borderRadius: 8,
-              border: "1px solid #e5e7eb",
-              background: "#f9fafb",
-              color: "#111827",
-              fontSize: 13,
-              cursor: "pointer",
-            }}
-          >
-            🖼 选择封面图片…
-          </button>
-        </div>
-      </div>
-
-      {/* 右侧信息 + 控制区 */}
       <div
         style={{
           flex: 1,
+          minHeight: 0,
           display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
+          gap: 24,
         }}
       >
-        <div>
-          <div
-            style={{
-              fontSize: 14,
-              color: "#6b7280",
-              marginBottom: 4,
-            }}
-          >
-            正在播放
-          </div>
-          <div
-            style={{
-              fontSize: 20,
-              fontWeight: 600,
-              marginBottom: 4,
-            }}
-          >
-            {title}
-          </div>
-          <div
-            style={{
-              fontSize: 14,
-              color: "#6b7280",
-              marginBottom: 12,
-            }}
-          >
-            {indexText}
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              gap: 8,
-              fontSize: 13,
-              color: "#6b7280",
-              marginBottom: 12,
-            }}
-          >
-            <span>{formatTime(currentTime)}</span>
-            <span>/</span>
-            <span>{formatTime(duration)}</span>
-          </div>
-
-          <p
-            style={{
-              fontSize: 12,
-              color: "#9ca3af",
-              maxWidth: 520,
-              lineHeight: 1.5,
-            }}
-          >
-            封面和曲目信息会与底部播放器保持同步。你可以在资料库或播放列表中切歌，
-            这里会自动跟随更新；也可以使用顶部的 Tab 在各个页面间自由切换。
-          </p>
-        </div>
-
+        {/* 左侧封面卡片 */}
         <div
           style={{
+            width: 340,
+            minWidth: 280,
+            maxWidth: 360,
+            borderRadius: 20,
+            padding: 16,
+            background: "linear-gradient(145deg,#020617,#111827)",
+            boxShadow:
+              "0 18px 45px rgba(15,23,42,0.55), 0 0 0 1px rgba(148,163,184,0.15)",
             display: "flex",
-            gap: 12,
-            marginTop: 24,
-            flexWrap: "wrap",
+            flexDirection: "column",
+            justifyContent: "space-between",
           }}
         >
-          <button
-            onClick={prev}
+          <div
             style={{
-              padding: "6px 10px",
-              borderRadius: 6,
-              border: "1px solid #e5e7eb",
+              borderRadius: 16,
+              padding: 12,
+              background: "radial-gradient(circle at 0% 0%,#0ea5e9,#1d4ed8)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 12,
+              aspectRatio: "1 / 1",
+              overflow: "hidden",
+              position: "relative",
+            }}
+          >
+            {coverSrc && !coverError ? (
+              <img
+                src={coverSrc}
+                alt={title}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  borderRadius: 14,
+                  display: "block",
+                }}
+                onError={() => setCoverError(true)}
+              />
+            ) : (
+              <div
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  borderRadius: 14,
+                  background:
+                    "radial-gradient(circle at 20% 0%,#0ea5e9,#111827 60%)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#e5e7eb",
+                  fontSize: 40,
+                  fontWeight: 700,
+                  letterSpacing: 6,
+                }}
+              >
+                {title ? title.charAt(0) : "♪"}
+              </div>
+            )}
+          </div>
+
+          <div style={{ marginTop: 4 }}>
+            <div
+              style={{
+                fontSize: 15,
+                fontWeight: 600,
+                color: "#e5e7eb",
+                marginBottom: 4,
+                lineHeight: 1.4,
+              }}
+            >
+              {title}
+            </div>
+            <div
+              style={{
+                fontSize: 12,
+                color: "#9ca3af",
+                marginBottom: 2,
+              }}
+            >
+              {artist}
+            </div>
+            {album && (
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "#6b7280",
+                }}
+              >
+                {album}
+              </div>
+            )}
+          </div>
+
+          <div
+            style={{
+              marginTop: 14,
+              paddingTop: 12,
+              borderTop: "1px solid rgba(148,163,184,0.25)",
+            }}
+          >
+            <button
+              onClick={handlePickCover}
+              style={{
+                width: "100%",
+                borderRadius: 9999,
+                padding: "6px 10px",
+                fontSize: 13,
+                border: "1px solid rgba(148,163,184,0.7)",
+                background:
+                  "radial-gradient(circle at 0% 0%,rgba(56,189,248,0.1),rgba(15,23,42,0.9))",
+                color: "#e5e7eb",
+                cursor: "pointer",
+              }}
+            >
+              选择封面图片…
+            </button>
+            <p
+              style={{
+                marginTop: 6,
+                fontSize: 11,
+                color: "#9ca3af",
+                lineHeight: 1.5,
+              }}
+            >
+              选择本地图片作为当前曲目的封面，应用会把图片复制到封面缓存目录中保存。
+            </p>
+          </div>
+        </div>
+
+        {/* 右侧信息区 */}
+        <div
+          style={{
+            flex: 1,
+            minWidth: 0,
+            paddingTop: 4,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div
+            style={{
+              marginBottom: 16,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 16,
+                fontWeight: 600,
+                marginBottom: 4,
+              }}
+            >
+              正在播放
+            </div>
+            {track ? (
+              <div
+                style={{
+                  fontSize: 13,
+                  color: "#6b7280",
+                }}
+              >
+                来自当前播放列表：第 {currentIndex + 1} / {playlist.length} 首
+              </div>
+            ) : (
+              <div
+                style={{
+                  fontSize: 13,
+                  color: "#9ca3af",
+                }}
+              >
+                当前没有正在播放的曲目。
+              </div>
+            )}
+          </div>
+
+          {/* 时间 + 播放控制（页面内的简化版） */}
+          <div
+            style={{
+              marginBottom: 24,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: 12,
+                color: "#6b7280",
+                marginBottom: 4,
+              }}
+            >
+              <span>{currentTimeDisplay}</span>
+              <span>{durationDisplay}</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={duration || 0}
+              step={0.1}
+              value={seeking ? seekValue : currentTime}
+              onChange={(e) => handleSeekChange(Number(e.target.value) || 0)}
+              onMouseUp={(e) =>
+                handleSeekCommit(Number((e.target as HTMLInputElement).value) || 0)
+              }
+              onTouchEnd={(e) =>
+                handleSeekCommit(Number((e.target as HTMLInputElement).value) || 0)
+              }
+              style={{
+                width: "100%",
+                cursor: "pointer",
+              }}
+            />
+            <div
+              style={{
+                marginTop: 12,
+                display: "flex",
+                gap: 8,
+              }}
+            >
+              <button
+                onClick={prev}
+                style={{
+                  padding: "4px 10px",
+                  fontSize: 13,
+                  borderRadius: 9999,
+                  border: "1px solid #e5e7eb",
+                  background: "#ffffff",
+                  cursor: "pointer",
+                }}
+              >
+                上一首
+              </button>
+              <button
+                onClick={togglePlay}
+                style={{
+                  padding: "4px 16px",
+                  fontSize: 13,
+                  borderRadius: 9999,
+                  border: "1px solid #2563eb",
+                  background: isPlaying ? "#2563eb" : "#ffffff",
+                  color: isPlaying ? "#ffffff" : "#2563eb",
+                  cursor: "pointer",
+                }}
+              >
+                {isPlaying ? "暂停" : "播放"}
+              </button>
+              <button
+                onClick={next}
+                style={{
+                  padding: "4px 10px",
+                  fontSize: 13,
+                  borderRadius: 9999,
+                  border: "1px solid #e5e7eb",
+                  background: "#ffffff",
+                  cursor: "pointer",
+                }}
+              >
+                下一首
+              </button>
+            </div>
+          </div>
+
+          {/* 右侧其余空白，未来可以放歌词 / 队列预览等 */}
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              borderRadius: 16,
+              border: "1px dashed #e5e7eb",
               background: "#ffffff",
+              padding: 16,
               fontSize: 13,
-              cursor: "pointer",
+              color: "#9ca3af",
             }}
           >
-            ⏮ 上一首
-          </button>
-          <button
-            onClick={togglePlay}
-            style={{
-              padding: "6px 10px",
-              borderRadius: 6,
-              border: "1px solid #2563eb",
-              background: "#2563eb",
-              color: "#ffffff",
-              fontSize: 13,
-              cursor: "pointer",
-            }}
-          >
-            {isPlaying ? "⏸ 暂停" : "▶ 播放"}
-          </button>
-          <button
-            onClick={next}
-            style={{
-              padding: "6px 10px",
-              borderRadius: 6,
-              border: "1px solid #e5e7eb",
-              background: "#ffffff",
-              fontSize: 13,
-              cursor: "pointer",
-            }}
-          >
-            ⏭ 下一首
-          </button>
+            封面和时间信息会与底部播放器联动同步。
+            以后可以在这里扩展歌词、接下来播放的曲目等。
+          </div>
         </div>
       </div>
     </div>

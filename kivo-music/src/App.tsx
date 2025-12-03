@@ -2,180 +2,186 @@
 import React, { useEffect, useState } from "react";
 import { AudioEngine } from "./components/AudioEngine";
 import { PlayerBar } from "./components/PlayerBar";
+import LibraryPage from "./pages/LibraryPage";
 import PlaylistPage from "./pages/PlaylistPage";
 import NowPlayingPage from "./pages/NowPlayingPage";
-import LibraryPage from "./pages/LibraryPage";
 import SettingsPage from "./pages/SettingsPage";
-import { GlobalShortcuts } from "./components/GlobalShortcuts";
-import type { Theme } from "./persistence/SettingsPersistence";
-import {
-  loadSettings,
-  updateSettings,
-} from "./persistence/SettingsPersistence";
+import { usePlayerStore } from "./store/player";
 
 type TabKey = "library" | "playlist" | "nowPlaying" | "settings";
 
 const tabButtonStyle = (active: boolean): React.CSSProperties => ({
   padding: "4px 10px",
   fontSize: 13,
-  borderRadius: 4,
-  border: "1px solid " + (active ? "#60a5fa" : "#e5e7eb"),
-  background: active ? "#eff6ff" : "#ffffff",
+  borderRadius: 9999,
+  border: "1px solid " + (active ? "#2563eb" : "transparent"),
+  background: active ? "#eff6ff" : "transparent",
   color: active ? "#1d4ed8" : "#4b5563",
   cursor: "pointer",
 });
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabKey>("library");
-  const [theme, setTheme] = useState<Theme>("system");
+  const [tab, setTab] = useState<TabKey>("library");
 
+  const togglePlay = usePlayerStore((s) => s.togglePlay);
+  const next = usePlayerStore((s) => s.next);
+  const prev = usePlayerStore((s) => s.prev);
+
+  // 全局键盘快捷键：Space / ← / →
   useEffect(() => {
-    (async () => {
-      const s = await loadSettings();
-      setTheme(s.theme);
-    })();
-  }, []);
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
 
-  const handleThemeChange = async (next: Theme) => {
-    setTheme(next);
-    await updateSettings({ theme: next });
-  };
+      // 在输入框里就不抢快捷键
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
 
-  const isDark = theme === "dark";
-  const bgMain = isDark ? "#020617" : "#f3f4f6";
-  const headerBg = isDark ? "#020617" : "#ffffff";
-  const headerBorder = isDark ? "#1f2937" : "#e5e7eb";
-  const cardBg = isDark ? "#020617" : "#ffffff";
-  const cardShadow = isDark
-    ? "0 10px 30px rgba(0,0,0,0.6)"
-    : "0 10px 30px rgba(15,23,42,0.08)";
-  const cardBorder = isDark ? "#111827" : "#e5e7eb";
-  const footerBg = isDark ? "#020617" : "#ffffff";
+      if (e.code === "Space") {
+        e.preventDefault();
+        togglePlay();
+      } else if (e.code === "ArrowRight") {
+        next();
+      } else if (e.code === "ArrowLeft") {
+        prev();
+      }
+    };
+
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [togglePlay, next, prev]);
 
   return (
     <div
       style={{
+        height: "100vh",
         display: "flex",
         flexDirection: "column",
-        height: "100vh",
+        background: "#f3f4f6",
+        color: "#111827",
         fontFamily:
-          "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        background: bgMain,
-        color: isDark ? "#e5e7eb" : "#111827",
+          '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
       }}
     >
+      {/* 全局音频引擎 */}
       <AudioEngine />
-      <GlobalShortcuts />
 
+      {/* 顶部 Tab + 标题 */}
       <header
         style={{
           padding: "8px 16px",
-          borderBottom: `1px solid ${headerBorder}`,
-          background: headerBg,
+          borderBottom: "1px solid #e5e7eb",
+          background: "#ffffff",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          gap: 16,
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            gap: 8,
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div
             style={{
-              fontSize: 18,
-              fontWeight: 600,
-              color: isDark ? "#f9fafb" : "#111827",
+              width: 8,
+              height: 8,
+              borderRadius: "9999px",
+              background:
+                "radial-gradient(circle at 30% 30%, #22c55e, #16a34a)",
+              marginRight: 4,
             }}
-          >
-            Kivo Music
-          </div>
-          <div
+          />
+          <span style={{ fontWeight: 600, fontSize: 14 }}>Kivo Music</span>
+          <span
             style={{
               fontSize: 11,
-              color: isDark ? "#6b7280" : "#9ca3af",
+              color: "#9ca3af",
+              padding: "1px 6px",
+              borderRadius: 9999,
+              border: "1px solid #e5e7eb",
+              marginLeft: 4,
             }}
           >
-            本地音乐播放器 · 未来 20+ 年计划版
-          </div>
+            本地播放器 · v2
+          </span>
         </div>
 
         <nav
           style={{
             display: "flex",
-            gap: 8,
+            alignItems: "center",
+            gap: 6,
+            background: "#f3f4f6",
+            borderRadius: 9999,
+            padding: 2,
           }}
         >
           <button
-            type="button"
-            style={tabButtonStyle(activeTab === "library")}
-            onClick={() => setActiveTab("library")}
+            style={tabButtonStyle(tab === "library")}
+            onClick={() => setTab("library")}
           >
             资料库
           </button>
           <button
-            type="button"
-            style={tabButtonStyle(activeTab === "playlist")}
-            onClick={() => setActiveTab("playlist")}
+            style={tabButtonStyle(tab === "playlist")}
+            onClick={() => setTab("playlist")}
           >
             播放列表
           </button>
           <button
-            type="button"
-            style={tabButtonStyle(activeTab === "nowPlaying")}
-            onClick={() => setActiveTab("nowPlaying")}
+            style={tabButtonStyle(tab === "nowPlaying")}
+            onClick={() => setTab("nowPlaying")}
           >
             正在播放
           </button>
           <button
-            type="button"
-            style={tabButtonStyle(activeTab === "settings")}
-            onClick={() => setActiveTab("settings")}
+            style={tabButtonStyle(tab === "settings")}
+            onClick={() => setTab("settings")}
           >
             设置
           </button>
         </nav>
       </header>
 
+      {/* 中间内容区 */}
       <main
         style={{
           flex: 1,
-          padding: "12px 16px 0",
-          overflow: "hidden",
+          minHeight: 0,
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <div
           style={{
-            height: "100%",
-            borderRadius: 12,
-            background: cardBg,
-            boxShadow: cardShadow,
-            border: `1px solid ${cardBorder}`,
-            padding: "12px 16px",
-            boxSizing: "border-box",
+            flex: 1,
+            minHeight: 0,
             overflow: "hidden",
           }}
         >
-          {activeTab === "library" && <LibraryPage />}
-          {activeTab === "playlist" && <PlaylistPage />}
-          {activeTab === "nowPlaying" && <NowPlayingPage />}
-          {activeTab === "settings" && (
-            <SettingsPage
-              theme={theme}
-              onThemeChange={handleThemeChange}
-            />
-          )}
+          <div
+            style={{
+              height: "100%",
+              overflow: "auto",
+            }}
+          >
+            {tab === "library" && <LibraryPage />}
+            {tab === "playlist" && <PlaylistPage />}
+            {tab === "nowPlaying" && <NowPlayingPage />}
+            {tab === "settings" && <SettingsPage />}
+          </div>
         </div>
       </main>
 
+      {/* 底部播放器条 */}
       <footer
         style={{
           padding: "8px 16px",
-          borderTop: `1px solid ${headerBorder}`,
-          background: footerBg,
+          borderTop: "1px solid #e5e7eb",
+          background: "#ffffff",
         }}
       >
         <PlayerBar />

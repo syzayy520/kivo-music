@@ -1,5 +1,7 @@
 import { create } from "zustand";
 
+export type PlayMode = "order" | "repeat-all" | "repeat-one";
+
 export interface PlayerTrack {
   id: string;
   title: string;
@@ -8,221 +10,310 @@ export interface PlayerTrack {
   filePath: string;
   duration?: number;
 
-  // 封面相关字段（已经在库里用上了）
-  coverId?: string;   // 封面唯一 ID（未来可用专辑名/哈希等）
-  coverPath?: string; // 封面在本地缓存后的绝对路径
+  // 封面缓存相关字段（可选）
+  coverId?: string;
+  coverPath?: string;
 }
 
-export type PlayMode = "normal" | "repeat-one" | "repeat-all";
-
 export interface PlayerState {
-  // 播放列表 / 队列
   playlist: PlayerTrack[];
-  /** 兼容历史字段：有的地方还叫 tracks，这里始终与 playlist 保持一致 */
+  // 为了兼容旧代码，提供 tracks 的别名
   tracks: PlayerTrack[];
 
-  // 播放指针
-  currentIndex: number; // -1 表示当前没有曲目
+  currentIndex: number;
   isPlaying: boolean;
 
-  // 进度信息
   currentTime: number;
   duration: number;
   pendingSeek: number | null;
 
-  // 音量 / 模式
   volume: number;
+
   mode: PlayMode;
 
-  // === actions ===
-  /** 覆盖整个播放列表，尽量保留 currentIndex */
   setPlaylist: (tracks: PlayerTrack[]) => void;
-  /** setPlaylist 的兼容别名 */
   setTracks: (tracks: PlayerTrack[]) => void;
-
-  /** 切换到指定索引并开始播放 */
   playTrack: (index: number) => void;
-
-  /** 播放 / 暂停 */
   togglePlay: () => void;
-  setIsPlaying: (value: boolean) => void;
 
-  /** 音量 0–1 */
   setVolume: (value: number) => void;
-
-  /** 由 <audio> 驱动的实时位置 */
-  setPosition: (t: number) => void;
-  setDuration: (d: number) => void;
-
-  /** 用户拖动进度条时调用 */
-  seek: (t: number) => void;
+  seek: (seconds: number) => void;
+  setPosition: (seconds: number) => void;
+  setDuration: (seconds: number) => void;
   clearPendingSeek: () => void;
 
-  /** 切到下一首 / 上一首 */
+  setIsPlaying: (flag: boolean) => void;
   next: () => void;
   prev: () => void;
+
+  setMode: (mode: PlayMode) => void;
+  cycleMode: () => void;
 }
 
-function clampIndex(len: number, index: number): number {
-  if (len <= 0) return -1;
-  if (index < 0) return 0;
-  if (index >= len) return len - 1;
-  return index;
+function clampVolume(v: number): number {
+  if (Number.isNaN(v)) return 1;
+  if (v < 0) return 0;
+  if (v > 1) return 1;
+  return v;
+}
+
+function getTrackIdentity(t: PlayerTrack | undefined): string | null {
+  if (!t) return null;
+  return t.id || t.filePath || null;
 }
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
   playlist: [],
   tracks: [],
+
   currentIndex: -1,
   isPlaying: false,
+
   currentTime: 0,
   duration: 0,
   pendingSeek: null,
+
   volume: 1,
-  mode: "normal",
 
-  setPlaylist: (tracks: PlayerTrack[]) =>
+  mode: "order",
+
+  setPlaylist: (tracks) =>
     set((state) => {
-      const len = tracks.length;
-      let newIndex = state.currentIndex;
-
-      if (len === 0) {
-        newIndex = -1;
-      } else if (newIndex < 0 || newIndex >= len) {
-        // 之前索引已经越界了，就回到第一首
-        newIndex = 0;
-      }
-
-      return {
-        playlist: tracks,
-        tracks, // 保持同步
-        currentIndex: newIndex,
-      };
-    }),
-
-  setTracks: (tracks: PlayerTrack[]) =>
-    set((state) => {
-      const len = tracks.length;
-      let newIndex = state.currentIndex;
-
-      if (len === 0) {
-        newIndex = -1;
-      } else if (newIndex < 0 || newIndex >= len) {
-        newIndex = 0;
-      }
-
-      return {
-        playlist: tracks,
-        tracks,
-        currentIndex: newIndex,
-      };
-    }),
-
-  playTrack: (index: number) =>
-    set((state) => {
-      const len = state.playlist.length;
-      if (len === 0) {
-        return state;
-      }
-      const clamped = clampIndex(len, index);
-      if (clamped === -1) {
+      const nextList = Array.isArray(tracks) ? tracks.slice() : [];
+      if (nextList.length === 0) {
         return {
           ...state,
+          playlist: [],
+          tracks: [],
           currentIndex: -1,
           isPlaying: false,
           currentTime: 0,
           duration: 0,
+          pendingSeek: null,
         };
       }
+
+      const current =
+        state.currentIndex >= 0 && state.currentIndex < state.playlist.length
+          ? state.playlist[state.currentIndex]
+          : undefined;
+
+      let newIndex = 0;
+
+      const currentId = getTrackIdentity(current as PlayerTrack | undefined);
+      if (currentId) {
+        const found = nextList.findIndex(
+          (t) => getTrackIdentity(t) === currentId,
+        );
+        if (found >= 0) {
+          newIndex = found;
+        }
+      } else if (state.currentIndex >= 0 && state.currentIndex < nextList.length) {
+        newIndex = state.currentIndex;
+      }
+
       return {
         ...state,
-        currentIndex: clamped,
+        playlist: nextList,
+        tracks: nextList,
+        currentIndex: newIndex,
+      };
+    }),
+
+  setTracks: (tracks) => {
+    const list = Array.isArray(tracks) ? tracks : [];
+    get().setPlaylist(list as PlayerTrack[]);
+  },
+
+  playTrack: (index) =>
+    set((state) => {
+      const list = state.playlist;
+      if (!list || list.length === 0) {
+        return state;
+      }
+      let idx = index;
+      if (idx < 0) idx = 0;
+      if (idx >= list.length) idx = list.length - 1;
+
+      return {
+        ...state,
+        currentIndex: idx,
         isPlaying: true,
-        pendingSeek: null,
+        pendingSeek: 0,
+        currentTime: 0,
       };
     }),
 
   togglePlay: () =>
+    set((state) => {
+      if (!state.playlist.length) {
+        return state;
+      }
+      return {
+        ...state,
+        isPlaying: !state.isPlaying,
+      };
+    }),
+
+  setVolume: (value) =>
+    set(() => ({
+      volume: clampVolume(value),
+    })),
+
+  seek: (seconds) =>
     set((state) => ({
-      isPlaying: !state.isPlaying,
+      ...state,
+      pendingSeek: seconds,
+      currentTime: seconds,
     })),
 
-  setIsPlaying: (value: boolean) =>
-    set(() => ({
-      isPlaying: value,
-    })),
+  setPosition: (seconds) =>
+    set((state) => {
+      if (!Number.isFinite(seconds)) return state;
+      return {
+        ...state,
+        currentTime: seconds,
+      };
+    }),
 
-  setVolume: (value: number) =>
-    set(() => ({
-      volume: Math.min(1, Math.max(0, value)),
-    })),
-
-  setPosition: (t: number) =>
-    set(() => ({
-      currentTime: t,
-    })),
-
-  setDuration: (d: number) =>
-    set(() => ({
-      duration: d,
-    })),
-
-  seek: (t: number) =>
-    set(() => ({
-      pendingSeek: t,
-      currentTime: t,
-    })),
+  setDuration: (seconds) =>
+    set((state) => {
+      if (!Number.isFinite(seconds) || seconds <= 0) {
+        return state;
+      }
+      return {
+        ...state,
+        duration: seconds,
+      };
+    }),
 
   clearPendingSeek: () =>
-    set(() => ({
+    set((state) => ({
+      ...state,
       pendingSeek: null,
     })),
 
-  next: () => {
-    const state = get();
-    const len = state.playlist.length;
-    if (len === 0) return;
+  setIsPlaying: (flag) =>
+    set((state) => ({
+      ...state,
+      isPlaying: !!flag,
+    })),
 
-    let nextIndex = state.currentIndex + 1;
-    if (nextIndex >= len) {
-      if (state.mode === "repeat-all") {
-        nextIndex = 0;
-      } else {
-        // normal / repeat-one：到末尾就停
-        set({
+  next: () =>
+    set((state) => {
+      const list = state.playlist;
+      if (!list || list.length === 0) {
+        return state;
+      }
+
+      const lastIndex = list.length - 1;
+
+      // 单曲循环：只回到本曲开头
+      if (state.mode === "repeat-one") {
+        return {
+          ...state,
+          pendingSeek: 0,
+          currentTime: 0,
+          isPlaying: true,
+        };
+      }
+
+      // 当前还没确定 index 时，直接从 0 开始
+      if (state.currentIndex < 0) {
+        return {
+          ...state,
+          currentIndex: 0,
+          pendingSeek: 0,
+          currentTime: 0,
+          isPlaying: true,
+        };
+      }
+
+      // 已经是最后一首
+      if (state.currentIndex >= lastIndex) {
+        if (state.mode === "repeat-all") {
+          // 列表循环：回到第一首
+          return {
+            ...state,
+            currentIndex: 0,
+            pendingSeek: 0,
+            currentTime: 0,
+            isPlaying: true,
+          };
+        }
+        // 顺序播放：停在最后一首并暂停
+        return {
+          ...state,
           isPlaying: false,
-        });
-        return;
+        };
       }
-    }
 
-    set({
-      currentIndex: nextIndex,
-      isPlaying: true,
-      pendingSeek: null,
-    });
-  },
+      // 正常下一首
+      return {
+        ...state,
+        currentIndex: state.currentIndex + 1,
+        pendingSeek: 0,
+        currentTime: 0,
+        isPlaying: true,
+      };
+    }),
 
-  prev: () => {
-    const state = get();
-    const len = state.playlist.length;
-    if (len === 0) return;
-
-    let prevIndex = state.currentIndex - 1;
-    if (prevIndex < 0) {
-      if (state.mode === "repeat-all") {
-        prevIndex = len - 1;
-      } else {
-        prevIndex = 0;
+  prev: () =>
+    set((state) => {
+      const list = state.playlist;
+      if (!list || list.length === 0) {
+        return state;
       }
-    }
+      if (state.currentIndex < 0) {
+        return state;
+      }
 
-    set({
-      currentIndex: prevIndex,
-      isPlaying: true,
-      pendingSeek: null,
-    });
-  },
+      // 若当前已播放超过 3 秒，先回到本曲开头
+      if (state.currentTime > 3) {
+        return {
+          ...state,
+          pendingSeek: 0,
+          currentTime: 0,
+        };
+      }
+
+      // 已经是第一首了，就只回到头
+      if (state.currentIndex === 0) {
+        return {
+          ...state,
+          pendingSeek: 0,
+          currentTime: 0,
+        };
+      }
+
+      // 正常上一首
+      return {
+        ...state,
+        currentIndex: state.currentIndex - 1,
+        pendingSeek: 0,
+        currentTime: 0,
+        isPlaying: true,
+      };
+    }),
+
+  setMode: (mode) =>
+    set((state) => ({
+      ...state,
+      mode,
+    })),
+
+  cycleMode: () =>
+    set((state) => {
+      let nextMode: PlayMode;
+      if (state.mode === "order") nextMode = "repeat-all";
+      else if (state.mode === "repeat-all") nextMode = "repeat-one";
+      else nextMode = "order";
+
+      return {
+        ...state,
+        mode: nextMode,
+      };
+    }),
 }));
 
 export default usePlayerStore;

@@ -1,71 +1,78 @@
+// src/components/AudioEngine.tsx
 import React, { useEffect, useRef } from "react";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { usePlayerStore } from "../store/player";
+import usePlayerStore from "../store/player";
 
-/**
- * 不渲染 UI，只负责管理 <audio> 元素，
- * 把 Zustand 里的播放状态同步到真正的音频播放。
- */
 export const AudioEngine: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const playlist = usePlayerStore((s) => s.playlist);
-  const currentIndex = usePlayerStore((s) => s.currentIndex);
-  const isPlaying = usePlayerStore((s) => s.isPlaying);
-  const volume = usePlayerStore((s) => s.volume);
-  const pendingSeek = usePlayerStore((s) => s.pendingSeek);
+  const playlist = usePlayerStore((s) => s.playlist ?? s.tracks ?? []);
+  const currentIndex = usePlayerStore((s) => s.currentIndex ?? -1);
+  const isPlaying = usePlayerStore((s) => s.isPlaying ?? false);
+  const volume = usePlayerStore((s) => s.volume ?? 1);
+  const pendingSeek = usePlayerStore((s) => s.pendingSeek ?? null);
 
-  const setPosition = usePlayerStore((s) => s.setPosition);
-  const setDuration = usePlayerStore((s) => s.setDuration);
-  const clearPendingSeek = usePlayerStore((s) => s.clearPendingSeek);
-  const next = usePlayerStore((s) => s.next);
+  const setPosition = usePlayerStore((s) => s.setPosition ?? (() => {}));
+  const setDuration = usePlayerStore((s) => s.setDuration ?? (() => {}));
+  const clearPendingSeek = usePlayerStore((s) => s.clearPendingSeek ?? (() => {}));
+  const setIsPlaying = usePlayerStore((s) => s.setIsPlaying ?? (() => {}));
+  const next = usePlayerStore((s) => s.next ?? (() => {}));
 
-  // 同步播放源 / 播放状态 / 音量
+  const currentTrack =
+    playlist && playlist.length > 0 && currentIndex >= 0 && currentIndex < playlist.length
+      ? playlist[currentIndex]
+      : null;
+
+  const currentSrc = currentTrack ? convertFileSrc(currentTrack.filePath) : "";
+
+  // 当曲目或 src 改变时，加载新的音频
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    audio.volume = volume;
-
-    const track =
-      currentIndex != null && currentIndex >= 0
-        ? playlist[currentIndex]
-        : undefined;
-
-    if (!track) {
-      audio.pause();
+    if (!currentTrack) {
       audio.removeAttribute("src");
       audio.load();
+      setIsPlaying(false);
       return;
     }
 
-    const newSrc = convertFileSrc(track.filePath);
-
-    if (audio.src !== newSrc) {
-      audio.src = newSrc;
-      audio.load();
-    }
+    audio.src = currentSrc;
+    audio.load();
 
     if (isPlaying) {
       audio
         .play()
-        .catch((err) => console.warn("[AudioEngine] play() error:", err));
-    } else {
-      audio.pause();
+        .catch((err) => {
+          console.error("[AudioEngine] play error", err);
+          setIsPlaying(false);
+        });
     }
-  }, [playlist, currentIndex, isPlaying, volume]);
+  }, [currentTrack, currentSrc, isPlaying, setIsPlaying]);
 
-  // 处理 seek
+  // 音量变化
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.volume = volume;
+  }, [volume]);
+
+  // 拖动进度：pendingSeek
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
     if (pendingSeek == null) return;
 
-    audio.currentTime = pendingSeek;
-    clearPendingSeek();
+    try {
+      audio.currentTime = pendingSeek;
+    } catch (e) {
+      console.warn("[AudioEngine] failed to seek", e);
+    } finally {
+      clearPendingSeek();
+    }
   }, [pendingSeek, clearPendingSeek]);
 
-  // 绑定事件
+  // 事件监听：更新时间 / 时长 / 播放状态 / 自动下一首
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -74,24 +81,32 @@ export const AudioEngine: React.FC = () => {
       setPosition(audio.currentTime || 0);
     };
 
-    const handleLoaded = () => {
+    const handleLoadedMetadata = () => {
+      if (!Number.isFinite(audio.duration)) return;
       setDuration(audio.duration || 0);
     };
+
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
 
     const handleEnded = () => {
       next();
     };
 
     audio.addEventListener("timeupdate", handleTimeUpdate);
-    audio.addEventListener("loadedmetadata", handleLoaded);
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.addEventListener("play", handlePlay);
+    audio.addEventListener("pause", handlePause);
     audio.addEventListener("ended", handleEnded);
 
     return () => {
       audio.removeEventListener("timeupdate", handleTimeUpdate);
-      audio.removeEventListener("loadedmetadata", handleLoaded);
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      audio.removeEventListener("play", handlePlay);
+      audio.removeEventListener("pause", handlePause);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [setPosition, setDuration, next]);
+  }, [setPosition, setDuration, setIsPlaying, next]);
 
   return <audio ref={audioRef} style={{ display: "none" }} />;
 };
