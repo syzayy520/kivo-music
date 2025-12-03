@@ -8,72 +8,106 @@ export interface PlayerTrack {
   filePath: string;
   duration?: number;
 
-  // 预留：封面缓存相关字段
-  coverId?: string;    // 封面唯一 ID（后面可用专辑名/哈希等）
-  coverPath?: string;  // 封面图片在本地缓存后的绝对路径
+  // 封面相关字段（已经在库里用上了）
+  coverId?: string;   // 封面唯一 ID（未来可用专辑名/哈希等）
+  coverPath?: string; // 封面在本地缓存后的绝对路径
 }
 
+export type PlayMode = "normal" | "repeat-one" | "repeat-all";
 
 export interface PlayerState {
-  // 播放列表
+  // 播放列表 / 队列
   playlist: PlayerTrack[];
-  currentIndex: number; // -1 表示没有当前曲目
+  /** 兼容历史字段：有的地方还叫 tracks，这里始终与 playlist 保持一致 */
+  tracks: PlayerTrack[];
 
-  // 播放状态
+  // 播放指针
+  currentIndex: number; // -1 表示当前没有曲目
   isPlaying: boolean;
-  volume: number; // 0 ~ 1
 
-  // 进度 & 时长
+  // 进度信息
   currentTime: number;
   duration: number;
-
-  // seek 用的中间状态（给 AudioEngine 处理）
   pendingSeek: number | null;
 
-  // === 播放列表相关 ===
+  // 音量 / 模式
+  volume: number;
+  mode: PlayMode;
+
+  // === actions ===
+  /** 覆盖整个播放列表，尽量保留 currentIndex */
   setPlaylist: (tracks: PlayerTrack[]) => void;
-  addTracks: (tracks: PlayerTrack[]) => void;
+  /** setPlaylist 的兼容别名 */
+  setTracks: (tracks: PlayerTrack[]) => void;
 
-  // === 播放控制 ===
+  /** 切换到指定索引并开始播放 */
   playTrack: (index: number) => void;
-  togglePlay: () => void;
-  next: () => void;
-  prev: () => void;
 
-  // === 进度 / 音量 ===
-  setVolume: (v: number) => void;
+  /** 播放 / 暂停 */
+  togglePlay: () => void;
+  setIsPlaying: (value: boolean) => void;
+
+  /** 音量 0–1 */
+  setVolume: (value: number) => void;
+
+  /** 由 <audio> 驱动的实时位置 */
   setPosition: (t: number) => void;
   setDuration: (d: number) => void;
+
+  /** 用户拖动进度条时调用 */
   seek: (t: number) => void;
   clearPendingSeek: () => void;
+
+  /** 切到下一首 / 上一首 */
+  next: () => void;
+  prev: () => void;
 }
 
-const clampIndex = (len: number, idx: number) => {
+function clampIndex(len: number, index: number): number {
   if (len <= 0) return -1;
-  if (idx < 0) return 0;
-  if (idx >= len) return len - 1;
-  return idx;
-};
+  if (index < 0) return 0;
+  if (index >= len) return len - 1;
+  return index;
+}
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
   playlist: [],
+  tracks: [],
   currentIndex: -1,
   isPlaying: false,
-  volume: 1,
   currentTime: 0,
   duration: 0,
   pendingSeek: null,
+  volume: 1,
+  mode: "normal",
 
-    // 设置整条播放列表，但尽量保留当前正在播放的索引
-  setPlaylist: (tracks) =>
+  setPlaylist: (tracks: PlayerTrack[]) =>
     set((state) => {
+      const len = tracks.length;
       let newIndex = state.currentIndex;
 
-      if (tracks.length === 0) {
-        // 没有歌了，索引设为 -1
+      if (len === 0) {
         newIndex = -1;
-      } else if (newIndex < 0 || newIndex >= tracks.length) {
-        // 之前的索引已经越界了，就回到第一首 
+      } else if (newIndex < 0 || newIndex >= len) {
+        // 之前索引已经越界了，就回到第一首
+        newIndex = 0;
+      }
+
+      return {
+        playlist: tracks,
+        tracks, // 保持同步
+        currentIndex: newIndex,
+      };
+    }),
+
+  setTracks: (tracks: PlayerTrack[]) =>
+    set((state) => {
+      const len = tracks.length;
+      let newIndex = state.currentIndex;
+
+      if (len === 0) {
+        newIndex = -1;
+      } else if (newIndex < 0 || newIndex >= len) {
         newIndex = 0;
       }
 
@@ -84,107 +118,56 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       };
     }),
 
-  // setTracks 做同样的事，保持行为一致
-  setTracks: (tracks) =>
-    set((state) => {
-      let newIndex = state.currentIndex;
-
-      if (tracks.length === 0) {
-        newIndex = -1;
-      } else if (newIndex < 0 || newIndex >= tracks.length) {
-        newIndex = 0;
-      }
-
-      return {
-        playlist: tracks,
-        tracks,
-        currentIndex: newIndex,
-      };
-    }),
-
-
-  addTracks: (tracks) =>
-    set((state) => ({
-      playlist: [...state.playlist, ...tracks],
-    })),
-
-  playTrack: (index) =>
+  playTrack: (index: number) =>
     set((state) => {
       const len = state.playlist.length;
-      if (len === 0) return state;
-      const i = clampIndex(len, index);
+      if (len === 0) {
+        return state;
+      }
+      const clamped = clampIndex(len, index);
+      if (clamped === -1) {
+        return {
+          ...state,
+          currentIndex: -1,
+          isPlaying: false,
+          currentTime: 0,
+          duration: 0,
+        };
+      }
       return {
-        currentIndex: i,
+        ...state,
+        currentIndex: clamped,
         isPlaying: true,
-        currentTime: 0,
+        pendingSeek: null,
       };
     }),
 
   togglePlay: () =>
-    set((state) => {
-      if (state.playlist.length === 0) return state;
-      if (state.currentIndex === -1) {
-        // 没有当前曲目，从第一首开始
-        return {
-          ...state,
-          currentIndex: 0,
-          isPlaying: true,
-        };
-      }
-      return { ...state, isPlaying: !state.isPlaying };
-    }),
-
-  next: () =>
-    set((state) => {
-      const len = state.playlist.length;
-      if (len === 0) return state;
-      if (state.currentIndex === -1) {
-        return { ...state, currentIndex: 0, isPlaying: true, currentTime: 0 };
-      }
-      const nextIndex = state.currentIndex + 1;
-      if (nextIndex >= len) {
-        // 播完最后一首就停
-        return { ...state, isPlaying: false };
-      }
-      return {
-        ...state,
-        currentIndex: nextIndex,
-        isPlaying: true,
-        currentTime: 0,
-      };
-    }),
-
-  prev: () =>
-    set((state) => {
-      const len = state.playlist.length;
-      if (len === 0) return state;
-      if (state.currentIndex <= 0) {
-        return { ...state, currentIndex: 0, currentTime: 0 };
-      }
-      return {
-        ...state,
-        currentIndex: state.currentIndex - 1,
-        isPlaying: true,
-        currentTime: 0,
-      };
-    }),
-
-  setVolume: (v) =>
-    set(() => ({
-      volume: Math.min(1, Math.max(0, v)),
+    set((state) => ({
+      isPlaying: !state.isPlaying,
     })),
 
-  setPosition: (t) =>
+  setIsPlaying: (value: boolean) =>
+    set(() => ({
+      isPlaying: value,
+    })),
+
+  setVolume: (value: number) =>
+    set(() => ({
+      volume: Math.min(1, Math.max(0, value)),
+    })),
+
+  setPosition: (t: number) =>
     set(() => ({
       currentTime: t,
     })),
 
-  setDuration: (d) =>
+  setDuration: (d: number) =>
     set(() => ({
       duration: d,
     })),
 
-  seek: (t) =>
+  seek: (t: number) =>
     set(() => ({
       pendingSeek: t,
       currentTime: t,
@@ -194,6 +177,52 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     set(() => ({
       pendingSeek: null,
     })),
+
+  next: () => {
+    const state = get();
+    const len = state.playlist.length;
+    if (len === 0) return;
+
+    let nextIndex = state.currentIndex + 1;
+    if (nextIndex >= len) {
+      if (state.mode === "repeat-all") {
+        nextIndex = 0;
+      } else {
+        // normal / repeat-one：到末尾就停
+        set({
+          isPlaying: false,
+        });
+        return;
+      }
+    }
+
+    set({
+      currentIndex: nextIndex,
+      isPlaying: true,
+      pendingSeek: null,
+    });
+  },
+
+  prev: () => {
+    const state = get();
+    const len = state.playlist.length;
+    if (len === 0) return;
+
+    let prevIndex = state.currentIndex - 1;
+    if (prevIndex < 0) {
+      if (state.mode === "repeat-all") {
+        prevIndex = len - 1;
+      } else {
+        prevIndex = 0;
+      }
+    }
+
+    set({
+      currentIndex: prevIndex,
+      isPlaying: true,
+      pendingSeek: null,
+    });
+  },
 }));
 
 export default usePlayerStore;
