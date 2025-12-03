@@ -1,10 +1,11 @@
 // src/App.tsx
 import React, { useState } from "react";
 import { AudioEngine } from "./components/AudioEngine";
-import { TrackList } from "./components/TrackList";
 import { PlayerBar } from "./components/PlayerBar";
 import PlaylistPage from "./pages/PlaylistPage";
 import NowPlayingPage from "./pages/NowPlayingPage";
+import LibraryPage from "./pages/LibraryPage";
+import { GlobalShortcuts } from "./components/GlobalShortcuts";
 
 type TabKey = "library" | "playlist" | "nowPlaying";
 
@@ -14,28 +15,12 @@ const tabButtonStyle = (active: boolean): React.CSSProperties => ({
   borderRadius: 4,
   border: "1px solid " + (active ? "#60a5fa" : "#e5e7eb"),
   background: active ? "#eff6ff" : "#ffffff",
-  color: active ? "#1d4ed8" : "#374151",
+  color: active ? "#1d4ed8" : "#4b5563",
   cursor: "pointer",
 });
 
-/**
- * 顶层 App：
- * - 上面是标题 + Tab 切换（资料库 / 播放列表 / 正在播放）
- * - 中间根据当前 Tab 显示对应页面
- * - 底部是全局 PlayerBar
- * - AudioEngine 在最顶层挂一次就好
- */
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>("library");
-
-  let content: React.ReactNode;
-  if (activeTab === "library") {
-    content = <TrackList />;
-  } else if (activeTab === "playlist") {
-    content = <PlaylistPage />;
-  } else {
-    content = <NowPlayingPage />;
-  }
 
   return (
     <div
@@ -44,14 +29,16 @@ const App: React.FC = () => {
         flexDirection: "column",
         height: "100vh",
         fontFamily:
-          '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
-        background: "#f9fafb",
+          "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        background: "#f3f4f6",
       }}
     >
-      {/* 音频引擎，全局挂载一次 */}
+      {/* 隐藏的音频引擎（真正驱动 <audio> 播放） */}
       <AudioEngine />
 
-      {/* 顶部标题栏 + Tab */}
+      {/* 全局快捷键：空格播放/暂停、左右切歌、Ctrl+F 聚焦搜索 */}
+      <GlobalShortcuts />
+
       <header
         style={{
           padding: "8px 16px",
@@ -62,43 +49,54 @@ const App: React.FC = () => {
           justifyContent: "space-between",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 20 }}>🎵</span>
-          <div>
-            <div
-              style={{
-                fontSize: 16,
-                fontWeight: 600,
-                lineHeight: 1.2,
-              }}
-            >
-              Kivo Music
-            </div>
-            <div
-              style={{
-                fontSize: 11,
-                color: "#9ca3af",
-              }}
-            >
-              本地音乐播放器 · 本来 20+ 年计划版
-            </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            gap: 8,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 18,
+              fontWeight: 600,
+              color: "#111827",
+            }}
+          >
+            Kivo Music
+          </div>
+          <div
+            style={{
+              fontSize: 11,
+              color: "#9ca3af",
+            }}
+          >
+            本地音乐播放器 · 未来 20+ 年计划版
           </div>
         </div>
 
-        <nav style={{ display: "flex", gap: 8 }}>
+        <nav
+          style={{
+            display: "flex",
+            gap: 8,
+          }}
+        >
           <button
+            type="button"
             style={tabButtonStyle(activeTab === "library")}
             onClick={() => setActiveTab("library")}
           >
             资料库
           </button>
           <button
+            type="button"
             style={tabButtonStyle(activeTab === "playlist")}
             onClick={() => setActiveTab("playlist")}
           >
             播放列表
           </button>
           <button
+            type="button"
             style={tabButtonStyle(activeTab === "nowPlaying")}
             onClick={() => setActiveTab("nowPlaying")}
           >
@@ -107,18 +105,30 @@ const App: React.FC = () => {
         </nav>
       </header>
 
-      {/* 中间主内容区域 */}
       <main
         style={{
           flex: 1,
-          overflow: "auto",
-          background: "#f9fafb",
+          padding: "12px 16px 0",
+          overflow: "hidden",
         }}
       >
-        {content}
+        <div
+          style={{
+            height: "100%",
+            borderRadius: 12,
+            background: "#ffffff",
+            boxShadow: "0 10px 30px rgba(15,23,42,0.08)",
+            padding: "12px 16px",
+            boxSizing: "border-box",
+            overflow: "hidden",
+          }}
+        >
+          {activeTab === "library" && <LibraryPage />}
+          {activeTab === "playlist" && <PlaylistPage />}
+          {activeTab === "nowPlaying" && <NowPlayingPage />}
+        </div>
       </main>
 
-      {/* 底部播放器 */}
       <footer
         style={{
           padding: "8px 16px",
