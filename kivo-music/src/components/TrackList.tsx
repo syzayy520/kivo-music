@@ -172,17 +172,18 @@ export const TrackList: React.FC = () => {
   const normalizedQuery = query.trim().toLowerCase();
 
   // 小工具：切换排序
+    // 切换排序字段 / 方向
   const toggleSort = (key: "title" | "artist") => {
-    setSortKey((prevKey) => {
-      if (prevKey !== key) {
-        setSortDir("asc");
-        return key;
-      }
-      // 同一个字段，再点一次反转方向
-      setSortDir((prevDir) => (prevDir === "asc" ? "desc" : "asc"));
-      return key;
-    });
+    if (sortKey !== key) {
+      // 换了新的字段：默认升序
+      setSortKey(key);
+      setSortDir("asc");
+    } else {
+      // 同一个字段：在 升序/降序 之间切换
+      setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
+    }
   };
+
 
   const sortArrow = (key: "title" | "artist") => {
     if (sortKey !== key) return null;

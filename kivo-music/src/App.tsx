@@ -1,10 +1,12 @@
+// src/App.tsx
 import React, { useState } from "react";
 import { AudioEngine } from "./components/AudioEngine";
 import { TrackList } from "./components/TrackList";
 import { PlayerBar } from "./components/PlayerBar";
+import PlaylistPage from "./pages/PlaylistPage";
 import NowPlayingPage from "./pages/NowPlayingPage";
 
-type TabKey = "library" | "playlist" | "nowplaying";
+type TabKey = "library" | "playlist" | "nowPlaying";
 
 const tabButtonStyle = (active: boolean): React.CSSProperties => ({
   padding: "4px 10px",
@@ -12,127 +14,108 @@ const tabButtonStyle = (active: boolean): React.CSSProperties => ({
   borderRadius: 4,
   border: "1px solid " + (active ? "#60a5fa" : "#e5e7eb"),
   background: active ? "#eff6ff" : "#ffffff",
+  color: active ? "#1d4ed8" : "#374151",
   cursor: "pointer",
 });
 
+/**
+ * 顶层 App：
+ * - 上面是标题 + Tab 切换（资料库 / 播放列表 / 正在播放）
+ * - 中间根据当前 Tab 显示对应页面
+ * - 底部是全局 PlayerBar
+ * - AudioEngine 在最顶层挂一次就好
+ */
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>("library");
+
+  let content: React.ReactNode;
+  if (activeTab === "library") {
+    content = <TrackList />;
+  } else if (activeTab === "playlist") {
+    content = <PlaylistPage />;
+  } else {
+    content = <NowPlayingPage />;
+  }
 
   return (
     <div
       style={{
-        fontFamily:
-          'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-        height: "100vh",
         display: "flex",
         flexDirection: "column",
+        height: "100vh",
+        fontFamily:
+          '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+        background: "#f9fafb",
       }}
     >
-      {/* 隐藏的真实播放引擎 */}
+      {/* 音频引擎，全局挂载一次 */}
       <AudioEngine />
 
-      {/* 顶部标题栏 */}
+      {/* 顶部标题栏 + Tab */}
       <header
         style={{
           padding: "8px 16px",
           borderBottom: "1px solid #e5e7eb",
+          background: "#ffffff",
           display: "flex",
           alignItems: "center",
-          gap: 12,
+          justifyContent: "space-between",
         }}
       >
-        <div style={{ fontSize: 22, fontWeight: 600 }}>🎵 Kivo Music</div>
-        <div style={{ color: "#6b7280", fontSize: 12 }}>
-          本地音乐播放器 · 本来 20+ 年 计划版
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 20 }}>🎵</span>
+          <div>
+            <div
+              style={{
+                fontSize: 16,
+                fontWeight: 600,
+                lineHeight: 1.2,
+              }}
+            >
+              Kivo Music
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                color: "#9ca3af",
+              }}
+            >
+              本地音乐播放器 · 本来 20+ 年计划版
+            </div>
+          </div>
         </div>
+
+        <nav style={{ display: "flex", gap: 8 }}>
+          <button
+            style={tabButtonStyle(activeTab === "library")}
+            onClick={() => setActiveTab("library")}
+          >
+            资料库
+          </button>
+          <button
+            style={tabButtonStyle(activeTab === "playlist")}
+            onClick={() => setActiveTab("playlist")}
+          >
+            播放列表
+          </button>
+          <button
+            style={tabButtonStyle(activeTab === "nowPlaying")}
+            onClick={() => setActiveTab("nowPlaying")}
+          >
+            正在播放
+          </button>
+        </nav>
       </header>
 
-      {/* 顶部 tab */}
-      <div
-        style={{
-          padding: "6px 16px",
-          borderBottom: "1px solid #e5e7eb",
-          display: "flex",
-          gap: 8,
-        }}
-      >
-        <button
-          style={tabButtonStyle(activeTab === "library")}
-          onClick={() => setActiveTab("library")}
-        >
-          资料库
-        </button>
-        <button
-          style={tabButtonStyle(activeTab === "playlist")}
-          onClick={() => setActiveTab("playlist")}
-        >
-          播放列表
-        </button>
-        <button
-          style={tabButtonStyle(activeTab === "nowplaying")}
-          onClick={() => setActiveTab("nowplaying")}
-        >
-          正在播放
-        </button>
-      </div>
-
-      {/* 主体内容 */}
+      {/* 中间主内容区域 */}
       <main
         style={{
           flex: 1,
-          padding: "10px 16px 8px",
           overflow: "auto",
+          background: "#f9fafb",
         }}
       >
-        {activeTab === "library" && (
-          <>
-            <h2
-              style={{
-                fontSize: 20,
-                fontWeight: 600,
-                marginBottom: 4,
-              }}
-            >
-              本地音乐资料库
-            </h2>
-            <p
-              style={{
-                fontSize: 13,
-                color: "#4b5563",
-                marginBottom: 10,
-              }}
-            >
-              这里会显示你导入的本地歌曲列表，后面我们会把它升级为真正的资料库（带封面、
-              搜索、排序等）。
-            </p>
-
-            <TrackList />
-          </>
-        )}
-
-        {activeTab === "playlist" && (
-          <>
-            <h2
-              style={{
-                fontSize: 20,
-                fontWeight: 600,
-                marginBottom: 4,
-              }}
-            >
-              播放列表
-            </h2>
-            <p
-              style={{
-                fontSize: 13,
-                color: "#4b5563",
-              }}
-            >
-              播放列表功能暂时还没做，这里后面会支持自定义歌单、收藏等。
-            </p>
-          </>
-        )}
-
-        {activeTab === "nowplaying" && <NowPlayingPage />}
+        {content}
       </main>
 
       {/* 底部播放器 */}
@@ -140,6 +123,7 @@ const App: React.FC = () => {
         style={{
           padding: "8px 16px",
           borderTop: "1px solid #e5e7eb",
+          background: "#ffffff",
         }}
       >
         <PlayerBar />
