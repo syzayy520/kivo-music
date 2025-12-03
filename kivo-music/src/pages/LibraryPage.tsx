@@ -18,41 +18,25 @@ type SortKey = "none" | "title" | "artist";
 const LibraryPage: React.FC = () => {
   const { tracks, addTracks, clearLibrary } = useLibrary();
 
-  // 从播放器 store 中取出我们需要的两个操作
   const setPlaylist = usePlayerStore(
     (s: any) => s.setPlaylist ?? s.setTracks ?? (() => {}),
-  );
+  ) as (tracks: MusicTrack[]) => void;
   const playTrackByIndex = usePlayerStore(
     (s: any) => s.playTrack ?? (() => {}),
-  );
-    const playerPlaylist = usePlayerStore(
+  ) as (index: number) => void;
+
+  const playerPlaylist = usePlayerStore(
     (s: any) => s.playlist ?? s.tracks ?? [],
   );
   const currentIndex = usePlayerStore(
     (s: any) => s.currentIndex ?? -1,
   );
-    const activeTrackId = useMemo(() => {
-    if (
-      currentIndex < 0 ||
-      currentIndex >= playerPlaylist.length
-    ) {
-      return null;
-    }
-    const t = playerPlaylist[currentIndex];
-    if (!t) return null;
-    return (
-      t.id ??
-      (t as any).filePath ??
-      (t as any).path ??
-      null
-    );
-  }, [playerPlaylist, currentIndex]);
-
 
   const [keyword, setKeyword] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("none");
   const [sortAsc, setSortAsc] = useState(true);
 
+  // ===== 导入本地音乐 =====
   const handleImport = async () => {
     try {
       const result = await open({
@@ -85,8 +69,8 @@ const LibraryPage: React.FC = () => {
 
       addTracks(newTracks);
 
-      // 同步到播放器队列：用最新的全库作为 playlist
-      const allTracks = useLibrary.getState().tracks;
+      // 默认行为：导入后按“整个库”的顺序作为播放列表
+      const allTracks = useLibrary.getState().tracks as MusicTrack[];
       if (allTracks && allTracks.length > 0) {
         setPlaylist(allTracks);
       }
@@ -95,39 +79,13 @@ const LibraryPage: React.FC = () => {
     }
   };
 
-  // 播放指定歌曲：根据 id 在全库中找下标
-  const handlePlayTrack = (track: MusicTrack, _index: number) => {
-    const allTracks = useLibrary.getState().tracks;
-    if (!allTracks || allTracks.length === 0) return;
-
-    const index = allTracks.findIndex((t) => t.id === track.id);
-    if (index === -1) return;
-
-    setPlaylist(allTracks);
-    playTrackByIndex(index);
-  };
-
-  // 切换排序
-  const toggleSort = (key: SortKey) => {
-    if (key === "none") {
-      setSortKey("none");
-      return;
-    }
-    if (sortKey === key) {
-      setSortAsc((v) => !v);
-    } else {
-      setSortKey(key);
-      setSortAsc(true);
-    }
-  };
-
-  // 计算需要展示的列表：先过滤、再排序
-  const displayedTracks = useMemo(() => {
-    let list = tracks || [];
+  // ===== 排序 / 过滤后的“当前列表” =====
+  const displayedTracks: MusicTrack[] = useMemo(() => {
+    let list = (tracks ?? []) as MusicTrack[];
 
     const kw = keyword.trim().toLowerCase();
     if (kw) {
-      list = list.filter((t: MusicTrack) => {
+      list = list.filter((t) => {
         const title = (t.title || "").toLowerCase();
         const artist = (t.artist || "").toLowerCase();
         const album = (t.album || "").toLowerCase();
@@ -141,9 +99,7 @@ const LibraryPage: React.FC = () => {
       });
     }
 
-    if (sortKey === "none") {
-      return list;
-    }
+    if (sortKey === "none") return list;
 
     const sorted = [...list].sort((a, b) => {
       const aVal =
@@ -168,6 +124,60 @@ const LibraryPage: React.FC = () => {
   const sortLabel = (key: SortKey) => {
     if (sortKey !== key) return "";
     return sortAsc ? "▲" : "▼";
+  };
+
+  const activeTrackId = useMemo(() => {
+    if (
+      currentIndex < 0 ||
+      currentIndex >= playerPlaylist.length
+    ) {
+      return null;
+    }
+    const t = playerPlaylist[currentIndex];
+    if (!t) return null;
+    return (
+      t.id ??
+      (t as any).filePath ??
+      (t as any).path ??
+      null
+    );
+  }, [playerPlaylist, currentIndex]);
+
+  // ===== 双击某一行播放：以“当前显示列表”的顺序作为队列 =====
+  const handlePlayTrack = (track: MusicTrack, index: number) => {
+    if (!displayedTracks.length) return;
+    setPlaylist(displayedTracks);
+    playTrackByIndex(index);
+  };
+
+  // ===== 顶部“播放全部 / 随机播放”按钮 =====
+  const handlePlayAll = () => {
+    if (!displayedTracks.length) return;
+    setPlaylist(displayedTracks);
+    playTrackByIndex(0);
+  };
+
+  const handleShufflePlay = () => {
+    if (!displayedTracks.length) return;
+    const randomIndex = Math.floor(
+      Math.random() * displayedTracks.length,
+    );
+    setPlaylist(displayedTracks);
+    playTrackByIndex(randomIndex);
+  };
+
+  // 切换排序
+  const toggleSort = (key: SortKey) => {
+    if (key === "none") {
+      setSortKey("none");
+      return;
+    }
+    if (sortKey === key) {
+      setSortAsc((v) => !v);
+    } else {
+      setSortKey(key);
+      setSortAsc(true);
+    }
   };
 
   return (
@@ -217,9 +227,12 @@ const LibraryPage: React.FC = () => {
           }}
         >
           <input
+            id="kivo-library-search"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             placeholder="搜索标题 / 艺人 / 专辑"
+            autoComplete="off"
+            spellCheck={false}
             style={{
               minWidth: 220,
               borderRadius: 6,
@@ -229,6 +242,44 @@ const LibraryPage: React.FC = () => {
               outline: "none",
             }}
           />
+
+          <button
+            type="button"
+            onClick={handlePlayAll}
+            disabled={!displayedTracks.length}
+            style={{
+              padding: "4px 10px",
+              borderRadius: 6,
+              border: "1px solid #22c55e",
+              backgroundColor: displayedTracks.length
+                ? "#22c55e"
+                : "#e5e7eb",
+              color: displayedTracks.length ? "#ffffff" : "#9ca3af",
+              fontSize: 12,
+              cursor: displayedTracks.length ? "pointer" : "default",
+            }}
+          >
+            ▶ 播放全部
+          </button>
+
+          <button
+            type="button"
+            onClick={handleShufflePlay}
+            disabled={!displayedTracks.length}
+            style={{
+              padding: "4px 10px",
+              borderRadius: 6,
+              border: "1px solid #3b82f6",
+              backgroundColor: displayedTracks.length
+                ? "#ffffff"
+                : "#e5e7eb",
+              color: displayedTracks.length ? "#1d4ed8" : "#9ca3af",
+              fontSize: 12,
+              cursor: displayedTracks.length ? "pointer" : "default",
+            }}
+          >
+            🔀 随机播放
+          </button>
 
           <button
             type="button"
@@ -317,11 +368,10 @@ const LibraryPage: React.FC = () => {
       {/* 列表区域 */}
       <div style={{ flex: 1 }}>
         <TrackList
-  tracks={displayedTracks}
-  onPlay={handlePlayTrack}
-  activeTrackId={activeTrackId}
-/>
-
+          tracks={displayedTracks}
+          onPlay={handlePlayTrack}
+          activeTrackId={activeTrackId}
+        />
       </div>
     </div>
   );

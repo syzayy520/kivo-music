@@ -1,87 +1,69 @@
 // src/components/GlobalShortcuts.tsx
 import React, { useEffect } from "react";
-import * as PlayerStore from "../store/player";
-
-// 为了兼容不同版本的导出，这里做一层小适配：
-// - 优先使用 usePlayerStore
-// - 退而求其次使用 usePlayer
-// 这样不用去改动你现有的 store/player.ts 文件。
-const usePlayerSelector: any =
-  (PlayerStore as any).usePlayerStore ??
-  (PlayerStore as any).usePlayer ??
-  null;
-
-const noop = () => {};
+import { usePlayerStore } from "../store/player";
 
 /**
- * 全局键盘快捷键：
- * - 空格：播放 / 暂停
- * - 左方向键：上一首
- * - 右方向键：下一首
- * - Ctrl+F / Cmd+F：聚焦到资料库搜索框
+ * 全局快捷键：
+ * - Space / MediaPlayPause: 播放 / 暂停
+ * - ArrowLeft / MediaTrackPrevious: 上一首
+ * - ArrowRight / MediaTrackNext: 下一首
+ * - Ctrl+F / Cmd+F: 聚焦资料库搜索框（id = "kivo-library-search"）
  */
-export const GlobalShortcuts: React.FC = () => {
-  // 如果没拿到 hook，就直接什么都不做（避免在编译期报错）
-  if (!usePlayerSelector) {
-    console.warn(
-      "[GlobalShortcuts] no usePlayerStore / usePlayer exported from store/player",
-    );
-    return null;
-  }
-
-  const togglePlay =
-    usePlayerSelector((s: any) => s.togglePlay ?? noop);
-  const next = usePlayerSelector((s: any) => s.next ?? noop);
-  const prev = usePlayerSelector((s: any) => s.prev ?? noop);
+const GlobalShortcuts: React.FC = () => {
+  const togglePlay = usePlayerStore(
+    (s: any) => s.togglePlay ?? (() => {}),
+  );
+  const next = usePlayerStore((s: any) => s.next ?? (() => {}));
+  const prev = usePlayerStore((s: any) => s.prev ?? (() => {}));
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
-      const tag = target?.tagName;
-      const editable = target?.isContentEditable;
+      const tag = target?.tagName?.toLowerCase() ?? "";
+      const isTypingElement =
+        tag === "input" ||
+        tag === "textarea" ||
+        (target?.isContentEditable ?? false);
 
-      // 在输入框 / 文本区域 / 可编辑区域中就不要拦截（避免影响打字）
-      if (
-        tag === "INPUT" ||
-        tag === "TEXTAREA" ||
-        editable ||
-        (target && (target as any).closest?.("[contenteditable=true]"))
-      ) {
-        return;
-      }
-
-      // 空格：播放 / 暂停
-      if (e.code === "Space") {
+      // 播放 / 暂停：Space 或多媒体键
+      if (e.code === "Space" || e.key === " " || e.code === "MediaPlayPause") {
+        // 在输入框里敲空格就别打断人家了
+        if (isTypingElement && e.code !== "MediaPlayPause") return;
         e.preventDefault();
         togglePlay();
         return;
       }
 
-      // 左右方向键：上一首 / 下一首
-      if (e.code === "ArrowRight") {
-        e.preventDefault();
-        next();
-        return;
-      }
-      if (e.code === "ArrowLeft") {
+      // 上一首
+      if (
+        e.code === "ArrowLeft" ||
+        e.code === "MediaTrackPrevious"
+      ) {
+        if (isTypingElement) return;
         e.preventDefault();
         prev();
         return;
       }
 
-      // Ctrl+F / Cmd+F：聚焦到资料库搜索框
+      // 下一首
+      if (
+        e.code === "ArrowRight" ||
+        e.code === "MediaTrackNext"
+      ) {
+        if (isTypingElement) return;
+        e.preventDefault();
+        next();
+        return;
+      }
+
+      // Ctrl+F / Cmd+F：聚焦资料库搜索框
       if (
         (e.ctrlKey || e.metaKey) &&
         (e.key === "f" || e.key === "F")
       ) {
-        const input =
-          document.querySelector<HTMLInputElement>(
-            'input[placeholder*="搜索标题"]',
-          ) ||
-          document.querySelector<HTMLInputElement>(
-            'input[placeholder*="搜索"]',
-          );
-
+        const input = document.getElementById(
+          "kivo-library-search",
+        ) as HTMLInputElement | null;
         if (input) {
           e.preventDefault();
           input.focus();
@@ -90,11 +72,15 @@ export const GlobalShortcuts: React.FC = () => {
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handler);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keydown", handler);
     };
   }, [togglePlay, next, prev]);
 
+  // 只负责挂监听器，本身不渲染任何 UI
   return null;
 };
+
+export { GlobalShortcuts };
+export default GlobalShortcuts;
