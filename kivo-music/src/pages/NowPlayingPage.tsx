@@ -1,10 +1,24 @@
 // src/pages/NowPlayingPage.tsx
-import React, { useEffect, useMemo, useState } from "react";
+//
+// B2.2：在 B2.1 基础上，增加「目录封面索引持久化」
+// - 自动封面（folder/cover.jpg）加载失败时，会把该目录记入 CoverCache 的 folders 列表
+// - 下次启动时，先查询 isFolderKnownNoCover，命中后根本不会再去请求 cover.jpg，自然不会再刷 500
+
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { usePlayerStore } from "../store/player";
 import { saveLibrary } from "../persistence/LibraryPersistence";
-import { setCoverForTrack } from "../persistence/CoverCache";
+import {
+  setCoverForTrack,
+  isFolderKnownNoCover,
+  markFolderNoCover,
+} from "../persistence/CoverCache";
 
 function formatTime(value: number | undefined): string {
   if (!value || !Number.isFinite(value)) return "0:00";
@@ -14,7 +28,9 @@ function formatTime(value: number | undefined): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-// 记住哪些文件夹已经确认“没有封面”，避免重复去请求不存在的 cover.jpg
+// 内存级别的「这个目录没有封面」缓存：
+// - 当前运行中用它避免重复调用 isFolderKnownNoCover
+// - 同时配合持久化版本（CoverCache.folders）
 const noCoverFolders = new Set<string>();
 
 function getFolderPathFromTrack(track: any | null): string | null {
@@ -29,7 +45,7 @@ function getFolderPathFromTrack(track: any | null): string | null {
   return parts.join(sep);
 }
 
-// 简单猜测：同一目录下的 cover.jpg 作为封面
+// 简单规则：同一目录下的 cover.jpg 作为自动封面候选
 function guessCoverPathForTrack(
   track: any | null,
 ): { folderPath: string | null; candidatePath: string | null } {
@@ -84,49 +100,101 @@ const NowPlayingPage: React.FC = () => {
       : null;
 
   const [coverError, setCoverError] = useState(false);
+  const [folderHasNoCover, setFolderHasNoCover] = useState(false);
 
-  // 当前 track 所在目录
+  // 当前曲目所在目录
   const folderPath = useMemo(
     () => getFolderPathFromTrack(track),
     [track && (track as any).id, currentIndex],
   );
 
+  // 用来标记当前 <img> 的 src 是不是「猜的 cover.jpg」
+  const coverFromGuessedRef = useRef(false);
+
+  // track / index 变化时重置错误状态
   useEffect(() => {
     setCoverError(false);
   }, [track && (track as any).id, currentIndex]);
 
+  // 目录发生变化时，从持久化索引里查询「是否已知没有封面」
+  useEffect(() => {
+    let cancelled = false;
+
+    const checkFolder = async () => {
+      if (!folderPath) {
+        setFolderHasNoCover(false);
+        return;
+      }
+
+      // 先看内存缓存
+      if (noCoverFolders.has(folderPath)) {
+        setFolderHasNoCover(true);
+        return;
+      }
+
+      try {
+        const known = await isFolderKnownNoCover(folderPath);
+        if (cancelled) return;
+        if (known) {
+          noCoverFolders.add(folderPath);
+          setFolderHasNoCover(true);
+        } else {
+          setFolderHasNoCover(false);
+        }
+      } catch (error) {
+        console.warn(
+          "[NowPlayingPage] isFolderKnownNoCover failed:",
+          error,
+        );
+        if (!cancelled) {
+          setFolderHasNoCover(false);
+        }
+      }
+    };
+
+    checkFolder();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [folderPath]);
+
   const coverSrc = useMemo(() => {
+    coverFromGuessedRef.current = false;
+
     if (!track) return null;
     if (coverError) return null;
 
-    // 手动选择的封面：直接从 coverPath 出发
+    // 1. 优先使用手动选择的封面（走 CoverCache）
     if (track.coverPath) {
       try {
         return convertFileSrc(String(track.coverPath));
       } catch (e) {
-        console.warn("[NowPlayingPage] convertFileSrc coverPath failed:", e);
+        console.warn("[NowPlayingPage] convertFileSrc coverPath error:", e);
         return null;
       }
     }
 
-    // 没有手动封面，且该目录已经确认没有 cover.jpg，就不要再重复试了
-    if (folderPath && noCoverFolders.has(folderPath)) {
+    // 2. 没有手动封面，并且该目录已经被标记为「无封面」，则不再尝试 cover.jpg
+    if (folderPath && folderHasNoCover) {
       return null;
     }
 
+    // 3. 尝试使用目录下的 cover.jpg
     const { candidatePath } = guessCoverPathForTrack(track);
     if (!candidatePath) return null;
 
     try {
+      coverFromGuessedRef.current = true;
       return convertFileSrc(candidatePath);
     } catch (e) {
       console.warn(
-        "[NowPlayingPage] convertFileSrc guessed cover failed:",
+        "[NowPlayingPage] convertFileSrc guessed cover error:",
         e,
       );
       return null;
     }
-  }, [track, folderPath, coverError]);
+  }, [track, folderPath, folderHasNoCover, coverError]);
 
   const handlePickCover = async () => {
     if (!track) return;
@@ -147,7 +215,6 @@ const NowPlayingPage: React.FC = () => {
       const path = Array.isArray(result) ? result[0] : result;
       const fullPath = String(path);
 
-      // 调用 CoverCache：把原图复制到 AppData/covers，并返回带 coverPath 的新 track
       const updatedTrack = await setCoverForTrack(track, fullPath);
 
       const updatedPlaylist = playlist.map((t: any, idx: number) =>
@@ -172,8 +239,17 @@ const NowPlayingPage: React.FC = () => {
 
   const handleImageError = () => {
     setCoverError(true);
-    if (folderPath) {
+
+    // 只有在「尝试目录 cover.jpg」失败时，才标记目录无封面
+    if (folderPath && coverFromGuessedRef.current) {
       noCoverFolders.add(folderPath);
+      setFolderHasNoCover(true);
+      markFolderNoCover(folderPath).catch((error) => {
+        console.error(
+          "[NowPlayingPage] markFolderNoCover failed:",
+          error,
+        );
+      });
     }
   };
 
@@ -199,7 +275,6 @@ const NowPlayingPage: React.FC = () => {
   const title = track.title || track.name || "未知标题";
   const artist = track.artist || "未知艺人";
   const album = track.album || "";
-
   const gradient = pickGradientForKey(
     track.id ?? track.filePath ?? track.path,
   );

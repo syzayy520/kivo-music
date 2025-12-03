@@ -1,9 +1,8 @@
 // src/persistence/CoverCache.ts
 //
-// 封面缓存 v2（修正版路径）：
-// - 把用户选择的图片复制到 $APPDATA/com.administrator.kivo-music/covers 目录
-// - 用 covers.json 维护一个简单索引
-// - 返回带有 coverPath（指向缓存文件绝对路径）的 track
+// 封面缓存 v2 + 目录索引（B2.2）
+// - covers:  track 级别封面缓存（用户手动选封面 → 复制到 AppData/covers）
+// - folders: 目录级索引，目前主要用来记录「这个文件夹没有封面」，下次启动不再去试探 cover.jpg
 
 import {
   BaseDirectory,
@@ -27,28 +26,39 @@ export interface CoverTrackLike {
 interface CoverRecord {
   trackKey: string;
   sourcePath: string;
-  cachedRelativePath: string; // 相对 AppData 根目录（com.administrator.kivo-music）的路径
+  cachedRelativePath: string; // 相对 AppData 根目录的路径（例如 "covers/xxxx.jpg"）
   cachedAbsolutePath: string; // 绝对路径，用于 convertFileSrc
+  updatedAt: string;
+}
+
+interface FolderRecord {
+  folderPath: string; // 目录绝对路径
+  hasCover: boolean; // 当前我们只用到 hasCover === false 的情况
+  sourcePath?: string;
+  cachedRelativePath?: string;
+  cachedAbsolutePath?: string;
   updatedAt: string;
 }
 
 interface CoverStore {
   version: number;
   covers: CoverRecord[];
+  folders: FolderRecord[];
 }
 
-// 这里直接用相对 AppData 根目录的路径：
-// AppData 实际是 C:\Users\Administrator\AppData\Roaming\com.administrator.kivo-music
+const STORE_VERSION = 1;
+
+// AppData 实际路径例如：
+// C:\Users\Administrator\AppData\Roaming\com.administrator.kivo-music
+// 我们在其下放：covers\*.jpg 和 covers\covers.json
 const COVERS_DIR = "covers";
 const COVERS_INDEX_FILE = "covers/covers.json";
 
 async function getAppDataRoot(): Promise<string> {
-  // 例如：C:\Users\Administrator\AppData\Roaming\com.administrator.kivo-music\
   const root = await appDataDir();
   return root;
 }
 
-// 把相对 AppData 的路径拼成绝对路径
 async function toAbsolutePath(relativePath: string): Promise<string> {
   const root = await getAppDataRoot();
   return await join(root, relativePath);
@@ -72,8 +82,13 @@ async function loadStore(): Promise<CoverStore> {
     const ok = await exists(COVERS_INDEX_FILE, {
       baseDir: BaseDirectory.AppData,
     }).catch(() => false);
+
     if (!ok) {
-      return { version: 1, covers: [] };
+      return {
+        version: STORE_VERSION,
+        covers: [],
+        folders: [],
+      };
     }
 
     const json = await readTextFile(COVERS_INDEX_FILE, {
@@ -82,14 +97,19 @@ async function loadStore(): Promise<CoverStore> {
     const parsed = JSON.parse(json) as any;
 
     if (!parsed || typeof parsed !== "object") {
-      return { version: 1, covers: [] };
+      return {
+        version: STORE_VERSION,
+        covers: [],
+        folders: [],
+      };
     }
 
     const version =
       typeof parsed.version === "number" && parsed.version > 0
         ? parsed.version
-        : 1;
+        : STORE_VERSION;
     const rawCovers = Array.isArray(parsed.covers) ? parsed.covers : [];
+    const rawFolders = Array.isArray(parsed.folders) ? parsed.folders : [];
 
     const covers: CoverRecord[] = rawCovers
       .filter(
@@ -106,23 +126,52 @@ async function loadStore(): Promise<CoverStore> {
         updatedAt: String(c.updatedAt ?? ""),
       }));
 
-    return { version, covers };
+    const folders: FolderRecord[] = rawFolders
+      .filter((f: any) => f && typeof f.folderPath === "string")
+      .map((f: any) => ({
+        folderPath: String(f.folderPath),
+        hasCover: Boolean(f.hasCover),
+        sourcePath:
+          typeof f.sourcePath === "string" ? f.sourcePath : undefined,
+        cachedRelativePath:
+          typeof f.cachedRelativePath === "string"
+            ? f.cachedRelativePath
+            : undefined,
+        cachedAbsolutePath:
+          typeof f.cachedAbsolutePath === "string"
+            ? f.cachedAbsolutePath
+            : undefined,
+        updatedAt: String(f.updatedAt ?? ""),
+      }));
+
+    return { version, covers, folders };
   } catch (error) {
     console.warn("[CoverCache] loadStore failed, use empty store:", error);
-    return { version: 1, covers: [] };
+    return {
+      version: STORE_VERSION,
+      covers: [],
+      folders: [],
+    };
   }
 }
 
 async function saveStore(store: CoverStore): Promise<void> {
   try {
     await ensureCoversDir();
-    const payload = JSON.stringify(store, null, 2);
+    const normalized: CoverStore = {
+      version: store.version || STORE_VERSION,
+      covers: store.covers || [],
+      folders: store.folders || [],
+    };
+    const payload = JSON.stringify(normalized, null, 2);
     await writeTextFile(COVERS_INDEX_FILE, payload, {
       baseDir: BaseDirectory.AppData,
     });
     console.info(
       "[CoverCache] saved covers index, items:",
-      store.covers.length,
+      normalized.covers.length,
+      "folders:",
+      normalized.folders.length,
     );
   } catch (error) {
     console.error("[CoverCache] saveStore failed:", error);
@@ -153,12 +202,12 @@ function guessExt(path: string): string {
 }
 
 /**
- * 主函数：
+ * track 级封面缓存：
  * - 把 imagePath 指向的原图复制到 AppData/com.administrator.kivo-music/covers
  * - 更新 / 写入 covers.json
  * - 返回一个新的 track（只改 coverPath 字段，指向缓存文件的绝对路径）
  *
- * 如果复制失败，会 fallback：直接把 coverPath 设置为原图路径（行为和旧版一致）。
+ * 如果复制失败，会 fallback：直接把 coverPath 设置为原图路径。
  */
 export async function setCoverForTrack<T extends CoverTrackLike>(
   track: T,
@@ -219,4 +268,63 @@ export async function setCoverForTrack<T extends CoverTrackLike>(
     ...track,
     coverPath: cachedAbsolutePath,
   };
+}
+
+/**
+ * 查询：某个目录是否已经被标记为「没有封面」。
+ * 用于启动时跳过对该目录的 cover.jpg 试探请求，避免重复的 500。
+ */
+export async function isFolderKnownNoCover(
+  folderPath: string,
+): Promise<boolean> {
+  if (!folderPath) return false;
+  try {
+    const store = await loadStore();
+    const rec = store.folders.find(
+      (f) => f.folderPath === folderPath && f.hasCover === false,
+    );
+    return !!rec;
+  } catch (error) {
+    console.warn("[CoverCache] isFolderKnownNoCover failed:", error);
+    return false;
+  }
+}
+
+/**
+ * 标记：某个目录「没有封面」。
+ * 典型调用点：前端尝试加载 folder/cover.jpg 失败（onError）时。
+ */
+export async function markFolderNoCover(
+  folderPath: string,
+): Promise<void> {
+  if (!folderPath) return;
+
+  try {
+    await ensureCoversDir();
+    const store = await loadStore();
+    const normalized = String(folderPath);
+    const now = new Date().toISOString();
+
+    const idx = store.folders.findIndex(
+      (f) => f.folderPath === normalized,
+    );
+    if (idx >= 0) {
+      store.folders[idx] = {
+        ...store.folders[idx],
+        folderPath: normalized,
+        hasCover: false,
+        updatedAt: now,
+      };
+    } else {
+      store.folders.push({
+        folderPath: normalized,
+        hasCover: false,
+        updatedAt: now,
+      });
+    }
+
+    await saveStore(store);
+  } catch (error) {
+    console.error("[CoverCache] markFolderNoCover failed:", error);
+  }
 }
