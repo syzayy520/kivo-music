@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { AudioEngine } from "./components/AudioEngine";
 import { TrackList } from "./components/TrackList";
 import { PlayerBar } from "./components/PlayerBar";
+import NowPlayingPage from "./pages/NowPlayingPage";
+
+type TabKey = "library" | "playlist" | "nowplaying";
 
 const tabButtonStyle = (active: boolean): React.CSSProperties => ({
   padding: "4px 10px",
@@ -9,10 +12,12 @@ const tabButtonStyle = (active: boolean): React.CSSProperties => ({
   borderRadius: 4,
   border: "1px solid " + (active ? "#60a5fa" : "#e5e7eb"),
   background: active ? "#eff6ff" : "#ffffff",
+  cursor: "pointer",
 });
 
 const App: React.FC = () => {
-  // 目前只有「资料库」页面，其他两个先做占位
+  const [activeTab, setActiveTab] = useState<TabKey>("library");
+
   return (
     <div
       style={{
@@ -51,12 +56,27 @@ const App: React.FC = () => {
           gap: 8,
         }}
       >
-        <button style={tabButtonStyle(true)}>资料库</button>
-        <button style={tabButtonStyle(false)}>播放列表</button>
-        <button style={tabButtonStyle(false)}>正在播放</button>
+        <button
+          style={tabButtonStyle(activeTab === "library")}
+          onClick={() => setActiveTab("library")}
+        >
+          资料库
+        </button>
+        <button
+          style={tabButtonStyle(activeTab === "playlist")}
+          onClick={() => setActiveTab("playlist")}
+        >
+          播放列表
+        </button>
+        <button
+          style={tabButtonStyle(activeTab === "nowplaying")}
+          onClick={() => setActiveTab("nowplaying")}
+        >
+          正在播放
+        </button>
       </div>
 
-      {/* 主体内容：本地音乐资料库 */}
+      {/* 主体内容 */}
       <main
         style={{
           flex: 1,
@@ -64,26 +84,55 @@ const App: React.FC = () => {
           overflow: "auto",
         }}
       >
-        <h2
-          style={{
-            fontSize: 20,
-            fontWeight: 600,
-            marginBottom: 4,
-          }}
-        >
-          本地音乐资料库
-        </h2>
-        <p
-          style={{
-            fontSize: 13,
-            color: "#4b5563",
-            marginBottom: 10,
-          }}
-        >
-          这里会显示你导入的本地歌曲列表，后面我们会把它升级为真正的资料库（带封面、搜索、排序等）。
-        </p>
+        {activeTab === "library" && (
+          <>
+            <h2
+              style={{
+                fontSize: 20,
+                fontWeight: 600,
+                marginBottom: 4,
+              }}
+            >
+              本地音乐资料库
+            </h2>
+            <p
+              style={{
+                fontSize: 13,
+                color: "#4b5563",
+                marginBottom: 10,
+              }}
+            >
+              这里会显示你导入的本地歌曲列表，后面我们会把它升级为真正的资料库（带封面、
+              搜索、排序等）。
+            </p>
 
-        <TrackList />
+            <TrackList />
+          </>
+        )}
+
+        {activeTab === "playlist" && (
+          <>
+            <h2
+              style={{
+                fontSize: 20,
+                fontWeight: 600,
+                marginBottom: 4,
+              }}
+            >
+              播放列表
+            </h2>
+            <p
+              style={{
+                fontSize: 13,
+                color: "#4b5563",
+              }}
+            >
+              播放列表功能暂时还没做，这里后面会支持自定义歌单、收藏等。
+            </p>
+          </>
+        )}
+
+        {activeTab === "nowplaying" && <NowPlayingPage />}
       </main>
 
       {/* 底部播放器 */}

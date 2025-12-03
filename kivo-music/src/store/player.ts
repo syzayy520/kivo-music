@@ -7,7 +7,12 @@ export interface PlayerTrack {
   album?: string;
   filePath: string;
   duration?: number;
+
+  // 预留：封面缓存相关字段
+  coverId?: string;    // 封面唯一 ID（后面可用专辑名/哈希等）
+  coverPath?: string;  // 封面图片在本地缓存后的绝对路径
 }
+
 
 export interface PlayerState {
   // 播放列表
@@ -59,11 +64,44 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   duration: 0,
   pendingSeek: null,
 
+    // 设置整条播放列表，但尽量保留当前正在播放的索引
   setPlaylist: (tracks) =>
-    set(() => ({
-      playlist: tracks,
-      currentIndex: tracks.length > 0 ? 0 : -1,
-    })),
+    set((state) => {
+      let newIndex = state.currentIndex;
+
+      if (tracks.length === 0) {
+        // 没有歌了，索引设为 -1
+        newIndex = -1;
+      } else if (newIndex < 0 || newIndex >= tracks.length) {
+        // 之前的索引已经越界了，就回到第一首 
+        newIndex = 0;
+      }
+
+      return {
+        playlist: tracks,
+        tracks,
+        currentIndex: newIndex,
+      };
+    }),
+
+  // setTracks 做同样的事，保持行为一致
+  setTracks: (tracks) =>
+    set((state) => {
+      let newIndex = state.currentIndex;
+
+      if (tracks.length === 0) {
+        newIndex = -1;
+      } else if (newIndex < 0 || newIndex >= tracks.length) {
+        newIndex = 0;
+      }
+
+      return {
+        playlist: tracks,
+        tracks,
+        currentIndex: newIndex,
+      };
+    }),
+
 
   addTracks: (tracks) =>
     set((state) => ({
