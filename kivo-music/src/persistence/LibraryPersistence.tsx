@@ -1,23 +1,25 @@
-// src/persistence/LibraryPersistence.tsx
 import {
+  BaseDirectory,
+  exists,
   readTextFile,
   writeTextFile,
-  exists,
-  BaseDirectory,
 } from "@tauri-apps/plugin-fs";
 import type { PlayerTrack } from "../store/player";
 
 const LIBRARY_FILE = "kivo-library.json";
 
 /**
- * 从磁盘读取资料库
+ * 从磁盘读取本地音乐库
  */
 export async function loadLibrary(): Promise<PlayerTrack[]> {
   try {
+    // ✅ 注意：这里要用 baseDir，而不是老版本的 dir
     const hasFile = await exists(LIBRARY_FILE, {
       baseDir: BaseDirectory.AppData,
     });
+
     if (!hasFile) {
+      console.info("[LibraryPersistence] no library file yet");
       return [];
     }
 
@@ -25,44 +27,94 @@ export async function loadLibrary(): Promise<PlayerTrack[]> {
       baseDir: BaseDirectory.AppData,
     });
 
-    const raw = JSON.parse(contents);
-    if (!Array.isArray(raw)) return [];
+    if (!contents) return [];
 
-    const tracks: PlayerTrack[] = raw
+    let raw: unknown;
+    try {
+      raw = JSON.parse(contents);
+    } catch (err) {
+      console.warn(
+        "[LibraryPersistence] JSON parse failed, ignore library file:",
+        err,
+      );
+      return [];
+    }
+
+    if (!Array.isArray(raw)) {
+      console.warn(
+        "[LibraryPersistence] library file is not an array, ignore",
+      );
+      return [];
+    }
+
+    const tracks: PlayerTrack[] = (raw as any[])
       .map((item: any, index: number) => {
         if (!item || typeof item.filePath !== "string") return null;
 
         const track: PlayerTrack = {
-          id: typeof item.id === "string" ? item.id : `lib-${index}`,
-          title: typeof item.title === "string" ? item.title : "未知标题",
-          artist: typeof item.artist === "string" ? item.artist : "未知艺人",
-          album: typeof item.album === "string" ? item.album : undefined,
+          id:
+            typeof item.id === "string"
+              ? item.id
+              : `legacy-${Date.now()}-${index}`,
+          title:
+            typeof item.title === "string" && item.title.trim()
+              ? item.title
+              : "未知标题",
+          artist:
+            typeof item.artist === "string" && item.artist.trim()
+              ? item.artist
+              : "未知艺人",
+          album:
+            typeof item.album === "string" && item.album.trim()
+              ? item.album
+              : undefined,
           filePath: item.filePath,
           duration:
-            typeof item.duration === "number" ? item.duration : undefined,
+            typeof item.duration === "number" && Number.isFinite(item.duration)
+              ? item.duration
+              : undefined,
         };
 
         return track;
       })
-      .filter((t: PlayerTrack | null): t is PlayerTrack => t !== null);
+      .filter((t): t is PlayerTrack => t !== null);
 
+    console.info(
+      "[LibraryPersistence] loaded tracks:",
+      tracks.length,
+    );
     return tracks;
-  } catch (error) {
-    console.error("[LibraryPersistence] loadLibrary failed:", error);
+  } catch (err) {
+    console.error("[LibraryPersistence] loadLibrary failed:", err);
     return [];
   }
 }
 
 /**
- * 把当前资料库写入磁盘
+ * 把当前音乐库写回磁盘
  */
 export async function saveLibrary(tracks: PlayerTrack[]): Promise<void> {
   try {
-    const data = JSON.stringify(tracks, null, 2);
-    await writeTextFile(LIBRARY_FILE, data, {
+    const serializable = tracks.map((t) => ({
+      id: t.id,
+      title: t.title,
+      artist: t.artist,
+      album: t.album ?? null,
+      filePath: t.filePath,
+      duration: t.duration ?? null,
+    }));
+
+    const json = JSON.stringify(serializable, null, 2);
+
+    await writeTextFile(LIBRARY_FILE, json, {
       baseDir: BaseDirectory.AppData,
     });
-  } catch (error) {
-    console.error("[LibraryPersistence] saveLibrary failed:", error);
+
+    console.info(
+      "[LibraryPersistence] saveLibrary ok, tracks:",
+      tracks.length,
+    );
+  } catch (err) {
+    console.error("[LibraryPersistence] saveLibrary failed:", err);
   }
 }
