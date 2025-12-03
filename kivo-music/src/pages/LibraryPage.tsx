@@ -25,6 +25,29 @@ const LibraryPage: React.FC = () => {
   const playTrackByIndex = usePlayerStore(
     (s: any) => s.playTrack ?? (() => {}),
   );
+    const playerPlaylist = usePlayerStore(
+    (s: any) => s.playlist ?? s.tracks ?? [],
+  );
+  const currentIndex = usePlayerStore(
+    (s: any) => s.currentIndex ?? -1,
+  );
+    const activeTrackId = useMemo(() => {
+    if (
+      currentIndex < 0 ||
+      currentIndex >= playerPlaylist.length
+    ) {
+      return null;
+    }
+    const t = playerPlaylist[currentIndex];
+    if (!t) return null;
+    return (
+      t.id ??
+      (t as any).filePath ??
+      (t as any).path ??
+      null
+    );
+  }, [playerPlaylist, currentIndex]);
+
 
   const [keyword, setKeyword] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("none");
@@ -293,7 +316,12 @@ const LibraryPage: React.FC = () => {
 
       {/* 列表区域 */}
       <div style={{ flex: 1 }}>
-        <TrackList tracks={displayedTracks} onPlay={handlePlayTrack} />
+        <TrackList
+  tracks={displayedTracks}
+  onPlay={handlePlayTrack}
+  activeTrackId={activeTrackId}
+/>
+
       </div>
     </div>
   );

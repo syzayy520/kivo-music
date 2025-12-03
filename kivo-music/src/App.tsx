@@ -5,11 +5,14 @@ import { PlayerBar } from "./components/PlayerBar";
 import PlaylistPage from "./pages/PlaylistPage";
 import NowPlayingPage from "./pages/NowPlayingPage";
 import LibraryPage from "./pages/LibraryPage";
+import SettingsPage from "./pages/SettingsPage";
 import { GlobalShortcuts } from "./components/GlobalShortcuts";
 
-type TabKey = "library" | "playlist" | "nowPlaying";
+type TabKey = "library" | "playlist" | "nowPlaying" | "settings";
 
-const tabButtonStyle = (active: boolean): React.CSSProperties => ({
+const tabButtonStyle = (
+  active: boolean,
+): React.CSSProperties => ({
   padding: "4px 10px",
   fontSize: 13,
   borderRadius: 4,
@@ -102,6 +105,13 @@ const App: React.FC = () => {
           >
             正在播放
           </button>
+          <button
+            type="button"
+            style={tabButtonStyle(activeTab === "settings")}
+            onClick={() => setActiveTab("settings")}
+          >
+            设置
+          </button>
         </nav>
       </header>
 
@@ -126,6 +136,7 @@ const App: React.FC = () => {
           {activeTab === "library" && <LibraryPage />}
           {activeTab === "playlist" && <PlaylistPage />}
           {activeTab === "nowPlaying" && <NowPlayingPage />}
+          {activeTab === "settings" && <SettingsPage />}
         </div>
       </main>
 
