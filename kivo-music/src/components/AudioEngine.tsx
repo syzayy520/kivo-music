@@ -1,78 +1,42 @@
 // src/components/AudioEngine.tsx
 import React, { useEffect, useRef } from "react";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import usePlayerStore from "../store/player";
+import { usePlayerStore } from "../store/player";
 
+/**
+ * 全局隐形播放器：
+ * - 只渲染一个 <audio> 元素
+ * - 根据 player store 里的状态来加载音频 / 播放 / 暂停 / 跳转
+ * - 把播放进度、时长等事件写回 store
+ *
+ * 这里特意保证：
+ *   👉 仅在「当前曲目变化」时才会重新设置 audio.src
+ *   👉 单纯切换 isPlaying（暂停 / 继续）不会重置进度
+ */
 export const AudioEngine: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const playlist = usePlayerStore((s) => s.playlist ?? s.tracks ?? []);
-  const currentIndex = usePlayerStore((s) => s.currentIndex ?? -1);
-  const isPlaying = usePlayerStore((s) => s.isPlaying ?? false);
-  const volume = usePlayerStore((s) => s.volume ?? 1);
-  const pendingSeek = usePlayerStore((s) => s.pendingSeek ?? null);
+  // 播放列表 & 当前曲目
+  const playlist = usePlayerStore((s: any) => s.playlist ?? s.tracks ?? []);
+  const currentIndex = usePlayerStore((s: any) => s.currentIndex ?? -1);
+  const isPlaying = usePlayerStore((s: any) => s.isPlaying ?? false);
+  const volume = usePlayerStore((s: any) => s.volume ?? 1);
+  const pendingSeek = usePlayerStore((s: any) => s.pendingSeek ?? null);
 
-  const setPosition = usePlayerStore((s) => s.setPosition ?? (() => {}));
-  const setDuration = usePlayerStore((s) => s.setDuration ?? (() => {}));
-  const clearPendingSeek = usePlayerStore((s) => s.clearPendingSeek ?? (() => {}));
-  const setIsPlaying = usePlayerStore((s) => s.setIsPlaying ?? (() => {}));
-  const next = usePlayerStore((s) => s.next ?? (() => {}));
+  // 事件回写
+  const setPosition = usePlayerStore((s: any) => s.setPosition ?? (() => {}));
+  const setDuration = usePlayerStore((s: any) => s.setDuration ?? (() => {}));
+  const clearPendingSeek = usePlayerStore(
+    (s: any) => s.clearPendingSeek ?? (() => {}),
+  );
+  const next = usePlayerStore((s: any) => s.next ?? (() => {}));
 
   const currentTrack =
-    playlist && playlist.length > 0 && currentIndex >= 0 && currentIndex < playlist.length
+    currentIndex >= 0 && currentIndex < playlist.length
       ? playlist[currentIndex]
       : null;
 
-  const currentSrc = currentTrack ? convertFileSrc(currentTrack.filePath) : "";
-
-  // 当曲目或 src 改变时，加载新的音频
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    if (!currentTrack) {
-      audio.removeAttribute("src");
-      audio.load();
-      setIsPlaying(false);
-      return;
-    }
-
-    audio.src = currentSrc;
-    audio.load();
-
-    if (isPlaying) {
-      audio
-        .play()
-        .catch((err) => {
-          console.error("[AudioEngine] play error", err);
-          setIsPlaying(false);
-        });
-    }
-  }, [currentTrack, currentSrc, isPlaying, setIsPlaying]);
-
-  // 音量变化
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.volume = volume;
-  }, [volume]);
-
-  // 拖动进度：pendingSeek
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (pendingSeek == null) return;
-
-    try {
-      audio.currentTime = pendingSeek;
-    } catch (e) {
-      console.warn("[AudioEngine] failed to seek", e);
-    } finally {
-      clearPendingSeek();
-    }
-  }, [pendingSeek, clearPendingSeek]);
-
-  // 事件监听：更新时间 / 时长 / 播放状态 / 自动下一首
+  // 绑定 <audio> 事件：timeupdate / loadedmetadata / ended
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -83,11 +47,8 @@ export const AudioEngine: React.FC = () => {
 
     const handleLoadedMetadata = () => {
       if (!Number.isFinite(audio.duration)) return;
-      setDuration(audio.duration || 0);
+      setDuration(audio.duration);
     };
-
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
 
     const handleEnded = () => {
       next();
@@ -95,20 +56,86 @@ export const AudioEngine: React.FC = () => {
 
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
-    audio.addEventListener("play", handlePlay);
-    audio.addEventListener("pause", handlePause);
     audio.addEventListener("ended", handleEnded);
 
     return () => {
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      audio.removeEventListener("play", handlePlay);
-      audio.removeEventListener("pause", handlePause);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [setPosition, setDuration, setIsPlaying, next]);
+  }, [setPosition, setDuration, next]);
 
-  return <audio ref={audioRef} style={{ display: "none" }} />;
+  // 当「当前曲目」变化时，才重新设置 src / load
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (!currentTrack) {
+      audio.removeAttribute("src");
+      audio.load();
+      return;
+    }
+
+    const src = convertFileSrc(String(currentTrack.filePath));
+
+    // 用 dataset 记一下当前 src，避免重复赋值导致重置播放进度
+    const htmlAudio = audio as HTMLAudioElement & { dataset: DOMStringMap };
+    if (htmlAudio.dataset.src !== src) {
+      htmlAudio.dataset.src = src;
+      audio.src = src;
+      audio.load();
+    }
+
+    // 如果当前应该是播放状态，就自动开播
+    if (isPlaying) {
+      audio
+        .play()
+        .catch((err) =>
+          console.error("[AudioEngine] play error after track change", err),
+        );
+    }
+  }, [currentTrack && currentTrack.filePath]); // 只关心曲目变化
+
+  // 仅根据 isPlaying 来控制 播放/暂停，不改 src
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentTrack) return;
+
+    if (isPlaying) {
+      audio
+        .play()
+        .catch((err) =>
+          console.error("[AudioEngine] play error on toggle", err),
+        );
+    } else {
+      audio.pause();
+    }
+  }, [isPlaying, currentTrack && currentTrack.filePath]);
+
+  // 音量变化
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const clamped = Math.max(0, Math.min(1, Number(volume) || 0));
+    audio.volume = clamped;
+  }, [volume]);
+
+  // 处理 seek：只在 pendingSeek 有值时改 currentTime
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (pendingSeek == null || !Number.isFinite(pendingSeek)) return;
+
+    try {
+      audio.currentTime = pendingSeek;
+    } catch (err) {
+      console.error("[AudioEngine] failed to seek", err);
+    } finally {
+      clearPendingSeek();
+    }
+  }, [pendingSeek, clearPendingSeek]);
+
+  return <audio ref={audioRef} style={{ display: "none" }} preload="metadata" />;
 };
 
 export default AudioEngine;
