@@ -1,7 +1,7 @@
 // src/persistence/CoverCache.ts
 //
-// 封面缓存 v2：
-// - 把用户选择的图片复制到 AppData/com.administrator.kivo-music/covers 目录
+// 封面缓存 v2（修正版路径）：
+// - 把用户选择的图片复制到 $APPDATA/com.administrator.kivo-music/covers 目录
 // - 用 covers.json 维护一个简单索引
 // - 返回带有 coverPath（指向缓存文件绝对路径）的 track
 
@@ -27,7 +27,7 @@ export interface CoverTrackLike {
 interface CoverRecord {
   trackKey: string;
   sourcePath: string;
-  cachedRelativePath: string; // 相对 $APPDATA 的路径
+  cachedRelativePath: string; // 相对 AppData 根目录（com.administrator.kivo-music）的路径
   cachedAbsolutePath: string; // 绝对路径，用于 convertFileSrc
   updatedAt: string;
 }
@@ -37,25 +37,28 @@ interface CoverStore {
   covers: CoverRecord[];
 }
 
-const APP_DIR_NAME = "com.administrator.kivo-music";
-const COVERS_DIR = `${APP_DIR_NAME}/covers`;
-const COVERS_INDEX_FILE = `${COVERS_DIR}/covers.json`;
+// 这里直接用相对 AppData 根目录的路径：
+// AppData 实际是 C:\Users\Administrator\AppData\Roaming\com.administrator.kivo-music
+const COVERS_DIR = "covers";
+const COVERS_INDEX_FILE = "covers/covers.json";
 
 async function getAppDataRoot(): Promise<string> {
-  // 例如：C:\Users\Administrator\AppData\Roaming\
+  // 例如：C:\Users\Administrator\AppData\Roaming\com.administrator.kivo-music\
   const root = await appDataDir();
   return root;
 }
 
+// 把相对 AppData 的路径拼成绝对路径
 async function toAbsolutePath(relativePath: string): Promise<string> {
   const root = await getAppDataRoot();
   return await join(root, relativePath);
 }
 
 async function ensureCoversDir(): Promise<void> {
-  const ok = await exists(COVERS_DIR, { baseDir: BaseDirectory.AppData }).catch(
-    () => false,
-  );
+  const ok = await exists(COVERS_DIR, {
+    baseDir: BaseDirectory.AppData,
+  }).catch(() => false);
+
   if (!ok) {
     await mkdir(COVERS_DIR, {
       baseDir: BaseDirectory.AppData,
@@ -150,8 +153,8 @@ function guessExt(path: string): string {
 }
 
 /**
- * 供外部使用的主函数：
- * - 把 imagePath 指向的原图复制到 AppData 封面仓库
+ * 主函数：
+ * - 把 imagePath 指向的原图复制到 AppData/com.administrator.kivo-music/covers
  * - 更新 / 写入 covers.json
  * - 返回一个新的 track（只改 coverPath 字段，指向缓存文件的绝对路径）
  *

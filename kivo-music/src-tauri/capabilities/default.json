@@ -48,6 +48,13 @@
         }
       ]
     },
-    "fs:allow-copy-file"
+    {
+      "identifier": "fs:allow-copy-file",
+      "allow": [
+        {
+          "path": "$APPDATA/**"
+        }
+      ]
+    }
   ]
 }
