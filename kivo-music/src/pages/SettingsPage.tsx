@@ -5,13 +5,15 @@ import {
   clearCoverCache,
   getCoverCacheStats,
   migrateCoverCache,
-  CoverCacheStats,
+  cleanupBrokenCoverEntries,
+  type CoverCacheStats,
+  type BrokenCoverCleanupResult,
 } from '../persistence/CoverCache';
 import {
   getEffectiveCoverCacheDir,
   loadSettings,
   saveSettings,
-  KivoSettings,
+  type KivoSettings,
 } from '../persistence/SettingsPersistence';
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({
@@ -19,13 +21,23 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({
   children,
 }) => (
   <section style={{ marginBottom: 24 }}>
-    <h2 style={{ fontSize: 18, marginBottom: 8 }}>{title}</h2>
+    <h2
+      style={{
+        fontSize: 16,
+        fontWeight: 600,
+        marginBottom: 8,
+      }}
+    >
+      {title}
+    </h2>
     <div
       style={{
         padding: 12,
-        borderRadius: 8,
-        border: '1px solid rgba(255,255,255,0.1)',
-        backgroundColor: 'rgba(0,0,0,0.15)',
+        borderRadius: 10,
+        border: '1px solid rgba(255,255,255,0.08)',
+        background:
+          'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(0,0,0,0.15))',
+        boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
       }}
     >
       {children}
@@ -38,8 +50,9 @@ export default function SettingsPage() {
   const [effectiveDir, setEffectiveDir] = useState<string>('');
   const [stats, setStats] = useState<CoverCacheStats | null>(null);
   const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string>('');
 
-  async function refreshAll() {
+  async function refreshAll(showMessage = false) {
     const [s, dir, stat] = await Promise.all([
       loadSettings(),
       getEffectiveCoverCacheDir(),
@@ -48,15 +61,34 @@ export default function SettingsPage() {
     setSettings(s);
     setEffectiveDir(dir);
     setStats(stat);
+    if (showMessage) {
+      setMessage('封面缓存统计已刷新。');
+    }
   }
 
   useEffect(() => {
-    void refreshAll();
+    void refreshAll(false);
   }, []);
+
+  async function handleRefreshStats() {
+    if (busy) return;
+    setBusy(true);
+    setMessage('');
+
+    try {
+      await refreshAll(true);
+    } catch (error) {
+      console.error('[SettingsPage] 刷新统计失败:', error);
+      setMessage('刷新封面缓存统计失败，请检查控制台日志。');
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function handleChooseCoverDir() {
     if (busy) return;
     setBusy(true);
+    setMessage('');
 
     try {
       const selected = await open({
@@ -76,6 +108,7 @@ export default function SettingsPage() {
 
       const oldDir = await getEffectiveCoverCacheDir();
       if (picked === oldDir) {
+        setMessage('封面缓存目录没有变化。');
         return;
       }
 
@@ -90,7 +123,6 @@ export default function SettingsPage() {
         ].join('\n'),
       );
 
-      // 先更新设置，让 getEffectiveCoverCacheDir 指向新目录
       const newSettings: KivoSettings = {
         ...settings,
         coverCacheDir: picked,
@@ -105,9 +137,13 @@ export default function SettingsPage() {
 
       const newStats = await getCoverCacheStats();
       setStats(newStats);
+      setMessage(
+        '封面缓存目录已更新。' +
+          (shouldMigrate ? ' 已尝试迁移旧缓存。' : ' 未迁移旧缓存。'),
+      );
     } catch (error) {
       console.error('[SettingsPage] 选择封面目录失败:', error);
-      alert('选择封面缓存目录时发生错误，请检查控制台日志。');
+      setMessage('选择封面缓存目录时发生错误，请检查控制台日志。');
     } finally {
       setBusy(false);
     }
@@ -128,17 +164,88 @@ export default function SettingsPage() {
     if (!ok) return;
 
     setBusy(true);
+    setMessage('');
+
     try {
       await clearCoverCache();
       const newStats = await getCoverCacheStats();
       setStats(newStats);
+      setMessage('封面缓存已完全清空。');
     } catch (error) {
       console.error('[SettingsPage] 清空封面缓存失败:', error);
-      alert('清空封面缓存失败，请检查控制台日志。');
+      setMessage('清空封面缓存失败，请检查控制台日志。');
     } finally {
       setBusy(false);
     }
   }
+
+  async function handleRepairIndex() {
+    if (busy) return;
+
+    const ok = window.confirm(
+      [
+        '此操作会扫描封面索引（covers.json / folder-covers.json），',
+        '并自动移除那些指向“已经不存在的文件”的记录。',
+        '',
+        '不会删除任何新的封面文件，也不会影响音乐库，只是做索引自检 / 清理。',
+        '',
+        '确定要继续吗？',
+      ].join('\n'),
+    );
+
+    if (!ok) return;
+
+    setBusy(true);
+    setMessage('');
+
+    try {
+      const result: BrokenCoverCleanupResult =
+        await cleanupBrokenCoverEntries();
+      const newStats = await getCoverCacheStats();
+      setStats(newStats);
+
+      setMessage(
+        [
+          '封面索引自检完成：',
+          `Track 封面索引检查 ${result.coverChecked} 条，移除 ${result.coverRemoved} 条失效记录；`,
+          `文件夹封面索引检查 ${result.folderChecked} 条，移除 ${result.folderRemoved} 条失效记录。`,
+        ].join('\n'),
+      );
+    } catch (error) {
+      console.error('[SettingsPage] 修复封面索引失败:', error);
+      setMessage('修复封面索引失败，请检查控制台日志。');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const buttonBase: React.CSSProperties = {
+    padding: '7px 14px',
+    borderRadius: 999,
+    border: 'none',
+    fontSize: 13,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    cursor: busy ? 'default' : 'pointer',
+    transition: 'transform 0.1s ease-out, box-shadow 0.15s ease-out, background-color 0.15s ease-out',
+    boxShadow: '0 4px 10px rgba(0,0,0,0.18)',
+    minWidth: 96,
+    height: 30,
+  };
+
+  const messageBox: React.CSSProperties = {
+    whiteSpace: 'pre-line',
+    fontSize: 12,
+    padding: message ? 10 : 0,
+    borderRadius: 8,
+    backgroundColor: message ? 'rgba(0,0,0,0.28)' : 'transparent',
+    border: message ? '1px solid rgba(255,255,255,0.08)' : 'none',
+    marginTop: 8,
+    minHeight: 32, // 始终预留高度，避免按钮上下抖动
+    transition: 'background-color 0.15s ease-out, border-color 0.15s ease-out',
+  };
 
   return (
     <div
@@ -150,14 +257,22 @@ export default function SettingsPage() {
         color: '#fff',
       }}
     >
-      <h1 style={{ fontSize: 22, marginBottom: 8 }}>设置</h1>
+      <h1
+        style={{
+          fontSize: 20,
+          fontWeight: 600,
+          marginBottom: 4,
+        }}
+      >
+        设置
+      </h1>
 
       <Section title="封面缓存目录">
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 8,
+            gap: 10,
           }}
         >
           <div>
@@ -166,10 +281,10 @@ export default function SettingsPage() {
             </div>
             <code
               style={{
-                fontSize: 13,
+                fontSize: 12,
                 padding: 6,
-                borderRadius: 4,
-                backgroundColor: 'rgba(0,0,0,0.3)',
+                borderRadius: 6,
+                backgroundColor: 'rgba(0,0,0,0.35)',
                 wordBreak: 'break-all',
               }}
             >
@@ -182,20 +297,16 @@ export default function SettingsPage() {
             disabled={busy}
             onClick={handleChooseCoverDir}
             style={{
+              ...buttonBase,
               alignSelf: 'flex-start',
-              marginTop: 4,
-              padding: '6px 12px',
-              borderRadius: 6,
-              border: 'none',
-              cursor: busy ? 'default' : 'pointer',
-              backgroundColor: busy ? '#666' : '#2b7cff',
+              backgroundColor: busy ? '#5b6b8a' : '#2b7cff',
               color: '#fff',
             }}
           >
-            {busy ? '处理中…' : '选择封面缓存目录…'}
+            选择封面缓存目录…
           </button>
 
-          <div style={{ opacity: 0.7, fontSize: 12, marginTop: 4 }}>
+          <div style={{ opacity: 0.7, fontSize: 12 }}>
             默认会使用系统 AppData 下的
             <code style={{ marginLeft: 4, marginRight: 4 }}>
               /com.administrator.kivo-music/covers
@@ -220,23 +331,53 @@ export default function SettingsPage() {
             <div>Track 封面索引条数：{stats.trackEntries}</div>
             <div>文件夹封面索引条数：{stats.folderEntries}</div>
 
-            <button
-              type="button"
-              disabled={busy}
-              onClick={handleClearCache}
+            <div
               style={{
-                alignSelf: 'flex-start',
-                marginTop: 8,
-                padding: '6px 12px',
-                borderRadius: 6,
-                border: 'none',
-                cursor: busy ? 'default' : 'pointer',
-                backgroundColor: busy ? '#666' : '#c0392b',
-                color: '#fff',
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 8,
+                marginTop: 10,
               }}
             >
-              {busy ? '处理中…' : '清空封面缓存'}
-            </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={handleRefreshStats}
+                style={{
+                  ...buttonBase,
+                  backgroundColor: busy ? '#4b4f58' : '#4a4f5c',
+                  color: '#fff',
+                }}
+              >
+                {busy ? '正在处理…' : '刷新统计'}
+              </button>
+
+              <button
+                type="button"
+                disabled={busy}
+                onClick={handleRepairIndex}
+                style={{
+                  ...buttonBase,
+                  backgroundColor: busy ? '#4f7d5a' : '#27ae60',
+                  color: '#fff',
+                }}
+              >
+                修复封面索引
+              </button>
+
+              <button
+                type="button"
+                disabled={busy}
+                onClick={handleClearCache}
+                style={{
+                  ...buttonBase,
+                  backgroundColor: busy ? '#874040' : '#c0392b',
+                  color: '#fff',
+                }}
+              >
+                清空封面缓存
+              </button>
+            </div>
           </div>
         ) : (
           <div style={{ fontSize: 13 }}>正在加载缓存统计信息…</div>
@@ -255,8 +396,7 @@ export default function SettingsPage() {
           <li>
             <code>folder-covers.json</code>{' '}
             记录“文件夹 ➜ 封面扫描结果（包括没有封面）”，
-            用来避免对不存在的 <code>cover.jpg</code> 重复发请求导致一堆
-            500；
+            用来避免对不存在的 <code>cover.jpg</code> 重复发请求；
           </li>
           <li>
             播放页 / 列表页只要改用{' '}
@@ -265,6 +405,9 @@ export default function SettingsPage() {
           </li>
         </ul>
       </Section>
+
+      {/* 始终预留一块提示区域，不让整体布局高度跳变 */}
+      <div style={messageBox}>{message || ' '}</div>
     </div>
   );
 }

@@ -48,6 +48,13 @@ export interface CoverCacheStats {
   folderEntries: number;
 }
 
+export interface BrokenCoverCleanupResult {
+  coverChecked: number;
+  coverRemoved: number;
+  folderChecked: number;
+  folderRemoved: number;
+}
+
 const COVERS_INDEX_FILE = 'covers.json';
 const FOLDER_COVERS_INDEX_FILE = 'folder-covers.json';
 
@@ -210,7 +217,7 @@ export async function setCoverForTrack(
   const trackKey = getTrackKey(track);
   const baseName = (await basename(sourcePath)) || 'cover';
   const hash = hashString(`${trackKey}:${sourcePath}:${Date.now()}`);
-  const fileName = `${hash}-${baseName}.${ext || 'jpg'}`;
+  const fileName = `${hash}-${baseName}${ext || '.jpg'}`;
   const destPath = await join(cacheDir, fileName);
 
   try {
@@ -277,7 +284,7 @@ export async function getFolderCoverForTrack(
   const folderIndex = await loadFolderCoverIndex(cacheDir);
   const existing = folderIndex[folderPath];
 
-  // 如果已经知道“没有封面”，直接返回 null，避免反复 500
+  // 如果已经知道“没有封面”，直接返回 null，避免反复扫描
   if (existing && existing.hasCover === false) {
     return null;
   }
@@ -333,7 +340,7 @@ export async function getFolderCoverForTrack(
   const baseName = (await basename(candidateSource)) || 'folder-cover';
   const hash = hashString(`folder:${folderPath}:${candidateSource}`);
   const ext = await extname(candidateSource);
-  const destFileName = `${hash}-${baseName}.${ext || 'jpg'}`;
+  const destFileName = `${hash}-${baseName}${ext || '.jpg'}`;
   const destPath = await join(cacheDir, destFileName);
 
   try {
@@ -455,6 +462,82 @@ export async function clearCoverCache(): Promise<void> {
 
   await saveCoverIndex({}, cacheDir);
   await saveFolderCoverIndex({}, cacheDir);
+}
+
+/**
+ * 清理“损坏的封面索引”：
+ * - covers.json 中 cachedPath 指向的文件已经不存在
+ * - folder-covers.json 中 cachedPath 指向的文件已经不存在
+ * 不会删除其他正常文件，只是把坏记录移除。
+ */
+export async function cleanupBrokenCoverEntries(): Promise<BrokenCoverCleanupResult> {
+  const cacheDir = await getEffectiveCoverCacheDir();
+  await ensureDirExists(cacheDir);
+
+  const coverIndex = await loadCoverIndex(cacheDir);
+  const folderIndex = await loadFolderCoverIndex(cacheDir);
+
+  let coverChecked = 0;
+  let coverRemoved = 0;
+  let folderChecked = 0;
+  let folderRemoved = 0;
+
+  // 处理 track 封面索引
+  for (const key of Object.keys(coverIndex)) {
+    const rec = coverIndex[key];
+    coverChecked += 1;
+
+    try {
+      if (!(await exists(rec.cachedPath))) {
+        delete coverIndex[key];
+        coverRemoved += 1;
+      }
+    } catch (error) {
+      console.warn(
+        '[CoverCache] 检查封面文件失败，将移除索引:',
+        rec.cachedPath,
+        error,
+      );
+      delete coverIndex[key];
+      coverRemoved += 1;
+    }
+  }
+
+  // 处理文件夹封面索引
+  for (const key of Object.keys(folderIndex)) {
+    const rec = folderIndex[key];
+    folderChecked += 1;
+
+    if (!rec.cachedPath) {
+      // 没有封面本身就只是一个“无封面”的标记，先保留
+      continue;
+    }
+
+    try {
+      if (!(await exists(rec.cachedPath))) {
+        delete folderIndex[key];
+        folderRemoved += 1;
+      }
+    } catch (error) {
+      console.warn(
+        '[CoverCache] 检查文件夹封面文件失败，将移除索引:',
+        rec.cachedPath,
+        error,
+      );
+      delete folderIndex[key];
+      folderRemoved += 1;
+    }
+  }
+
+  await saveCoverIndex(coverIndex, cacheDir);
+  await saveFolderCoverIndex(folderIndex, cacheDir);
+
+  return {
+    coverChecked,
+    coverRemoved,
+    folderChecked,
+    folderRemoved,
+  };
 }
 
 /**
