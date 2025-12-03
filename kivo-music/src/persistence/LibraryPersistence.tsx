@@ -1,141 +1,252 @@
+// src/persistence/LibraryPersistence.tsx
 import {
-  BaseDirectory,
-  exists,
-  mkdir,
   readTextFile,
   writeTextFile,
+  exists,
+  mkdir,
+  BaseDirectory,
 } from "@tauri-apps/plugin-fs";
-import type { PlayerTrack } from "../store/player";
+import {
+  CURRENT_LIBRARY_SCHEMA_VERSION,
+  type LibraryFile,
+  type LibraryFileV1,
+  type MusicTrack,
+} from "../types";
 
-// 数据文件放在：$APPDATA/com.administrator.kivo-music/library/kivo-library.json
-const LIBRARY_DIR = "library";
-const LIBRARY_FILE_NAME = "kivo-library.json";
-const LIBRARY_PATH = `${LIBRARY_DIR}/${LIBRARY_FILE_NAME}`;
+const LIB_DIR = "library";
+const LIB_FILE = `${LIB_DIR}/kivo-library.json`;
 
 /**
- * 确保 $APPDATA/com.administrator.kivo-music/library 目录存在
+ * 确保 AppData 下的 library 目录存在：
+ * C:\Users\Administrator\AppData\Roaming\com.administrator.kivo-music\library
  */
-async function ensureLibraryDirExists() {
+async function ensureLibraryDir() {
   try {
-    const hasDir = await exists(LIBRARY_DIR, {
+    const hasDir = await exists(LIB_DIR, {
       baseDir: BaseDirectory.AppData,
     });
+
     if (!hasDir) {
-      await mkdir(LIBRARY_DIR, {
+      await mkdir(LIB_DIR, {
         baseDir: BaseDirectory.AppData,
         recursive: true,
       });
-      console.info("[LibraryPersistence] created library dir");
+      console.log(
+        "[LibraryPersistence] created library dir:",
+        LIB_DIR,
+      );
     }
   } catch (error) {
-    console.error(
-      "[LibraryPersistence] ensureLibraryDirExists failed:",
-      error,
-    );
+    console.error("[LibraryPersistence] ensureLibraryDir error:", error);
   }
 }
 
 /**
- * 从磁盘读取本地资料库
+ * 根据任意对象「归一化」成 MusicTrack。
+ * 兼容旧字段：
+ * - filePath / path
+ * - title / name
  */
-export async function loadLibrary(): Promise<PlayerTrack[]> {
+function normalizeTrack(raw: any, index: number): MusicTrack {
+  const obj = raw && typeof raw === "object" ? raw : {};
+
+  const rawPath: string =
+    obj.filePath || obj.path || obj.fullPath || obj.sourcePath || "";
+
+  // 如果真的连路径都没有，就生成一个临时 ID，避免崩溃
+  const safePath = typeof rawPath === "string" ? rawPath : "";
+
+  const id: string =
+    typeof obj.id === "string" && obj.id.length > 0
+      ? obj.id
+      : safePath || `track-${index}`;
+
+  const filePath = safePath;
+  const path = safePath;
+
+  const fallbackTitle = (() => {
+    if (!filePath) return "未命名歌曲";
+    const parts = filePath.split(/[/\\]/);
+    const file = parts[parts.length - 1] || filePath;
+    const dotIdx = file.lastIndexOf(".");
+    return dotIdx > 0 ? file.slice(0, dotIdx) : file;
+  })();
+
+  const title: string =
+    typeof obj.title === "string" && obj.title.length > 0
+      ? obj.title
+      : typeof obj.name === "string" && obj.name.length > 0
+      ? obj.name
+      : fallbackTitle;
+
+  const artist: string =
+    typeof obj.artist === "string" && obj.artist.length > 0
+      ? obj.artist
+      : "未知艺人";
+
+  const album: string =
+    typeof obj.album === "string" && obj.album.length > 0
+      ? obj.album
+      : "未知专辑";
+
+  const duration =
+    typeof obj.duration === "number" && Number.isFinite(obj.duration)
+      ? obj.duration
+      : 0;
+
+  const coverPath =
+    typeof obj.coverPath === "string" && obj.coverPath.length > 0
+      ? obj.coverPath
+      : null;
+
+  const addedAt: string | undefined =
+    typeof obj.addedAt === "string" && obj.addedAt.length > 0
+      ? obj.addedAt
+      : undefined;
+
+  const playCount: number | undefined =
+    typeof obj.playCount === "number" && Number.isFinite(obj.playCount)
+      ? obj.playCount
+      : undefined;
+
+  const lastPlayedAt: string | null | undefined =
+    typeof obj.lastPlayedAt === "string"
+      ? obj.lastPlayedAt
+      : obj.lastPlayedAt === null
+      ? null
+      : undefined;
+
+  return {
+    // 先保留原始字段，避免未来扩展丢数据
+    ...obj,
+
+    // 再用规范字段覆盖一遍
+    id,
+    filePath,
+    path,
+    title,
+    artist,
+    album,
+    duration,
+    coverPath,
+    addedAt,
+    playCount,
+    lastPlayedAt,
+  };
+}
+
+/**
+ * 从任意 JSON 结构中提取 track 数组：
+ * - 兼容老版本：直接是数组 []
+ * - 新版本：{ schemaVersion, tracks: [] }
+ */
+function extractTracksFromRaw(raw: any): MusicTrack[] {
+  if (!raw) return [];
+
+  // v1+ 格式：{ schemaVersion, tracks }
+  if (!Array.isArray(raw) && Array.isArray((raw as LibraryFile).tracks)) {
+    const file = raw as LibraryFileV1;
+    const tracks = file.tracks || [];
+    return tracks.map((t, idx) => normalizeTrack(t, idx));
+  }
+
+  // 老格式：直接一个数组
+  if (Array.isArray(raw)) {
+    return raw.map((t, idx) => normalizeTrack(t, idx));
+  }
+
+  // 其它奇怪格式：尽量宽容一点
+  if (
+    typeof raw === "object" &&
+    Array.isArray((raw as any).libraryTracks)
+  ) {
+    const tracks = (raw as any).libraryTracks as any[];
+    return tracks.map((t, idx) => normalizeTrack(t, idx));
+  }
+
+  console.warn(
+    "[LibraryPersistence] unknown library JSON shape, fallback to empty list",
+  );
+  return [];
+}
+
+/**
+ * 读取资料库 JSON，自动做 schema 兼容和归一化。
+ */
+export async function loadLibrary(): Promise<MusicTrack[]> {
   try {
-    const hasFile = await exists(LIBRARY_PATH, {
+    await ensureLibraryDir();
+
+    const hasFile = await exists(LIB_FILE, {
       baseDir: BaseDirectory.AppData,
     });
 
     if (!hasFile) {
-      console.info("[LibraryPersistence] no library file yet");
+      console.log("[LibraryPersistence] no library file yet");
       return [];
     }
 
-    const contents = await readTextFile(LIBRARY_PATH, {
+    const text = await readTextFile(LIB_FILE, {
       baseDir: BaseDirectory.AppData,
     });
 
-    const raw = JSON.parse(contents);
-    if (!Array.isArray(raw)) {
-      console.warn("[LibraryPersistence] library file is not an array");
+    if (!text || !text.trim()) {
+      console.warn("[LibraryPersistence] library file is empty");
       return [];
     }
 
-    const tracks: PlayerTrack[] = raw
-      .map((item: any, index: number): PlayerTrack | null => {
-        if (!item || typeof item.filePath !== "string") return null;
+    let parsed: any;
+    try {
+      parsed = JSON.parse(text);
+    } catch (error) {
+      console.error(
+        "[LibraryPersistence] JSON parse error, will ignore file:",
+        error,
+      );
+      return [];
+    }
 
-        const track: PlayerTrack = {
-          id:
-            typeof item.id === "string"
-              ? item.id
-              : `lib-${index}-${item.filePath}`,
-          title:
-            typeof item.title === "string" && item.title.trim()
-              ? item.title
-              : "未知歌曲",
-          artist:
-            typeof item.artist === "string" && item.artist.trim()
-              ? item.artist
-              : "未知艺人",
-          album:
-            typeof item.album === "string" && item.album.trim()
-              ? item.album
-              : undefined,
-          filePath: item.filePath,
-          duration:
-            typeof item.duration === "number" && Number.isFinite(item.duration)
-              ? item.duration
-              : undefined,
-
-          // 新增：封面字段（没有就留空）
-          coverId:
-            typeof item.coverId === "string" && item.coverId.trim()
-              ? item.coverId
-              : undefined,
-          coverPath:
-            typeof item.coverPath === "string" && item.coverPath.trim()
-              ? item.coverPath
-              : undefined,
-        };
-
-        return track;
-      })
-      .filter((t: PlayerTrack | null): t is PlayerTrack => t !== null);
-
-    console.info(
+    const tracks = extractTracksFromRaw(parsed);
+    console.log(
       "[LibraryPersistence] loaded library tracks:",
       tracks.length,
     );
     return tracks;
   } catch (error) {
-    console.error("[LibraryPersistence] loadLibrary failed:", error);
+    console.error("[LibraryPersistence] loadLibrary error:", error);
     return [];
   }
 }
 
 /**
- * 把当前资料库保存到磁盘
+ * 写入资料库 JSON：
+ * - 永远写成 { schemaVersion: 1, tracks: [...] } 格式
+ * - 写入前会先做一次 normalize，保证结构一致
  */
-export async function saveLibrary(tracks: PlayerTrack[]): Promise<void> {
+export async function saveLibrary(tracks: MusicTrack[]): Promise<void> {
   try {
-    // 先保证目录存在（不存在就创建）
-    await ensureLibraryDirExists();
+    await ensureLibraryDir();
 
-    const payload = JSON.stringify(tracks, null, 2);
+    const normalized = (tracks || []).map((t, idx) =>
+      normalizeTrack(t, idx),
+    );
 
-    await writeTextFile(LIBRARY_PATH, payload, {
+    const payload: LibraryFile = {
+      schemaVersion: CURRENT_LIBRARY_SCHEMA_VERSION,
+      tracks: normalized,
+    };
+
+    const json = JSON.stringify(payload, null, 2);
+
+    await writeTextFile(LIB_FILE, json, {
       baseDir: BaseDirectory.AppData,
     });
 
-    console.info(
+    console.log(
       "[LibraryPersistence] saveLibrary ok, tracks:",
-      tracks.length,
+      normalized.length,
     );
   } catch (error) {
-    console.error("[LibraryPersistence] saveLibrary failed:", error);
+    console.error("[LibraryPersistence] saveLibrary error:", error);
   }
 }
-
-export default {
-  loadLibrary,
-  saveLibrary,
-};
