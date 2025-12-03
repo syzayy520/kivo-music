@@ -1,0 +1,17 @@
+# 忽略 node_modules (这个巨大，必须忽略)
+node_modules/
+
+# 忽略构建输出目录
+dist/
+build/
+
+# 忽略 Tauri/Rust 的编译垃圾 (这个也巨大)
+src-tauri/target/
+
+# 忽略系统生成的文件
+.DS_Store
+Thumbs.db
+
+# 忽略编辑器配置
+.vscode/
+.idea/

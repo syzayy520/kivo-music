@@ -1,7 +1,9 @@
-import React from "react";
+// src/components/TrackList.tsx
+import React, { useEffect, useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { usePlayerStore } from "../store/player";
 import type { PlayerTrack } from "../store/player";
+import { loadLibrary, saveLibrary } from "../persistence/LibraryPersistence";
 
 export const TrackList: React.FC = () => {
   const playlist = usePlayerStore((s) => s.playlist);
@@ -9,6 +11,21 @@ export const TrackList: React.FC = () => {
   const setPlaylist = usePlayerStore((s) => s.setPlaylist);
   const addTracks = usePlayerStore((s) => s.addTracks);
   const playTrack = usePlayerStore((s) => s.playTrack);
+
+  // 只在首次挂载时，从磁盘加载一次
+  const [loadedFromDisk, setLoadedFromDisk] = useState(false);
+
+  useEffect(() => {
+    if (loadedFromDisk) return;
+
+    (async () => {
+      const tracks = await loadLibrary();
+      if (tracks.length > 0) {
+        setPlaylist(tracks);
+      }
+      setLoadedFromDisk(true);
+    })();
+  }, [loadedFromDisk, setPlaylist]);
 
   // 导入本地音乐文件
   const handleImportClick = async () => {
@@ -41,11 +58,20 @@ export const TrackList: React.FC = () => {
         };
       });
 
+      let updatedPlaylist: PlayerTrack[];
+
       if (playlist.length === 0) {
+        updatedPlaylist = newTracks;
         setPlaylist(newTracks);
       } else {
+        updatedPlaylist = [...playlist, ...newTracks];
         addTracks(newTracks);
       }
+
+      // 异步保存到磁盘（不阻塞 UI）
+      saveLibrary(updatedPlaylist).catch((err) =>
+        console.error("[TrackList] saveLibrary error:", err)
+      );
     } catch (err) {
       console.error("[TrackList] 导入本地文件失败：", err);
     }
