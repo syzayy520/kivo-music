@@ -1,5 +1,5 @@
 // src/App.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AudioEngine } from "./components/AudioEngine";
 import { PlayerBar } from "./components/PlayerBar";
 import PlaylistPage from "./pages/PlaylistPage";
@@ -7,12 +7,15 @@ import NowPlayingPage from "./pages/NowPlayingPage";
 import LibraryPage from "./pages/LibraryPage";
 import SettingsPage from "./pages/SettingsPage";
 import { GlobalShortcuts } from "./components/GlobalShortcuts";
+import type { Theme } from "./persistence/SettingsPersistence";
+import {
+  loadSettings,
+  updateSettings,
+} from "./persistence/SettingsPersistence";
 
 type TabKey = "library" | "playlist" | "nowPlaying" | "settings";
 
-const tabButtonStyle = (
-  active: boolean,
-): React.CSSProperties => ({
+const tabButtonStyle = (active: boolean): React.CSSProperties => ({
   padding: "4px 10px",
   fontSize: 13,
   borderRadius: 4,
@@ -24,6 +27,30 @@ const tabButtonStyle = (
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>("library");
+  const [theme, setTheme] = useState<Theme>("system");
+
+  useEffect(() => {
+    (async () => {
+      const s = await loadSettings();
+      setTheme(s.theme);
+    })();
+  }, []);
+
+  const handleThemeChange = async (next: Theme) => {
+    setTheme(next);
+    await updateSettings({ theme: next });
+  };
+
+  const isDark = theme === "dark";
+  const bgMain = isDark ? "#020617" : "#f3f4f6";
+  const headerBg = isDark ? "#020617" : "#ffffff";
+  const headerBorder = isDark ? "#1f2937" : "#e5e7eb";
+  const cardBg = isDark ? "#020617" : "#ffffff";
+  const cardShadow = isDark
+    ? "0 10px 30px rgba(0,0,0,0.6)"
+    : "0 10px 30px rgba(15,23,42,0.08)";
+  const cardBorder = isDark ? "#111827" : "#e5e7eb";
+  const footerBg = isDark ? "#020617" : "#ffffff";
 
   return (
     <div
@@ -33,20 +60,18 @@ const App: React.FC = () => {
         height: "100vh",
         fontFamily:
           "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        background: "#f3f4f6",
+        background: bgMain,
+        color: isDark ? "#e5e7eb" : "#111827",
       }}
     >
-      {/* 隐藏的音频引擎（真正驱动 <audio> 播放） */}
       <AudioEngine />
-
-      {/* 全局快捷键：空格播放/暂停、左右切歌、Ctrl+F 聚焦搜索 */}
       <GlobalShortcuts />
 
       <header
         style={{
           padding: "8px 16px",
-          borderBottom: "1px solid #e5e7eb",
-          background: "#ffffff",
+          borderBottom: `1px solid ${headerBorder}`,
+          background: headerBg,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -63,7 +88,7 @@ const App: React.FC = () => {
             style={{
               fontSize: 18,
               fontWeight: 600,
-              color: "#111827",
+              color: isDark ? "#f9fafb" : "#111827",
             }}
           >
             Kivo Music
@@ -71,7 +96,7 @@ const App: React.FC = () => {
           <div
             style={{
               fontSize: 11,
-              color: "#9ca3af",
+              color: isDark ? "#6b7280" : "#9ca3af",
             }}
           >
             本地音乐播放器 · 未来 20+ 年计划版
@@ -126,8 +151,9 @@ const App: React.FC = () => {
           style={{
             height: "100%",
             borderRadius: 12,
-            background: "#ffffff",
-            boxShadow: "0 10px 30px rgba(15,23,42,0.08)",
+            background: cardBg,
+            boxShadow: cardShadow,
+            border: `1px solid ${cardBorder}`,
             padding: "12px 16px",
             boxSizing: "border-box",
             overflow: "hidden",
@@ -136,15 +162,20 @@ const App: React.FC = () => {
           {activeTab === "library" && <LibraryPage />}
           {activeTab === "playlist" && <PlaylistPage />}
           {activeTab === "nowPlaying" && <NowPlayingPage />}
-          {activeTab === "settings" && <SettingsPage />}
+          {activeTab === "settings" && (
+            <SettingsPage
+              theme={theme}
+              onThemeChange={handleThemeChange}
+            />
+          )}
         </div>
       </main>
 
       <footer
         style={{
           padding: "8px 16px",
-          borderTop: "1px solid #e5e7eb",
-          background: "#ffffff",
+          borderTop: `1px solid ${headerBorder}`,
+          background: footerBg,
         }}
       >
         <PlayerBar />
