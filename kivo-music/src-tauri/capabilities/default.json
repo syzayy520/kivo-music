@@ -16,44 +16,62 @@
     "dialog:default",
     "dialog:allow-open",
     "fs:default",
+
     {
       "identifier": "fs:allow-read-text-file",
       "allow": [
-        {
-          "path": "$APPDATA/**"
-        }
+        { "path": "$APPDATA/**" },
+        { "path": "**" }
       ]
     },
     {
       "identifier": "fs:allow-write-text-file",
       "allow": [
-        {
-          "path": "$APPDATA/**"
-        }
+        { "path": "$APPDATA/**" },
+        { "path": "**" }
       ]
     },
     {
       "identifier": "fs:allow-exists",
       "allow": [
-        {
-          "path": "$APPDATA/**"
-        }
+        { "path": "$APPDATA/**" },
+        { "path": "**" }
       ]
     },
     {
       "identifier": "fs:allow-mkdir",
       "allow": [
-        {
-          "path": "$APPDATA/**"
-        }
+        { "path": "$APPDATA/**" },
+        { "path": "**" }
       ]
     },
     {
       "identifier": "fs:allow-copy-file",
       "allow": [
-        {
-          "path": "$APPDATA/**"
-        }
+        { "path": "$APPDATA/**" },
+        { "path": "**" }
+      ]
+    },
+
+    {
+      "identifier": "fs:allow-read-dir",
+      "allow": [
+        { "path": "$APPDATA/**" },
+        { "path": "**" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-remove",
+      "allow": [
+        { "path": "$APPDATA/**" },
+        { "path": "**" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-size",
+      "allow": [
+        { "path": "$APPDATA/**" },
+        { "path": "**" }
       ]
     }
   ]
