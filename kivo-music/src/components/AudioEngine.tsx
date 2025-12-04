@@ -1,147 +1,103 @@
 // src/components/AudioEngine.tsx
 import React, { useEffect, useRef } from "react";
-import { convertFileSrc } from "@tauri-apps/api/core";
 import { usePlayerStore } from "../store/player";
+import type { AudioBackend } from "../audio-backend/AudioBackend";
+import { HtmlAudioBackend } from "../audio-backend/html/HtmlAudioBackend";
+import { log } from "../utils/log";
 
 /**
- * 全局隐形播放器：
- * - 只渲染一个 <audio> 元素
- * - 根据 player store 里的状态来加载音频 / 播放 / 暂停 / 跳转
- * - 把播放进度、时长等事件写回 store
+ * AudioEngine
  *
- * 这里特意保证：
- *   👉 仅在「当前曲目变化」时才会重新设置 audio.src
- *   👉 单纯切换 isPlaying（暂停 / 继续）不会重置进度
+ * - 只负责创建隐藏的 <audio> 元素和管理一个 AudioBackend 实例
+ * - 从 player store 读取最小状态快照交给后端
+ * - 接收后端回调，把进度 / 结束写回 store
+ *
+ * 所有具体播放逻辑都在 HtmlAudioBackend 里实现。
  */
 export const AudioEngine: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const backendRef = useRef<AudioBackend | null>(null);
 
-  // 播放列表 & 当前曲目
-  const playlist = usePlayerStore((s: any) => s.playlist ?? s.tracks ?? []);
-  const currentIndex = usePlayerStore((s: any) => s.currentIndex ?? -1);
+  // 用 any 避免和 store 类型过度耦合，方便以后重构
+  const playlist = usePlayerStore((s: any) => s.playlist || []);
+  const currentIndex = usePlayerStore((s: any) => s.currentIndex ?? 0);
   const isPlaying = usePlayerStore((s: any) => s.isPlaying ?? false);
-  const volume = usePlayerStore((s: any) => s.volume ?? 1);
   const pendingSeek = usePlayerStore((s: any) => s.pendingSeek ?? null);
+  const volume = usePlayerStore((s: any) => s.volume ?? 1);
 
-  // 事件回写
-  const setPosition = usePlayerStore((s: any) => s.setPosition ?? (() => {}));
-  const setDuration = usePlayerStore((s: any) => s.setDuration ?? (() => {}));
-  const clearPendingSeek = usePlayerStore(
-    (s: any) => s.clearPendingSeek ?? (() => {}),
-  );
-  const next = usePlayerStore((s: any) => s.next ?? (() => {}));
-
-  const currentTrack =
-    currentIndex >= 0 && currentIndex < playlist.length
-      ? playlist[currentIndex]
-      : null;
-
-  // 绑定 <audio> 事件：timeupdate / loadedmetadata / ended
+  // 初始化后端实例 + 绑定 audio 元素
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    const backend = new HtmlAudioBackend({
+      onTimeUpdate(currentTime: number, duration: number | null) {
+        // 直接通过 setState 写回 currentTime/duration
+        usePlayerStore.setState((prev: any) => ({
+          ...prev,
+          currentTime,
+          duration: duration ?? prev?.duration ?? 0,
+        }));
+      },
+      onEnded() {
+        const state: any = usePlayerStore.getState();
+        if (typeof state.next === "function") {
+          state.next();
+        } else {
+          log.info(
+            "AudioEngine",
+            "onEnded 触发，但 playerStore 未提供 next()，已忽略",
+          );
+        }
+      },
+      onError(error: unknown) {
+        log.error("AudioEngine", "播放错误", { error });
+      },
+    });
 
-    const handleTimeUpdate = () => {
-      setPosition(audio.currentTime || 0);
-    };
+    backendRef.current = backend;
 
-    const handleLoadedMetadata = () => {
-      if (!Number.isFinite(audio.duration)) return;
-      setDuration(audio.duration);
-    };
-
-    const handleEnded = () => {
-      next();
-    };
-
-    audio.addEventListener("timeupdate", handleTimeUpdate);
-    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
-    audio.addEventListener("ended", handleEnded);
+    if (audioRef.current) {
+      backend.attachAudioElement(audioRef.current);
+    }
 
     return () => {
-      audio.removeEventListener("timeupdate", handleTimeUpdate);
-      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      audio.removeEventListener("ended", handleEnded);
+      backend.destroy();
+      backendRef.current = null;
     };
-  }, [setPosition, setDuration, next]);
+  }, []);
 
-  // 当「当前曲目」变化时，才重新设置 src / load
+  // 播放状态相关（playlist / currentIndex / isPlaying）变化时同步给后端
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    const backend = backendRef.current;
+    if (!backend) return;
 
-    if (!currentTrack) {
-      audio.removeAttribute("src");
-      audio.load();
-      return;
-    }
+    backend.updateFromState({
+      playlist,
+      currentIndex,
+      isPlaying,
+    });
+  }, [playlist, currentIndex, isPlaying]);
 
-    const src = convertFileSrc(String(currentTrack.filePath));
-
-    // 用 dataset 记一下当前 src，避免重复赋值导致重置播放进度
-    const htmlAudio = audio as HTMLAudioElement & { dataset: DOMStringMap };
-    if (htmlAudio.dataset.src !== src) {
-      htmlAudio.dataset.src = src;
-      audio.src = src;
-      audio.load();
-    }
-
-    // 如果当前应该是播放状态，就自动开播
-    if (isPlaying) {
-      audio.play().catch((err: any) => {
-  // 这种情况是 play() 被立即 pause() 打断，属于正常现象，直接忽略
-  if (err && err.name === "AbortError") {
-    return;
-  }
-  console.error("[AudioEngine] play error after track change", err);
-});
-
-    }
-  }, [currentTrack && currentTrack.filePath]); // 只关心曲目变化
-
-  // 仅根据 isPlaying 来控制 播放/暂停，不改 src
+  // pendingSeek → 后端
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !currentTrack) return;
+    const backend = backendRef.current;
+    if (!backend) return;
+    if (pendingSeek == null) return;
 
-    if (isPlaying) {
-      audio.play().catch((err: any) => {
-  if (err && err.name === "AbortError") {
-    // 快速点击播放/暂停时也会出现 AbortError，同样是正常现象
-    return;
-  }
-  console.error("[AudioEngine] play error on toggle", err);
-});
+    backend.applyPendingSeek(pendingSeek);
 
-    } else {
-      audio.pause();
-    }
-  }, [isPlaying, currentTrack && currentTrack.filePath]);
+    // 清空 pendingSeek，避免重复 seek
+    usePlayerStore.setState((prev: any) => ({
+      ...prev,
+      pendingSeek: null,
+    }));
+  }, [pendingSeek]);
 
-  // 音量变化
+  // 音量变化 → 后端
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    const clamped = Math.max(0, Math.min(1, Number(volume) || 0));
-    audio.volume = clamped;
+    const backend = backendRef.current;
+    if (!backend) return;
+    backend.setVolume(volume);
   }, [volume]);
 
-  // 处理 seek：只在 pendingSeek 有值时改 currentTime
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (pendingSeek == null || !Number.isFinite(pendingSeek)) return;
-
-    try {
-      audio.currentTime = pendingSeek;
-    } catch (err) {
-      console.error("[AudioEngine] failed to seek", err);
-    } finally {
-      clearPendingSeek();
-    }
-  }, [pendingSeek, clearPendingSeek]);
-
-  return <audio ref={audioRef} style={{ display: "none" }} preload="metadata" />;
+  // 只渲染一个隐藏的 <audio>，给后端用
+  return <audio ref={audioRef} style={{ display: "none" }} />;
 };
-
-export default AudioEngine;
