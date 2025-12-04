@@ -1,5 +1,5 @@
 // src/App.tsx
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { AudioEngine } from "./components/AudioEngine";
 import { PlayerBar } from "./components/PlayerBar";
 import LibraryPage from "./pages/LibraryPage";
@@ -7,6 +7,13 @@ import PlaylistPage from "./pages/PlaylistPage";
 import NowPlayingPage from "./pages/NowPlayingPage";
 import SettingsPage from "./pages/SettingsPage";
 import { usePlayerStore } from "./store/player";
+
+// Tauri v2 窗口 API
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { PhysicalSize } from "@tauri-apps/api/dpi";
+
+// Mini 模式组件（下面我也给你实现，如果你还没有的话）
+import MiniPlayer from "./components/MiniPlayer";
 
 type TabKey = "library" | "playlist" | "nowPlaying" | "settings";
 
@@ -22,12 +29,43 @@ const tabButtonStyle = (active: boolean): React.CSSProperties => ({
 
 const App: React.FC = () => {
   const [tab, setTab] = useState<TabKey>("library");
+  const [miniMode, setMiniMode] = useState(false);
 
   const togglePlay = usePlayerStore((s) => s.togglePlay);
   const next = usePlayerStore((s) => s.next);
   const prev = usePlayerStore((s) => s.prev);
 
-  // 全局键盘快捷键：Space / ← / →
+  // 进入 Mini 模式：缩成小窗 + 置顶 + 禁止拉伸
+  const enterMiniMode = useCallback(async () => {
+    setMiniMode(true);
+    try {
+      const win = getCurrentWindow();
+      await win.setAlwaysOnTop(true);
+      await win.setResizable(false);
+      await win.setSize(new PhysicalSize(420, 560));
+    } catch (error) {
+      console.error("[App] 进入 Mini 模式时调整窗口失败:", error);
+    }
+  }, []);
+
+  // 退出 Mini 模式：恢复正常窗口大小
+  const exitMiniMode = useCallback(async () => {
+    setMiniMode(false);
+    try {
+      const win = getCurrentWindow();
+      await win.setAlwaysOnTop(false);
+      await win.setResizable(true);
+      await win.setSize(new PhysicalSize(1200, 800));
+    } catch (error) {
+      console.error("[App] 退出 Mini 模式时调整窗口失败:", error);
+    }
+  }, []);
+
+  // 全局键盘快捷键：
+  // Space：播放/暂停
+  // ← / →：上一首 / 下一首
+  // M：切换 Mini 模式
+  // Esc：强制退出 Mini 模式
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -49,29 +87,58 @@ const App: React.FC = () => {
         next();
       } else if (e.code === "ArrowLeft") {
         prev();
+      } else if (e.code === "KeyM") {
+        e.preventDefault();
+        if (miniMode) {
+          void exitMiniMode();
+        } else {
+          void enterMiniMode();
+        }
+      } else if (e.code === "Escape" && miniMode) {
+        e.preventDefault();
+        void exitMiniMode();
       }
     };
 
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [togglePlay, next, prev]);
+  }, [togglePlay, next, prev, miniMode, enterMiniMode, exitMiniMode]);
 
+  const renderMainPage = () => {
+    if (tab === "library") return <LibraryPage />;
+    if (tab === "playlist") return <PlaylistPage />;
+    if (tab === "nowPlaying") return <NowPlayingPage />;
+    if (tab === "settings") return <SettingsPage />;
+    return null;
+  };
+
+  const rootStyle: React.CSSProperties = {
+    height: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    background: "#f3f4f6",
+    color: "#111827",
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
+  };
+
+  // Mini 模式：整个窗口只展示 MiniPlayer，小窗尺寸由上面的 enter/exitMiniMode 控制
+  if (miniMode) {
+    return (
+      <div style={rootStyle}>
+        <AudioEngine />
+        <MiniPlayer onExitMiniMode={() => void exitMiniMode()} />
+      </div>
+    );
+  }
+
+  // 普通模式（带顶部 Tab + 底部 PlayerBar）
   return (
-    <div
-      style={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        background: "#f3f4f6",
-        color: "#111827",
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
-      }}
-    >
+    <div style={rootStyle}>
       {/* 全局音频引擎 */}
       <AudioEngine />
 
-      {/* 顶部 Tab + 标题 */}
+      {/* 顶部 Tab + 标题 + Mini 按钮 */}
       <header
         style={{
           padding: "8px 16px",
@@ -83,6 +150,7 @@ const App: React.FC = () => {
           gap: 16,
         }}
       >
+        {/* 左侧 Logo / 标题 */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div
             style={{
@@ -105,45 +173,72 @@ const App: React.FC = () => {
               marginLeft: 4,
             }}
           >
-            本地播放器 · v2
+            本地播放器 · v3
           </span>
         </div>
 
-        <nav
+        {/* 右侧 Tab + Mini 模式按钮 */}
+        <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 6,
-            background: "#f3f4f6",
-            borderRadius: 9999,
-            padding: 2,
+            gap: 8,
           }}
         >
-          <button
-            style={tabButtonStyle(tab === "library")}
-            onClick={() => setTab("library")}
+          <nav
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              background: "#f3f4f6",
+              borderRadius: 9999,
+              padding: 2,
+            }}
           >
-            资料库
-          </button>
+            <button
+              style={tabButtonStyle(tab === "library")}
+              onClick={() => setTab("library")}
+            >
+              资料库
+            </button>
+            <button
+              style={tabButtonStyle(tab === "playlist")}
+              onClick={() => setTab("playlist")}
+            >
+              播放列表
+            </button>
+            <button
+              style={tabButtonStyle(tab === "nowPlaying")}
+              onClick={() => setTab("nowPlaying")}
+            >
+              正在播放
+            </button>
+            <button
+              style={tabButtonStyle(tab === "settings")}
+              onClick={() => setTab("settings")}
+            >
+              设置
+            </button>
+          </nav>
+
           <button
-            style={tabButtonStyle(tab === "playlist")}
-            onClick={() => setTab("playlist")}
+            style={{
+              padding: "4px 10px",
+              fontSize: 12,
+              borderRadius: 9999,
+              border: "1px solid #e5e7eb",
+              background: "#111827",
+              color: "#f9fafb",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+            onClick={() => {
+              void enterMiniMode();
+            }}
           >
-            播放列表
+            极简 Mini 模式
           </button>
-          <button
-            style={tabButtonStyle(tab === "nowPlaying")}
-            onClick={() => setTab("nowPlaying")}
-          >
-            正在播放
-          </button>
-          <button
-            style={tabButtonStyle(tab === "settings")}
-            onClick={() => setTab("settings")}
-          >
-            设置
-          </button>
-        </nav>
+        </div>
       </header>
 
       {/* 中间内容区 */}
@@ -168,15 +263,12 @@ const App: React.FC = () => {
               overflow: "auto",
             }}
           >
-            {tab === "library" && <LibraryPage />}
-            {tab === "playlist" && <PlaylistPage />}
-            {tab === "nowPlaying" && <NowPlayingPage />}
-            {tab === "settings" && <SettingsPage />}
+            {renderMainPage()}
           </div>
         </div>
       </main>
 
-      {/* 底部播放器条 */}
+      {/* 底部播放器条（Mini 模式下会隐藏，这里是普通模式所以照常显示） */}
       <footer
         style={{
           padding: "8px 16px",
