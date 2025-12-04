@@ -1,183 +1,189 @@
-// src/pages/LibraryPage.tsx
+// 路径：src/pages/LibraryPage.tsx
 import React, { useMemo, useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useLibrary } from "../store/library";
-import { usePlayerStore } from "../store/player";
-import type { MusicTrack } from "../types";
-import { TrackList } from "../components/TrackList";
+import {
+  LibraryTrack,
+  SortKey,
+  getTrackTitle,
+  getTrackArtist,
+  getTrackAlbum,
+  bumpPlayStatsForTrack,
+  startPlaylistFrom,
+  saveCurrentLibrary,
+} from "../library/libraryModel";
 import { LibraryHeader } from "../components/library/LibraryHeader";
-import { LibrarySortBar } from "../components/library/LibrarySortBar";
+import { LibraryTracksView } from "../components/library/LibraryTracksView";
+import { LibraryGroupViews } from "../components/library/LibraryGroupViews";
 
-function pathToTitle(path: string): string {
-  const parts = path.split(/[/\\]/);
-  const file = parts[parts.length - 1] || path;
-  const dotIndex = file.lastIndexOf(".");
-  return dotIndex > 0 ? file.slice(0, dotIndex) : file;
-}
-
-type SortKey = "none" | "title" | "artist";
+type ViewMode = "tracks" | "albums" | "artists";
 
 const LibraryPage: React.FC = () => {
-  const { tracks, addTracks, clearLibrary } = useLibrary();
+  // 从库 store 里拿数据 & 方法
+  const tracks: LibraryTrack[] = useLibrary((s: any) => s.tracks ?? []);
+  const addTracks = useLibrary((s: any) => s.addTracks ?? null);
+  const clearLibrary = useLibrary((s: any) => s.clearLibrary ?? null);
 
-  const setPlaylist = usePlayerStore(
-    (s: any) => s.setPlaylist ?? s.setTracks ?? (() => {}),
-  ) as (tracks: MusicTrack[]) => void;
+  // 视图状态：歌曲 / 专辑 / 艺人
+  const [viewMode, setViewMode] = useState<ViewMode>("tracks");
+  // 搜索关键字
+  const [search, setSearch] = useState("");
+  // 排序方式
+  const [sortKey, setSortKey] = useState<SortKey>("default");
 
-  const playTrackByIndex = usePlayerStore(
-    (s: any) => s.playTrack ?? (() => {}),
-  ) as (index: number) => void;
+  // 先按搜索过滤
+  const filteredTracks = useMemo(() => {
+    const keyword = search.trim().toLowerCase();
+    let result = Array.isArray(tracks) ? tracks.slice() : [];
 
-  const playerPlaylist = usePlayerStore(
-    (s: any) => s.playlist ?? s.tracks ?? [],
-  );
-  const currentIndex = usePlayerStore(
-    (s: any) => s.currentIndex ?? -1,
-  );
+    if (keyword) {
+      result = result.filter((t) => {
+        const title = getTrackTitle(t).toLowerCase();
+        const artist = getTrackArtist(t).toLowerCase();
+        const album = getTrackAlbum(t).toLowerCase();
+        const pathText = (
+          t.filePath ||
+          t.path ||
+          t.location ||
+          ""
+        )
+          .toString()
+          .toLowerCase();
 
-  const [keyword, setKeyword] = useState("");
-  const [sortKey, setSortKey] = useState<SortKey>("none");
-  const [sortAsc, setSortAsc] = useState(true);
-
-  // ===== 导入本地音乐 =====
-  const handleImport = async () => {
-    try {
-      const result = await open({
-        multiple: true,
-        filters: [
-          {
-            name: "Audio",
-            extensions: ["mp3", "flac", "wav", "ogg", "m4a", "ape"],
-          },
-        ],
-      });
-
-      if (!result) return;
-
-      const files = Array.isArray(result) ? result : [result];
-
-      const newTracks: MusicTrack[] = files.map((filePath) => {
-        const fullPath = String(filePath);
-        const title = pathToTitle(fullPath);
-        return {
-          id: fullPath,
-          filePath: fullPath,
-          path: fullPath,
-          title,
-          artist: "未知艺人",
-          album: "未知专辑",
-          duration: 0,
-        };
-      });
-
-      addTracks(newTracks);
-
-      // 默认行为：导入后按“整个库”的顺序作为播放列表
-      const allTracks = useLibrary.getState().tracks as MusicTrack[];
-      if (allTracks && allTracks.length > 0) {
-        setPlaylist(allTracks);
-      }
-    } catch (e) {
-      console.error("导入音乐文件失败:", e);
-    }
-  };
-
-  // ===== 排序 / 过滤后的“当前列表” =====
-  const displayedTracks: MusicTrack[] = useMemo(() => {
-    let list = (tracks ?? []) as MusicTrack[];
-
-    const kw = keyword.trim().toLowerCase();
-    if (kw) {
-      list = list.filter((t) => {
-        const title = (t.title || "").toLowerCase();
-        const artist = (t.artist || "").toLowerCase();
-        const album = (t.album || "").toLowerCase();
-        const file = (t.filePath || (t as any).path || "").toLowerCase();
         return (
-          title.includes(kw) ||
-          artist.includes(kw) ||
-          album.includes(kw) ||
-          file.includes(kw)
+          title.includes(keyword) ||
+          artist.includes(keyword) ||
+          album.includes(keyword) ||
+          pathText.includes(keyword)
         );
       });
     }
 
-    if (sortKey === "none") return list;
+    return result;
+  }, [tracks, search]);
 
-    const sorted = [...list].sort((a, b) => {
-      const aValRaw =
-        sortKey === "title" ? a.title || "" : a.artist || "";
-      const bValRaw =
-        sortKey === "title" ? b.title || "" : b.artist || "";
-      const aVal = aValRaw.toLowerCase();
-      const bVal = bValRaw.toLowerCase();
+  // 再按排序规则排一遍
+  const tracksForView = useMemo(() => {
+    const result = filteredTracks.slice();
 
-      if (aVal === bVal) return 0;
-      const res = aVal < bVal ? -1 : 1;
-      return sortAsc ? res : -res;
-    });
-
-    return sorted;
-  }, [tracks, keyword, sortKey, sortAsc]);
-
-  const total = tracks?.length ?? 0;
-  const filteredCount = displayedTracks.length;
-
-  const activeTrackId = useMemo(() => {
-    if (
-      currentIndex < 0 ||
-      currentIndex >= playerPlaylist.length
-    ) {
-      return null;
+    switch (sortKey) {
+      case "title":
+        result.sort((a, b) =>
+          getTrackTitle(a).localeCompare(getTrackTitle(b), "zh-CN"),
+        );
+        break;
+      case "artist":
+        result.sort((a, b) =>
+          getTrackArtist(a).localeCompare(getTrackArtist(b), "zh-CN"),
+        );
+        break;
+      case "album":
+        result.sort((a, b) =>
+          getTrackAlbum(a).localeCompare(getTrackAlbum(b), "zh-CN"),
+        );
+        break;
+      case "recent":
+        result.sort((a, b) => {
+          const aTime = a.lastPlayedAt ? Date.parse(a.lastPlayedAt) : 0;
+          const bTime = b.lastPlayedAt ? Date.parse(b.lastPlayedAt) : 0;
+          return bTime - aTime;
+        });
+        break;
+      case "default":
+      default:
+        // 保持原顺序
+        break;
     }
-    const t = playerPlaylist[currentIndex];
-    if (!t) return null;
-    return (
-      (t as any).id ??
-      (t as any).filePath ??
-      (t as any).path ??
-      null
-    );
-  }, [playerPlaylist, currentIndex]);
 
-  // ===== 双击某一行播放：以“当前显示列表”的顺序作为队列 =====
-  const handlePlayTrack = (track: MusicTrack, index: number) => {
-    if (!displayedTracks.length) return;
-    setPlaylist(displayedTracks);
-    playTrackByIndex(index);
-  };
+    return result;
+  }, [filteredTracks, sortKey]);
 
-  // 顶部按钮：播放全部 / 随机播放
+  // 操作：播放全部
   const handlePlayAll = () => {
-    if (!displayedTracks.length) return;
-    setPlaylist(displayedTracks);
-    playTrackByIndex(0);
+    if (!tracksForView.length) return;
+    startPlaylistFrom(tracksForView, 0);
+    bumpPlayStatsForTrack(tracksForView[0]);
   };
 
+  // 操作：随机播放
   const handleShufflePlay = () => {
-    if (!displayedTracks.length) return;
-    const randomIndex = Math.floor(
-      Math.random() * displayedTracks.length,
-    );
-    setPlaylist(displayedTracks);
-    playTrackByIndex(randomIndex);
+    if (!tracksForView.length) return;
+    const cloned = tracksForView.slice();
+    for (let i = cloned.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [cloned[i], cloned[j]] = [cloned[j], cloned[i]];
+    }
+    startPlaylistFrom(cloned, 0);
+    bumpPlayStatsForTrack(cloned[0]);
   };
 
-  // 切换排序
-  const toggleSort = (key: SortKey) => {
-    if (key === "none") {
-      setSortKey("none");
+  // 操作：导入本地音乐
+  const handleImport = async () => {
+    if (!addTracks) {
+      console.warn(
+        "[LibraryPage] addTracks 不存在，暂不支持在此处导入曲目。",
+      );
       return;
     }
-    if (sortKey === key) {
-      setSortAsc((v) => !v);
-    } else {
-      setSortKey(key);
-      setSortAsc(true);
-    }
+
+    const selected = await open({
+      multiple: true,
+      directory: false,
+      filters: [
+        {
+          name: "Audio",
+          extensions: [
+            "mp3",
+            "flac",
+            "wav",
+            "m4a",
+            "ogg",
+            "opus",
+            "aac",
+            "wv",
+          ],
+        },
+      ],
+    });
+
+    if (!selected) return;
+
+    const now = new Date().toISOString();
+    const files = Array.isArray(selected) ? selected : [selected];
+
+    const newTracks: LibraryTrack[] = files.map((file) => {
+      const fullPath = String(file);
+      const filename = fullPath.split(/[\\/]/).pop() || fullPath;
+      const dotIndex = filename.lastIndexOf(".");
+      const baseTitle = dotIndex > 0 ? filename.slice(0, dotIndex) : filename;
+
+      return {
+        id: fullPath,
+        filePath: fullPath,
+        title: baseTitle,
+        artist: "未知艺人",
+        album: "未分专辑",
+        addedAt: now,
+      };
+    });
+
+    addTracks(newTracks);
+    saveCurrentLibrary();
   };
 
-  const hasDisplayedTracks = displayedTracks.length > 0;
+  // 操作：清空资料库
+  const handleClear = () => {
+    if (!clearLibrary) {
+      console.warn("[LibraryPage] clearLibrary 不存在，无法清空曲库。");
+      return;
+    }
+    const ok = window.confirm(
+      "确定要清空资料库吗？这不会删除你的音频文件，但会清空索引。",
+    );
+    if (!ok) return;
+    clearLibrary();
+    saveCurrentLibrary();
+  };
 
   return (
     <div
@@ -185,34 +191,51 @@ const LibraryPage: React.FC = () => {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        gap: 12,
+        padding: "16px 24px",
+        boxSizing: "border-box",
+        gap: 16,
       }}
     >
       <LibraryHeader
-        total={total}
-        filteredCount={filteredCount}
-        keyword={keyword}
-        onKeywordChange={setKeyword}
-        hasDisplayedTracks={hasDisplayedTracks}
+        totalCount={Array.isArray(tracks) ? tracks.length : 0}
+        search={search}
+        onSearchChange={setSearch}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        sortKey={sortKey}
+        onSortKeyChange={setSortKey}
         onPlayAll={handlePlayAll}
         onShufflePlay={handleShufflePlay}
         onImport={handleImport}
-        onClearLibrary={clearLibrary}
+        onClear={handleClear}
       />
 
-      <LibrarySortBar
-        sortKey={sortKey}
-        sortAsc={sortAsc}
-        onToggleSort={toggleSort}
-      />
-
-      {/* 列表区域 */}
-      <div style={{ flex: 1 }}>
-        <TrackList
-          tracks={displayedTracks}
-          onPlay={handlePlayTrack}
-          activeTrackId={activeTrackId}
-        />
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          display: "flex",
+        }}
+      >
+        {viewMode === "tracks" ? (
+          <LibraryTracksView
+            tracks={tracksForView}
+            onPlayTrack={(track: LibraryTrack, index: number) => {
+              startPlaylistFrom(tracksForView, index);
+              bumpPlayStatsForTrack(track);
+            }}
+          />
+        ) : (
+          <LibraryGroupViews
+            mode={viewMode}
+            tracks={tracksForView}
+            onPlayGroup={(groupTracks: LibraryTrack[]) => {
+              if (!groupTracks.length) return;
+              startPlaylistFrom(groupTracks, 0);
+              bumpPlayStatsForTrack(groupTracks[0]);
+            }}
+          />
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import React, { useCallback } from "react";
 import { usePlayerStore } from "../store/player";
+import { kivoTheme } from "../styles/theme";
 
 function formatTime(sec: number): string {
   if (!sec || !Number.isFinite(sec)) return "0:00";
@@ -19,13 +20,13 @@ export const PlayerBar: React.FC = () => {
 
   const prev = usePlayerStore((s) => s.prev);
   const next = usePlayerStore((s) => s.next);
-  const togglePlay = usePlayerStore((s) => s.togglePlay);
   const playTrack = usePlayerStore((s) => s.playTrack);
+  const togglePlay = usePlayerStore((s) => s.togglePlay);
   const seek = usePlayerStore((s) => s.seek);
   const setVolume = usePlayerStore((s) => s.setVolume);
 
   const currentTrack =
-    currentIndex != null && currentIndex >= 0
+    currentIndex != null && currentIndex >= 0 && playlist
       ? playlist[currentIndex]
       : undefined;
 
@@ -63,11 +64,13 @@ export const PlayerBar: React.FC = () => {
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: 4,
+        gap: kivoTheme.spacing.xs,
         fontSize: 12,
-        padding: "8px 12px",
-        borderTop: "1px solid #e5e7eb",
-        background: "#f9fafb",
+        padding: `${kivoTheme.spacing.sm}px ${kivoTheme.spacing.lg}px`,
+        borderTop: `1px solid ${kivoTheme.colors.borderSubtle}`,
+        background: "rgba(15, 23, 42, 0.96)",
+        color: kivoTheme.colors.textOnDark,
+        backdropFilter: "blur(16px)",
       }}
     >
       {/* 进度条 */}
@@ -123,12 +126,10 @@ export const PlayerBar: React.FC = () => {
             display: "flex",
             alignItems: "center",
             gap: 4,
-            minWidth: 120,
+            minWidth: 140,
           }}
         >
-          <span role="img" aria-label="volume">
-            🔊
-          </span>
+          <span style={{ fontSize: 14 }}>🔊</span>
           <input
             type="range"
             min={0}

@@ -1,54 +1,58 @@
-// src/components/playlists/PlaylistTable.tsx
 import React from "react";
-import { PlayerTrack } from "../../store/player";
-import { getTrackTitle, getTrackArtist, getTrackAlbum } from "../../library/libraryModel";
-import { playNext, appendToQueue, playFromQueue, getQueueSnapshot } from "../../playlists/playQueueModel";
+import {
+  LibraryTrack,
+  getTrackTitle,
+  getTrackArtist,
+  getTrackAlbum,
+  toggleFavorite,
+} from "../../library/libraryModel";
+import { usePlayerStore, PlayerTrack } from "../../store/player";
+import { appendToQueue, playNext } from "../../playlists/playQueueModel";
 
-interface PlaylistTableProps {
-  tracks: PlayerTrack[];
-  currentIndex: number;
-  makeIdentityKey: (track: any) => string;
+interface Props {
+  tracks: LibraryTrack[];
+  onPlayTrack: (track: LibraryTrack, index: number) => void;
 }
 
 /**
- * 播放列表页表格视图。
- * - 只负责“画列表 + 行内操作”：双击播放 / 下一首 / 加入队列。
- * - 具体从哪一组 tracks 来，由 PlaylistPage 决定。
+ * 本地资料库 - “按歌曲”视图。
+ *
+ * 只做两件事：
+ * 1. 把已经过滤 / 排好序的 tracks 画成表格；
+ * 2. 行级操作：双击播放、喜欢、加入队列 / 设为下一首。
  */
-const PlaylistTable: React.FC<PlaylistTableProps> = ({
-  tracks,
-  currentIndex,
-  makeIdentityKey,
-}) => {
-  const queueSnapshot = getQueueSnapshot();
-  const queueList = queueSnapshot.playlist;
+export const LibraryTracksView: React.FC<Props> = ({ tracks, onPlayTrack }) => {
+  const currentPlaylist = usePlayerStore(
+    (s: any) => s.playlist ?? s.tracks ?? [],
+  );
+  const currentIndex = usePlayerStore((s: any) => s.currentIndex ?? -1);
 
-  const findIndexInQueue = (track: PlayerTrack): number => {
-    const key = makeIdentityKey(track);
-    if (!queueList || queueList.length === 0) return -1;
-    for (let i = 0; i < queueList.length; i += 1) {
-      if (makeIdentityKey(queueList[i]) === key) {
-        return i;
-      }
-    }
-    return -1;
+  const currentTrack =
+    Array.isArray(currentPlaylist) &&
+    currentIndex >= 0 &&
+    currentIndex < currentPlaylist.length
+      ? (currentPlaylist[currentIndex] as any)
+      : null;
+
+  const currentFilePath: string | undefined =
+    currentTrack?.filePath ?? currentTrack?.path ?? currentTrack?.location;
+
+  const handleRowDoubleClick = (track: LibraryTrack, index: number) => {
+    onPlayTrack(track, index);
   };
 
-  const handleRowDoubleClick = (track: PlayerTrack) => {
-    const idx = findIndexInQueue(track);
-    if (idx >= 0) {
-      playFromQueue(idx);
-    } else {
-      playNext([track]);
-    }
+  const handleToggleFavorite = (track: LibraryTrack) => {
+    toggleFavorite(track);
   };
 
-  const handlePlayNext = (track: PlayerTrack) => {
-    playNext([track]);
+  const handlePlayNext = (track: LibraryTrack) => {
+    const asPlayerTrack = track as unknown as PlayerTrack;
+    playNext([asPlayerTrack]);
   };
 
-  const handleAppendToQueue = (track: PlayerTrack) => {
-    appendToQueue([track]);
+  const handleAppendToQueue = (track: LibraryTrack) => {
+    const asPlayerTrack = track as unknown as PlayerTrack;
+    appendToQueue([asPlayerTrack]);
   };
 
   const formatLastPlayed = (iso: string | null | undefined): string => {
@@ -134,6 +138,15 @@ const PlaylistTable: React.FC<PlaylistTableProps> = ({
               style={{
                 ...headerCellBase,
                 textAlign: "center",
+                width: 60,
+              }}
+            >
+              喜欢
+            </th>
+            <th
+              style={{
+                ...headerCellBase,
+                textAlign: "center",
                 width: 130,
               }}
             >
@@ -145,7 +158,7 @@ const PlaylistTable: React.FC<PlaylistTableProps> = ({
           {tracks.length === 0 ? (
             <tr>
               <td
-                colSpan={7}
+                colSpan={8}
                 style={{
                   padding: "40px 16px",
                   textAlign: "center",
@@ -153,36 +166,35 @@ const PlaylistTable: React.FC<PlaylistTableProps> = ({
                   color: "#9ca3af",
                 }}
               >
-                当前没有可显示的曲目。
+                当前没有任何本地音乐。点击上方「导入本地音乐」按钮添加一些歌曲吧。
               </td>
             </tr>
           ) : (
             tracks.map((track, index) => {
-              const baseIndex = findIndexInQueue(track);
-              const isCurrent = baseIndex === currentIndex;
+              const key =
+                (track as any)?.id ??
+                (track as any)?.trackId ??
+                track.filePath ??
+                track.path ??
+                track.location ??
+                index;
 
-              const title = getTrackTitle(track as any);
-              const artist = getTrackArtist(track as any);
-              const album = getTrackAlbum(track as any);
-              const playCount = (track as any).playCount ?? 0;
-              const lastPlayedLabel = formatLastPlayed(
-                (track as any).lastPlayedAt,
-              );
+              const title = getTrackTitle(track);
+              const artist = getTrackArtist(track);
+              const album = getTrackAlbum(track);
+              const playCount = track.playCount ?? 0;
+              const lastPlayedLabel = formatLastPlayed(track.lastPlayedAt);
+              const favorite = !!track.favorite;
 
-              const filePath =
-                (track as any).filePath ??
-                (track as any).path ??
-                (track as any).location;
-              const idPart =
-                (track as any).id ??
-                (track as any).trackId ??
-                (filePath || title || "track");
-              const key = `${idPart}::${index}`;
+              const trackFilePath =
+                track.filePath ?? track.path ?? track.location;
+              const isCurrent =
+                !!trackFilePath && trackFilePath === currentFilePath;
 
               return (
                 <tr
                   key={key}
-                  onDoubleClick={() => handleRowDoubleClick(track)}
+                  onDoubleClick={() => handleRowDoubleClick(track, index)}
                   style={{
                     backgroundColor: isCurrent
                       ? "rgba(37,99,235,0.06)"
@@ -273,6 +285,30 @@ const PlaylistTable: React.FC<PlaylistTableProps> = ({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        handleToggleFavorite(track);
+                      }}
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        cursor: "pointer",
+                        fontSize: 16,
+                        color: favorite ? "#f97316" : "#d1d5db",
+                      }}
+                      title={favorite ? "取消喜欢" : "标记为喜欢"}
+                    >
+                      {favorite ? "♥" : "♡"}
+                    </button>
+                  </td>
+                  <td
+                    style={{
+                      padding: "6px 10px",
+                      textAlign: "center",
+                      borderBottom: "1px solid #f3f4f6",
+                    }}
+                  >
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
                         handlePlayNext(track);
                       }}
                       style={{
@@ -313,5 +349,3 @@ const PlaylistTable: React.FC<PlaylistTableProps> = ({
     </div>
   );
 };
-
-export default PlaylistTable;

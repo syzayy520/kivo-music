@@ -1,37 +1,54 @@
 // src/components/now-playing/NowPlayingCoverCard.tsx
 import React from "react";
 import { useNowPlayingCover } from "../../hooks/useNowPlayingCover";
+import { kivoTheme } from "../../styles/theme";
 
 interface NowPlayingCoverCardProps {
+  // 这里 track 类型在全局还比较散，就先用 any，后面可以统一成 DomainTrack 类型
   track: any | null;
   playlist: any[];
   currentIndex: number;
 }
 
+// 这里只解构真正会用到的 theme 字段，避免 lint 报未使用
+const { radius, shadow, spacing } = kivoTheme;
+
+/** 整个卡片外壳样式 */
 const boxStyle: React.CSSProperties = {
-  borderRadius: 24,
-  padding: 16,
+  // theme 里最大一档是 xl，这里用 xl 即可
+  borderRadius: radius.xl,
+  padding: spacing.lg,
   background: "#ffffff",
-  boxShadow: "0 10px 30px rgba(15,23,42,0.08)",
+  boxShadow: shadow.subtle,
   display: "flex",
   flexDirection: "column",
-  gap: 12,
+  gap: spacing.md,
   height: "100%",
 };
 
-const buttonStyle: React.CSSProperties = {
+/** “选择封面图片…” 按钮 – 公共按钮基础样式 */
+const baseButtonStyle: React.CSSProperties = {
   padding: "6px 10px",
   fontSize: 12,
-  borderRadius: 9999,
-  border: "1px solid #e5e7eb",
-  background: "#111827",
-  color: "#f9fafb",
+  borderRadius: radius.pill,
+  borderWidth: 1,
+  borderStyle: "solid",
+  // 统一声明 borderColor，避免和 border 简写混用导致 React warning
+  borderColor: "#e5e7eb",
   cursor: "pointer",
   whiteSpace: "nowrap",
 };
 
+/** 可点击状态 */
+const enabledButtonStyle: React.CSSProperties = {
+  ...baseButtonStyle,
+  background: "#111827",
+  color: "#f9fafb",
+};
+
+/** 禁用状态 */
 const disabledButtonStyle: React.CSSProperties = {
-  ...buttonStyle,
+  ...baseButtonStyle,
   background: "#6b7280",
   borderColor: "#9ca3af",
   cursor: "not-allowed",
@@ -68,7 +85,7 @@ const NowPlayingCoverCard: React.FC<NowPlayingCoverCardProps> = ({
         <div style={{ fontSize: 13, fontWeight: 600 }}>封面</div>
         <button
           type="button"
-          style={canPickCover ? buttonStyle : disabledButtonStyle}
+          style={canPickCover ? enabledButtonStyle : disabledButtonStyle}
           disabled={!canPickCover}
           onClick={() => {
             void pickCover();
@@ -93,7 +110,7 @@ const NowPlayingCoverCard: React.FC<NowPlayingCoverCardProps> = ({
             width: "100%",
             maxWidth: 360,
             aspectRatio: "1 / 1",
-            borderRadius: 24,
+            borderRadius: radius.xl,
             overflow: "hidden",
             background: "#e5e7eb",
             display: "flex",

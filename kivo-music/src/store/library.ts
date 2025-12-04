@@ -1,64 +1,119 @@
+// src/store/library.ts
 import { create } from "zustand";
 import type { MusicTrack } from "../types";
+import { loadLibrary, saveLibrary } from "../persistence/LibraryPersistence";
+import { log } from "../utils/log";
 
-const STORAGE_KEY = "kivo-library-v1";
-
-const loadInitialTracks = (): MusicTrack[] => {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed;
-  } catch (e) {
-    console.warn("读取本地音乐资料库失败:", e);
-    return [];
-  }
-};
-
-const saveTracks = (tracks: MusicTrack[]) => {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(tracks));
-  } catch (e) {
-    console.warn("保存本地音乐资料库失败:", e);
-  }
-};
-
-interface LibraryState {
+export interface LibraryState {
+  /** 当前曲库中的所有曲目 */
   tracks: MusicTrack[];
-  addTracks: (tracks: MusicTrack[]) => void;
+  /** 是否已经从磁盘加载过一次 */
+  isLoaded: boolean;
+  /** 正在从磁盘加载 */
+  isLoading: boolean;
+
+  /** 从磁盘加载曲库（幂等，多次调用也只会真正加载一次） */
+  loadFromDisk: () => Promise<void>;
+
+  /** 用一批 tracks 替换当前曲库，并持久化到磁盘 */
+  setTracks: (tracks: MusicTrack[]) => void;
+
+  /** 往现有曲库里追加若干首歌（支持单首或数组），自动去重 + 持久化 */
+  addTracks: (tracks: MusicTrack[] | MusicTrack) => void;
+
+  /** 清空曲库并持久化 */
   clearLibrary: () => void;
 }
 
+/**
+ * 生成一个用于去重的 key：
+ * - 优先使用 id
+ * - 其次使用 filePath / path
+ */
+function makeTrackKey(t: MusicTrack): string {
+  const rawPath =
+    (t.filePath as string | undefined) ||
+    (t.path as string | undefined) ||
+    "";
+  const safePath = typeof rawPath === "string" ? rawPath : "";
+  const id = typeof t.id === "string" ? t.id : "";
+  return `${id}::${safePath}`;
+}
+
 export const useLibrary = create<LibraryState>((set, get) => ({
-  // 启动时尝试从 localStorage 里恢复
-  tracks: loadInitialTracks(),
+  tracks: [],
+  isLoaded: false,
+  isLoading: false,
 
-  // 导入新歌曲（自动按 path 去重）
-  addTracks: (incoming) => {
-    const existing = get().tracks;
-    const pathSet = new Set(existing.map((t) => t.path));
-
-    const deduped: MusicTrack[] = [];
-    for (const t of incoming) {
-      if (!pathSet.has(t.path)) {
-        pathSet.add(t.path);
-        deduped.push(t);
-      }
+  async loadFromDisk() {
+    // 已经加载过就不重复来了
+    if (get().isLoaded || get().isLoading) {
+      return;
     }
 
-    if (!deduped.length) return; // 全是重复的就不更新
-
-    const merged = [...existing, ...deduped];
-    set({ tracks: merged });
-    saveTracks(merged);
+    set({ isLoading: true });
+    try {
+      const loaded = await loadLibrary();
+      set({
+        tracks: loaded ?? [],
+        isLoaded: true,
+        isLoading: false,
+      });
+      log.debug("LibraryStore", "loaded library from disk", {
+        count: loaded.length,
+      });
+    } catch (error) {
+      log.error("LibraryStore", "loadFromDisk error", { error });
+      set({ isLoading: false, isLoaded: true });
+    }
   },
 
-  // 清空资料库（调试用 & 未来做个按钮给用户）
-  clearLibrary: () => {
+  setTracks(nextTracks) {
+    const safe = Array.isArray(nextTracks) ? nextTracks : [];
+    set({ tracks: safe });
+    void saveLibrary(safe);
+  },
+
+  addTracks(input) {
+    const incoming = Array.isArray(input) ? input : [input];
+    if (!incoming.length) return;
+
+    const current = get().tracks ?? [];
+    const existingKeySet = new Set(current.map(makeTrackKey));
+    const merged: MusicTrack[] = [...current];
+
+    for (const t of incoming) {
+      const key = makeTrackKey(t);
+      if (existingKeySet.has(key)) {
+        // 已有同一首歌 → 跳过，避免重复
+        continue;
+      }
+      existingKeySet.add(key);
+      merged.push(t);
+    }
+
+    set({ tracks: merged });
+    void saveLibrary(merged);
+
+    log.debug("LibraryStore", "addTracks merged", {
+      before: current.length,
+      added: incoming.length,
+      after: merged.length,
+    });
+  },
+
+  clearLibrary() {
     set({ tracks: [] });
-    saveTracks([]);
+    void saveLibrary([]);
+    log.warn("LibraryStore", "library cleared");
   },
 }));
+
+// --- 自动在应用启动时加载一次曲库（最佳努力，不影响主流程） ---
+void (async () => {
+  try {
+    await useLibrary.getState().loadFromDisk();
+  } catch (error) {
+    log.error("LibraryStore", "auto loadFromDisk error", { error });
+  }
+})();
