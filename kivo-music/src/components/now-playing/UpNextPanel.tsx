@@ -6,20 +6,24 @@ import {
   clearQueue,
   playFromQueue,
   removeFromQueue,
+  moveInQueue,
 } from "../../playlists/playQueueModel";
+import { UpNextRow } from "./UpNextRow";
 
 /**
  * 接下来播放（Up Next）面板。
- * - 读取 playerStore 中的 playlist / currentIndex。
- * - 双击某行可以从该曲目开始播放。
- * - 支持移除后续歌曲、清空队列。
+ *
+ * 设计原则：
+ * - 这里只关心“拿数据 + 组织布局 + 调用队列模型”；
+ * - 单行的展示和交互细节拆到 UpNextRow，避免文件过长；
+ * - 所有对队列的修改统一走 playQueueModel。
  */
 export const UpNextPanel: React.FC = () => {
   const playlist = usePlayerStore((s) => s.playlist);
   const currentIndex = usePlayerStore((s) => s.currentIndex);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
 
-  // 队列为空时的占位
+  // 队列为空时的占位视图
   if (!playlist || playlist.length === 0) {
     return (
       <div
@@ -43,22 +47,23 @@ export const UpNextPanel: React.FC = () => {
         <div style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>
           接下来播放
         </div>
-        <div>当前播放队列为空。可以在资料库或播放列表中选择歌曲开始播放。</div>
+        <div>
+          当前播放队列为空。可以在资料库或播放列表中选择歌曲开始播放。
+        </div>
       </div>
     );
   }
 
+  const total = playlist.length;
   const headerTitle = "接下来播放";
   const statusText =
-    currentIndex >= 0 && currentIndex < playlist.length
-      ? `当前第 ${currentIndex + 1} / ${playlist.length} 首 · ${
+    currentIndex >= 0 && currentIndex < total
+      ? `当前第 ${currentIndex + 1} / ${total} 首 · ${
           isPlaying ? "播放中" : "已暂停"
         }`
-      : `共 ${playlist.length} 首曲目`;
+      : `共 ${total} 首曲目`;
 
   const handleClear = () => clearQueue();
-  const handleRemove = (idx: number) => removeFromQueue(idx);
-  const handlePlayFrom = (idx: number) => playFromQueue(idx);
 
   return (
     <div
@@ -122,7 +127,7 @@ export const UpNextPanel: React.FC = () => {
         </button>
       </div>
 
-      {/* 列表 */}
+      {/* 列表区域 */}
       <div
         style={{
           flex: 1,
@@ -135,6 +140,54 @@ export const UpNextPanel: React.FC = () => {
           flexDirection: "column",
         }}
       >
+        {/* 列头 */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            padding: "6px 10px",
+            fontSize: 11,
+            color: "#6b7280",
+            borderBottom: "1px solid rgba(148,163,184,0.4)",
+            background: "rgba(15,23,42,0.02)",
+          }}
+        >
+          <div
+            style={{
+              width: 28,
+              textAlign: "right",
+              paddingRight: 4,
+            }}
+          >
+            #
+          </div>
+          <div
+            style={{
+              flex: 1,
+              minWidth: 0,
+            }}
+          >
+            曲目 / 艺人
+          </div>
+          <div
+            style={{
+              minWidth: 64,
+              textAlign: "right",
+            }}
+          >
+            状态
+          </div>
+          <div
+            style={{
+              minWidth: 88,
+              textAlign: "right",
+            }}
+          >
+            操作
+          </div>
+        </div>
+
+        {/* 列表内容 */}
         <div
           style={{
             flex: 1,
@@ -142,123 +195,34 @@ export const UpNextPanel: React.FC = () => {
             overflowY: "auto",
           }}
         >
-          {playlist.map((track: any, index: number) => {
+          {playlist.map((track, index) => {
             const isCurrent = index === currentIndex;
             const isNext = index === currentIndex + 1;
+            const canMoveUp = index > 0;
+            const canMoveDown = index < total - 1;
             const canRemove = !isCurrent;
 
-            // 关键修改：即使 filePath 一样，也用 index 拼接，保证 key 唯一
-            const filePath =
-              track?.filePath ?? track?.path ?? track?.location ?? "";
-            const idPart =
-              track?.id ??
-              track?.trackId ??
-              (filePath ? filePath : track?.title ?? "track");
-            const key = `${idPart}::${index}`;
+            const handlePlayFrom = () => playFromQueue(index);
+            const handleMoveUp = () => moveInQueue(index, index - 1);
+            const handleMoveDown = () => moveInQueue(index, index + 1);
+            const handleRemove = () => removeFromQueue(index);
 
             return (
-              <div
-                key={key}
-                onDoubleClick={() => handlePlayFrom(index)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "6px 10px",
-                  fontSize: 12,
-                  cursor: "pointer",
-                  backgroundColor: isCurrent
-                    ? "rgba(37,99,235,0.10)"
-                    : "transparent",
-                  borderBottom: "1px solid rgba(148,163,184,0.25)",
-                }}
-              >
-                {/* 序号 / 状态 */}
-                <div
-                  style={{
-                    width: 28,
-                    textAlign: "right",
-                    paddingRight: 4,
-                    fontVariantNumeric: "tabular-nums",
-                    color: isCurrent ? "#2563eb" : "#6b7280",
-                  }}
-                >
-                  {isCurrent ? "▶" : index + 1}
-                </div>
-
-                {/* 标题 + 艺人 */}
-                <div
-                  style={{
-                    flex: 1,
-                    minWidth: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: isCurrent ? 600 : 500,
-                      color: "#111827",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {track?.title || "未知标题"}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: "#6b7280",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {track?.artist || "未知艺人"}
-                  </div>
-                </div>
-
-                {/* 当前 / 下一首 标记 */}
-                <div
-                  style={{
-                    minWidth: 64,
-                    textAlign: "right",
-                    fontSize: 11,
-                    color: isCurrent ? "#2563eb" : "#6b7280",
-                  }}
-                >
-                  {isCurrent ? "正在播放" : isNext ? "下一首" : ""}
-                </div>
-
-                {/* 删除按钮 */}
-                <div
-                  style={{
-                    width: 40,
-                    textAlign: "right",
-                  }}
-                >
-                  {canRemove && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemove(index);
-                      }}
-                      style={{
-                        border: "none",
-                        background: "transparent",
-                        color: "#9ca3af",
-                        cursor: "pointer",
-                        fontSize: 14,
-                      }}
-                      title="从当前队列中移除这首歌"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              </div>
+              <UpNextRow
+                // 即使 filePath 一样，也用 index 拼接，保证 key 唯一
+                key={buildTrackRowKey(track, index)}
+                track={track}
+                index={index}
+                isCurrent={isCurrent}
+                isNext={isNext}
+                canMoveUp={canMoveUp}
+                canMoveDown={canMoveDown}
+                isRemovable={canRemove}
+                onPlay={handlePlayFrom}
+                onMoveUp={handleMoveUp}
+                onMoveDown={handleMoveDown}
+                onRemove={canRemove ? handleRemove : undefined}
+              />
             );
           })}
         </div>
@@ -266,5 +230,14 @@ export const UpNextPanel: React.FC = () => {
     </div>
   );
 };
+
+function buildTrackRowKey(track: any, index: number): string {
+  const filePath = track?.filePath ?? track?.path ?? track?.location ?? "";
+  const idPart =
+    track?.id ??
+    track?.trackId ??
+    (filePath ? filePath : track?.title ?? "track");
+  return `${idPart}::${index}`;
+}
 
 export default UpNextPanel;

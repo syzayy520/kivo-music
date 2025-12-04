@@ -1,25 +1,30 @@
+// src/components/library/LibraryTracksView.tsx
 import React from "react";
-import {
-  LibraryTrack,
-  getTrackTitle,
-  getTrackArtist,
-  getTrackAlbum,
-  toggleFavorite,
-} from "../../library/libraryModel";
+import { LibraryTrack, getTrackTitle } from "../../library/libraryModel";
 import { usePlayerStore, PlayerTrack } from "../../store/player";
 import { appendToQueue, playNext } from "../../playlists/playQueueModel";
+import { LibraryTrackRow } from "./LibraryTrackRow";
+import { LibraryTrackContextMenu } from "./LibraryTrackContextMenu";
 
 interface Props {
   tracks: LibraryTrack[];
   onPlayTrack: (track: LibraryTrack, index: number) => void;
 }
 
+interface ContextMenuState {
+  visible: boolean;
+  clientX: number;
+  clientY: number;
+  track: LibraryTrack | null;
+  rowIndex: number;
+}
+
 /**
- * 本地资料库 - “按歌曲”视图。
- *
- * 只做两件事：
- * 1. 把已经过滤 / 排好序的 tracks 画成表格；
- * 2. 行级操作：双击播放、喜欢、加入队列 / 设为下一首。
+ * 本地资料库 - “按歌曲”视图（壳组件）
+ * - 负责：
+ *   - 从 player store 里拿当前正在播放的曲目
+ *   - 维护右键菜单的 state
+ *   - 把单行渲染交给 LibraryTrackRow
  */
 export const LibraryTracksView: React.FC<Props> = ({ tracks, onPlayTrack }) => {
   const currentPlaylist = usePlayerStore(
@@ -37,12 +42,16 @@ export const LibraryTracksView: React.FC<Props> = ({ tracks, onPlayTrack }) => {
   const currentFilePath: string | undefined =
     currentTrack?.filePath ?? currentTrack?.path ?? currentTrack?.location;
 
+  const [contextMenu, setContextMenu] = React.useState<ContextMenuState>({
+    visible: false,
+    clientX: 0,
+    clientY: 0,
+    track: null,
+    rowIndex: -1,
+  });
+
   const handleRowDoubleClick = (track: LibraryTrack, index: number) => {
     onPlayTrack(track, index);
-  };
-
-  const handleToggleFavorite = (track: LibraryTrack) => {
-    toggleFavorite(track);
   };
 
   const handlePlayNext = (track: LibraryTrack) => {
@@ -55,19 +64,28 @@ export const LibraryTracksView: React.FC<Props> = ({ tracks, onPlayTrack }) => {
     appendToQueue([asPlayerTrack]);
   };
 
-  const formatLastPlayed = (iso: string | null | undefined): string => {
-    if (!iso) return "-";
-    const date = new Date(iso);
-    if (Number.isNaN(date.getTime())) return "-";
+  const openContextMenu = (
+    event: React.MouseEvent<HTMLTableRowElement>,
+    track: LibraryTrack,
+    index: number,
+  ) => {
+    event.preventDefault();
+    setContextMenu({
+      visible: true,
+      clientX: event.clientX,
+      clientY: event.clientY,
+      track,
+      rowIndex: index,
+    });
+  };
 
-    const y = date.getFullYear();
-    const m = date.getMonth() + 1;
-    const d = date.getDate();
-    const hh = String(date.getHours()).padStart(2, "0");
-    const mm = String(date.getMinutes()).padStart(2, "0");
-    const ss = String(date.getSeconds()).padStart(2, "0");
-
-    return `${y}/${m}/${d} ${hh}:${mm}:${ss}`;
+  const closeContextMenu = () => {
+    setContextMenu((prev) => ({
+      ...prev,
+      visible: false,
+      track: null,
+      rowIndex: -1,
+    }));
   };
 
   const headerCellBase: React.CSSProperties = {
@@ -83,10 +101,11 @@ export const LibraryTracksView: React.FC<Props> = ({ tracks, onPlayTrack }) => {
   return (
     <div
       style={{
+        position: "relative",
         flex: 1,
         minHeight: 0,
         overflow: "auto",
-        background: "#ffffff",
+        backgroundColor: "#ffffff",
         borderRadius: 16,
         boxShadow: "0 8px 24px rgba(15,23,42,0.08)",
       }}
@@ -101,7 +120,7 @@ export const LibraryTracksView: React.FC<Props> = ({ tracks, onPlayTrack }) => {
         <thead>
           <tr
             style={{
-              background: "#f9fafb",
+              backgroundColor: "#f9fafb",
             }}
           >
             <th
@@ -160,192 +179,76 @@ export const LibraryTracksView: React.FC<Props> = ({ tracks, onPlayTrack }) => {
               <td
                 colSpan={8}
                 style={{
-                  padding: "40px 16px",
+                  padding: 32,
                   textAlign: "center",
-                  fontSize: 13,
                   color: "#9ca3af",
+                  fontSize: 13,
                 }}
               >
-                当前没有任何本地音乐。点击上方「导入本地音乐」按钮添加一些歌曲吧。
+                当前没有可显示的曲目，请先导入本地音乐。
               </td>
             </tr>
           ) : (
             tracks.map((track, index) => {
-              const key =
-                (track as any)?.id ??
-                (track as any)?.trackId ??
-                track.filePath ??
-                track.path ??
-                track.location ??
-                index;
-
-              const title = getTrackTitle(track);
-              const artist = getTrackArtist(track);
-              const album = getTrackAlbum(track);
-              const playCount = track.playCount ?? 0;
-              const lastPlayedLabel = formatLastPlayed(track.lastPlayedAt);
-              const favorite = !!track.favorite;
-
-              const trackFilePath =
-                track.filePath ?? track.path ?? track.location;
+              const filePath =
+                (track as any).filePath ??
+                (track as any).path ??
+                (track as any).location ??
+                "";
               const isCurrent =
-                !!trackFilePath && trackFilePath === currentFilePath;
+                !!currentFilePath && !!filePath && currentFilePath === filePath;
+
+              const idCandidate =
+                (track as any).id ??
+                (track as any).trackId ??
+                filePath ??
+                getTrackTitle(track);
+
+              const idPart =
+                idCandidate && String(idCandidate).length > 0
+                  ? String(idCandidate)
+                  : "track";
+
+              const rowKey = `${idPart}::${index}`;
 
               return (
-                <tr
-                  key={key}
-                  onDoubleClick={() => handleRowDoubleClick(track, index)}
-                  style={{
-                    backgroundColor: isCurrent
-                      ? "rgba(37,99,235,0.06)"
-                      : index % 2 === 0
-                      ? "#ffffff"
-                      : "#f9fafb",
-                    cursor: "pointer",
-                  }}
-                >
-                  <td
-                    style={{
-                      padding: "6px 10px",
-                      textAlign: "right",
-                      fontVariantNumeric: "tabular-nums",
-                      color: isCurrent ? "#2563eb" : "#6b7280",
-                      borderBottom: "1px solid #f3f4f6",
-                    }}
-                  >
-                    {index + 1}
-                  </td>
-                  <td
-                    style={{
-                      padding: "6px 10px",
-                      maxWidth: 260,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      borderBottom: "1px solid #f3f4f6",
-                    }}
-                  >
-                    {title}
-                  </td>
-                  <td
-                    style={{
-                      padding: "6px 10px",
-                      maxWidth: 160,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      borderBottom: "1px solid #f3f4f6",
-                      color: "#4b5563",
-                    }}
-                  >
-                    {artist}
-                  </td>
-                  <td
-                    style={{
-                      padding: "6px 10px",
-                      maxWidth: 180,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      borderBottom: "1px solid #f3f4f6",
-                      color: "#6b7280",
-                    }}
-                  >
-                    {album}
-                  </td>
-                  <td
-                    style={{
-                      padding: "6px 10px",
-                      textAlign: "right",
-                      borderBottom: "1px solid #f3f4f6",
-                      fontVariantNumeric: "tabular-nums",
-                      color: "#4b5563",
-                    }}
-                  >
-                    {playCount}
-                  </td>
-                  <td
-                    style={{
-                      padding: "6px 10px",
-                      borderBottom: "1px solid #f3f4f6",
-                      fontSize: 12,
-                      color: "#6b7280",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {lastPlayedLabel}
-                  </td>
-                  <td
-                    style={{
-                      padding: "6px 10px",
-                      textAlign: "center",
-                      borderBottom: "1px solid #f3f4f6",
-                    }}
-                  >
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleFavorite(track);
-                      }}
-                      style={{
-                        border: "none",
-                        background: "transparent",
-                        cursor: "pointer",
-                        fontSize: 16,
-                        color: favorite ? "#f97316" : "#d1d5db",
-                      }}
-                      title={favorite ? "取消喜欢" : "标记为喜欢"}
-                    >
-                      {favorite ? "♥" : "♡"}
-                    </button>
-                  </td>
-                  <td
-                    style={{
-                      padding: "6px 10px",
-                      textAlign: "center",
-                      borderBottom: "1px solid #f3f4f6",
-                    }}
-                  >
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handlePlayNext(track);
-                      }}
-                      style={{
-                        border: "none",
-                        background: "transparent",
-                        cursor: "pointer",
-                        fontSize: 12,
-                        color: "#2563eb",
-                        marginRight: 8,
-                      }}
-                      title="设为下一首播放"
-                    >
-                      下一首
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAppendToQueue(track);
-                      }}
-                      style={{
-                        border: "none",
-                        background: "transparent",
-                        cursor: "pointer",
-                        fontSize: 12,
-                        color: "#6b7280",
-                      }}
-                      title="添加到当前队列末尾"
-                    >
-                      加入队列
-                    </button>
-                  </td>
-                </tr>
+                <LibraryTrackRow
+                  key={rowKey}
+                  track={track}
+                  index={index}
+                  isCurrent={isCurrent}
+                  onPlay={handleRowDoubleClick}
+                  onPlayNext={handlePlayNext}
+                  onAppendToQueue={handleAppendToQueue}
+                  onContextMenu={openContextMenu}
+                />
               );
             })
           )}
         </tbody>
       </table>
+
+      <LibraryTrackContextMenu
+        visible={contextMenu.visible && !!contextMenu.track}
+        x={contextMenu.clientX}
+        y={contextMenu.clientY}
+        onClose={closeContextMenu}
+        onPlay={() => {
+          if (!contextMenu.track || contextMenu.rowIndex < 0) return;
+          handleRowDoubleClick(contextMenu.track, contextMenu.rowIndex);
+          closeContextMenu();
+        }}
+        onPlayNext={() => {
+          if (!contextMenu.track) return;
+          handlePlayNext(contextMenu.track);
+          closeContextMenu();
+        }}
+        onAppendToQueue={() => {
+          if (!contextMenu.track) return;
+          handleAppendToQueue(contextMenu.track);
+          closeContextMenu();
+        }}
+      />
     </div>
   );
 };

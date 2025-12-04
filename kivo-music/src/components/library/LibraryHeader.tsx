@@ -2,8 +2,8 @@
 import React from "react";
 import { PageHeader } from "../layout/PageHeader";
 import { KivoButton } from "../common/KivoButton";
-import { kivoTheme } from "../../styles/theme";
 import type { SortKey } from "../../library/libraryModel";
+import { useKivoTheme } from "../../styles/ThemeContext";
 
 export type LibraryViewMode = "tracks" | "albums" | "artists";
 
@@ -12,20 +12,27 @@ export interface LibraryHeaderProps {
   totalCount?: number;
   totalTracks?: number;
 
+  /** 当前视图模式 */
   viewMode: LibraryViewMode;
+  /** 当前排序方式 */
   sortKey: SortKey;
 
-  /** 搜索关键字：可以是 search 或 searchText */
+  /** 搜索关键字（推荐使用 search） */
   search?: string;
+  /** 兼容旧版本命名 */
   searchText?: string;
 
+  /** 搜索变更回调（推荐 onSearchChange） */
+  onSearchChange?: (value: string) => void;
+  /** 兼容旧命名：onSearchTextChange */
+  onSearchTextChange?: (value: string) => void;
+
+  /** 视图切换回调 */
   onViewModeChange: (mode: LibraryViewMode) => void;
+  /** 排序变更回调 */
   onSortKeyChange: (key: SortKey) => void;
 
-  /** 搜索变化：支持 onSearchChange / onSearchTextChange 任意一个 */
-  onSearchChange?: (text: string) => void;
-  onSearchTextChange?: (text: string) => void;
-
+  /** 播放控制 */
   onPlayAll: () => void;
   onShufflePlay: () => void;
 
@@ -49,10 +56,10 @@ const LibraryHeader: React.FC<LibraryHeaderProps> = (props) => {
     sortKey,
     search,
     searchText,
-    onViewModeChange,
-    onSortKeyChange,
     onSearchChange,
     onSearchTextChange,
+    onViewModeChange,
+    onSortKeyChange,
     onPlayAll,
     onShufflePlay,
     onImport,
@@ -64,10 +71,11 @@ const LibraryHeader: React.FC<LibraryHeaderProps> = (props) => {
     onClear,
   } = props;
 
-  const { colors, radius, spacing } = kivoTheme;
+  const { theme } = useKivoTheme();
+  const { colors, radius, spacing } = theme;
 
   // 统一曲目数量
-  const total =
+  const resolvedTotal =
     typeof totalTracks === "number"
       ? totalTracks
       : typeof totalCount === "number"
@@ -112,6 +120,7 @@ const LibraryHeader: React.FC<LibraryHeaderProps> = (props) => {
     return (
       <button
         key={mode}
+        type="button"
         onClick={() => onViewModeChange(mode)}
         style={{
           flex: 1,
@@ -120,18 +129,18 @@ const LibraryHeader: React.FC<LibraryHeaderProps> = (props) => {
           borderWidth: 1,
           borderStyle: "solid",
           borderColor: isActive
-            ? "rgba(15, 23, 42, 0.1)"
-            : "rgba(255, 255, 255, 0.18)",
+            ? "rgba(15, 23, 42, 0.18)"
+            : "rgba(255, 255, 255, 0.16)",
           backgroundColor: isActive
-            ? "rgba(15, 23, 42, 0.16)"
-            : "rgba(15, 23, 42, 0.08)",
+            ? "rgba(15, 23, 42, 0.22)"
+            : "rgba(15, 23, 42, 0.10)",
           color: "#f9fafb",
           fontSize: 13,
           fontWeight: isActive ? 600 : 500,
           cursor: "pointer",
           borderRadius: radius.pill,
           boxShadow: isActive
-            ? "0 0 0 1px rgba(15, 23, 42, 0.3)"
+            ? "0 0 0 1px rgba(15, 23, 42, 0.35)"
             : "none",
           transition:
             "background-color 120ms ease-out, border-color 120ms ease-out, box-shadow 120ms ease-out",
@@ -142,7 +151,7 @@ const LibraryHeader: React.FC<LibraryHeaderProps> = (props) => {
     );
   };
 
-  // 注意：SortKey 在 libraryModel 里定义为 "default" | "title" | "artist" | "album" | "recent"
+  // SortKey: "default" | "title" | "artist" | "album" | "recent"
   const sortLabelMap: Record<SortKey, string> = {
     default: "默认顺序",
     title: "标题",
@@ -279,7 +288,16 @@ const LibraryHeader: React.FC<LibraryHeaderProps> = (props) => {
     </>
   );
 
-  const extra = <>共 {total} 首已扫描的本地曲目</>;
+  const extra = (
+    <span
+      style={{
+        fontSize: 13,
+        color: colors.textMutedOnLight,
+      }}
+    >
+      共 {resolvedTotal} 首歌曲
+    </span>
+  );
 
   return (
     <PageHeader

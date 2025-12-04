@@ -1,5 +1,5 @@
 // src/pages/SettingsPage.tsx
-import React, { useState } from "react";
+import { useState } from "react";
 import { GeneralSettingsPanel } from "../components/settings/GeneralSettingsPanel";
 import { CoverCachePanel } from "../components/settings/CoverCachePanel";
 import { DeveloperSettingsPanel } from "../components/settings/DeveloperSettingsPanel";
@@ -56,23 +56,18 @@ export default function SettingsPage() {
           display: "flex",
           flex: 1,
           minHeight: 0,
-          borderRadius: 12,
-          border: "1px solid rgba(255,255,255,0.06)",
-          overflow: "hidden",
+          gap: 12,
         }}
       >
         {/* 左侧 Tab 列表 */}
         <div
           style={{
-            width: 160,
-            borderRight: "1px solid rgba(255,255,255,0.06)",
+            width: 200,
+            borderRadius: 12,
             padding: 8,
+            backgroundColor: "rgba(15,23,42,0.9)",
+            border: "1px solid rgba(148,163,184,0.6)",
             boxSizing: "border-box",
-            display: "flex",
-            flexDirection: "column",
-            gap: 4,
-            background:
-              "linear-gradient(180deg, rgba(0,0,0,0.4), rgba(0,0,0,0.7))",
           }}
         >
           <div
@@ -105,9 +100,8 @@ export default function SettingsPage() {
                     backgroundColor: isActive
                       ? "rgba(255,255,255,0.12)"
                       : "transparent",
-                    color: isActive ? "#fff" : "#ccc",
-                    transition:
-                      "background-color 0.12s ease-out, color 0.12s ease-out",
+                    color: isActive ? "#f9fafb" : "#cbd5f5",
+                    marginBottom: 2,
                   }}
                 >
                   {tabLabels[tab]}

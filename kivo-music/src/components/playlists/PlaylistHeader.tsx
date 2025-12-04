@@ -1,6 +1,8 @@
 // src/components/playlists/PlaylistHeader.tsx
 import React from "react";
-import { kivoTheme } from "../../styles/theme";
+import type { PlayerTrack } from "../../store/player";
+import { useKivoTheme } from "../../styles/ThemeContext";
+import { KivoButton } from "../common/KivoButton";
 
 export type PlaylistTabKey =
   | "queue"
@@ -15,16 +17,31 @@ export interface PlaylistTabInfo {
   count: number;
 }
 
-interface PlaylistHeaderProps {
+export interface PlaylistHeaderProps {
+  /** 当前激活的 Tab */
   activeTab: PlaylistTabKey;
+  /** Tab 列表（包含 key / label / count） */
   tabs: PlaylistTabInfo[];
-  onChangeTab: (key: PlaylistTabKey) => void;
+  /** 切换 Tab 时回调 */
+  onChangeTab: (tab: PlaylistTabKey) => void;
+  /** 清空当前播放队列 */
   onClearQueue: () => void;
-  currentTrack: any | null;
+  /** 当前正在播放的曲目（可选） */
+  currentTrack?: PlayerTrack | null;
 }
 
-const { radius, spacing } = kivoTheme;
-
+/**
+ * 播放列表 & 智能列表头部
+ *
+ * - 显示当前曲目总数说明文案
+ * - 展示正在播放的小卡片
+ * - 提供 Tab 切换（当前队列 / 最近添加 / 最近播放 / 常常播放 / 喜欢的歌曲）
+ * - 提供“清空当前播放队列”操作
+ *
+ * 注意：
+ * - 所有颜色、圆角、间距统一从 theme 中取；
+ * - 样式中只使用 backgroundColor，不与 background 混用。
+ */
 const PlaylistHeader: React.FC<PlaylistHeaderProps> = ({
   activeTab,
   tabs,
@@ -32,126 +49,156 @@ const PlaylistHeader: React.FC<PlaylistHeaderProps> = ({
   onClearQueue,
   currentTrack,
 }) => {
-  const totalCount =
-    tabs.find((t) => t.key === "queue")?.count ?? 0;
+  const { theme } = useKivoTheme();
+  const { colors, radius, spacing } = theme;
 
-  const description = `根据“当前队列 / 最近添加 / 最近播放 / 最常播放 / 喜欢的歌曲”等模式，从当前曲目集合生成智能播放列表。目前共有 ${totalCount} 首曲目可供排列组合。`;
+  const totalCount = tabs.find((t) => t.key === "queue")?.count ?? 0;
+
+  const description = `根据“当前队列 / 最近添加 / 最近播放 / 常常播放 / 喜欢的歌曲”等模式，从当前曲目集合生成智能播放列表。目前共有 ${totalCount} 首曲目可供排列组合。`;
 
   const currentTitle =
-    currentTrack?.title ??
-    currentTrack?.name ??
-    currentTrack?.fileName ??
-    "暂无正在播放";
+    currentTrack?.title ||
+    // 兼容可能存在的 name 字段
+    // @ts-expect-error 兼容旧数据结构
+    currentTrack?.name ||
+    "当前没有正在播放的歌曲";
 
-  const currentArtist = currentTrack?.artist ?? "未知艺人";
+  const currentArtist =
+    currentTrack?.artist ||
+    // @ts-expect-error 兼容旧数据结构
+    currentTrack?.artistName ||
+    "选择一首歌开始播放，或从任意列表中双击添加到队列";
+
+  const containerStyle: React.CSSProperties = {
+    padding: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomStyle: "solid",
+    borderBottomColor: colors.borderSubtle,
+    display: "flex",
+    flexDirection: "column",
+    gap: spacing.md,
+  };
+
+  const heroStyle: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "stretch",
+    gap: spacing.lg,
+    padding: spacing.lg,
+    borderRadius: radius.xl,
+    backgroundColor: "#0f172a", // 深底色
+    backgroundImage:
+      "radial-gradient(circle at 0% 0%, rgba(59,130,246,0.6), transparent 55%), radial-gradient(circle at 120% 120%, rgba(56,189,248,0.35), transparent 55%)",
+    backgroundRepeat: "no-repeat",
+    backgroundSize: "cover",
+    color: "#e5e7eb",
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: 22,
+    fontWeight: 650,
+    letterSpacing: 0.3,
+    marginBottom: 4,
+  };
+
+  const descStyle: React.CSSProperties = {
+    fontSize: 13,
+    color: "rgba(226,232,240,0.86)",
+    maxWidth: 520,
+    lineHeight: 1.6,
+  };
+
+  const currentCardStyle: React.CSSProperties = {
+    minWidth: 220,
+    maxWidth: 280,
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: "rgba(15,23,42,0.82)",
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderColor: "rgba(148,163,184,0.55)",
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+  };
+
+  const currentTitleStyle: React.CSSProperties = {
+    fontSize: 14,
+    fontWeight: 600,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  };
+
+  const currentArtistStyle: React.CSSProperties = {
+    fontSize: 12,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    color: "rgba(148,163,184,0.95)",
+  };
+
+  const badgeStyle: React.CSSProperties = {
+    alignSelf: "flex-start",
+    fontSize: 11,
+    padding: "2px 8px",
+    borderRadius: radius.pill,
+    backgroundColor: "rgba(15,23,42,0.75)",
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderColor: "rgba(148,163,184,0.6)",
+  };
+
+  const tabsRowStyle: React.CSSProperties = {
+    marginTop: spacing.md,
+    display: "flex",
+    alignItems: "center",
+    gap: spacing.md,
+  };
+
+  const tabsContainerStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: spacing.sm,
+    padding: 4,
+    borderRadius: radius.pill,
+    backgroundColor: "rgba(15,23,42,0.04)",
+  };
 
   return (
-    <div
-      style={{
-        borderRadius: radius.xl,
-        padding: 24,
-        background:
-          "linear-gradient(135deg, rgba(59,130,246,1) 0%, rgba(96,165,250,1) 35%, rgba(56,189,248,1) 100%)",
-        color: "#ffffff",
-        boxShadow: "0 16px 40px rgba(15,23,42,0.35)",
-        display: "flex",
-        flexDirection: "column",
-        gap: 16,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 16,
-        }}
-      >
-        <div style={{ flex: 1, minWidth: 0 }}>
+    <header style={containerStyle}>
+      {/* 顶部智能列表说明 + 当前播放卡片 */}
+      <div style={heroStyle}>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={titleStyle}>播放列表 & 智能列表</div>
+          <div style={descStyle}>{description}</div>
           <div
             style={{
-              fontSize: 22,
-              fontWeight: 700,
-              marginBottom: 6,
+              marginTop: 6,
+              fontSize: 12,
+              color: "rgba(191,219,254,0.95)",
             }}
           >
-            播放列表 & 智能列表
-          </div>
-          <div
-            style={{
-              fontSize: 13,
-              opacity: 0.9,
-              lineHeight: 1.6,
-            }}
-          >
-            {description}
+            智能列表会优先考虑你的最近播放、播放次数和“喜欢的歌曲”等行为数据。
           </div>
         </div>
 
-        <div
-          style={{
-            minWidth: 260,
-            padding: 14,
-            borderRadius: 20,
-            background: "rgba(15,23,42,0.25)",
-            display: "flex",
-            flexDirection: "column",
-            gap: 4,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 12,
-              opacity: 0.85,
-            }}
-          >
-            正在播放：
-          </div>
-          <div
-            style={{
-              fontSize: 14,
-              fontWeight: 600,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {currentTitle}
-          </div>
-          <div
-            style={{
-              fontSize: 12,
-              opacity: 0.85,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {currentArtist}
-          </div>
+        <div style={currentCardStyle}>
+          <span style={badgeStyle}>正在播放</span>
+          <div style={currentTitleStyle}>{currentTitle}</div>
+          <div style={currentArtistStyle}>{currentArtist}</div>
         </div>
       </div>
 
-      {/* Tabs + 操作区 */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: spacing.md,
-          marginTop: 4,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            flexWrap: "wrap",
-          }}
-        >
+      {/* 底部：Tab 和“清空当前播放队列”按钮 */}
+      <div style={tabsRowStyle}>
+        <div style={tabsContainerStyle}>
           {tabs.map((tab) => {
             const isActive = tab.key === activeTab;
             return (
               <button
                 key={tab.key}
+                type="button"
                 onClick={() => onChangeTab(tab.key)}
                 style={{
                   padding: "6px 14px",
@@ -160,16 +207,16 @@ const PlaylistHeader: React.FC<PlaylistHeaderProps> = ({
                   borderWidth: 1,
                   borderStyle: "solid",
                   borderColor: isActive
-                    ? "rgba(255,255,255,0.95)"
-                    : "rgba(191,219,254,0.7)",
-                  background: isActive
-                    ? "rgba(15,23,42,0.16)"
-                    : "rgba(15,23,42,0.08)",
-                  color: "#ffffff",
-                  cursor: "pointer",
-                  display: "flex",
+                    ? "rgba(37,99,235,0.95)"
+                    : "rgba(148,163,184,0.75)",
+                  backgroundColor: isActive
+                    ? "rgba(37,99,235,0.18)"
+                    : "rgba(15,23,42,0.02)",
+                  color: isActive ? colors.textOnPrimary : colors.textOnLight,
+                  display: "inline-flex",
                   alignItems: "center",
                   gap: 6,
+                  cursor: "pointer",
                   whiteSpace: "nowrap",
                 }}
               >
@@ -179,7 +226,8 @@ const PlaylistHeader: React.FC<PlaylistHeaderProps> = ({
                     fontSize: 11,
                     padding: "0 6px",
                     borderRadius: 9999,
-                    background: "rgba(15,23,42,0.35)",
+                    backgroundColor: "rgba(15,23,42,0.18)",
+                    color: colors.textOnLight,
                   }}
                 >
                   {tab.count}
@@ -191,25 +239,12 @@ const PlaylistHeader: React.FC<PlaylistHeaderProps> = ({
 
         <div style={{ flex: 1 }} />
 
-        <button
-          onClick={onClearQueue}
-          style={{
-            padding: "6px 12px",
-            fontSize: 12,
-            borderRadius: 9999,
-            borderWidth: 1,
-            borderStyle: "solid",
-            borderColor: "rgba(248,113,113,0.95)",
-            background: "rgba(254,242,242,0.08)",
-            color: "#fee2e2",
-            cursor: "pointer",
-            whiteSpace: "nowrap",
-          }}
-        >
+        {/* 清空队列按钮 */}
+        <KivoButton variant="danger" size="sm" onClick={onClearQueue}>
           清空当前播放队列
-        </button>
+        </KivoButton>
       </div>
-    </div>
+    </header>
   );
 };
 

@@ -9,25 +9,32 @@ import { PhysicalSize } from "@tauri-apps/api/dpi";
 
 import { MainLayout } from "./components/layout/MainLayout";
 import type { TabKey } from "./navigation/navigationModel";
-import { kivoTheme } from "./styles/theme";
+import { KivoThemeProvider, useKivoTheme } from "./styles/ThemeContext";
 
-const rootStyle: React.CSSProperties = {
-  height: "100vh",
-  display: "flex",
-  flexDirection: "column",
-  background: kivoTheme.colors.appBackground,
-  color: kivoTheme.colors.textOnDark,
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
-};
+/**
+ * 内部真实 App 逻辑（Mini 模式 / 全局快捷键等）。
+ * 主题相关的东西通过 useKivoTheme 取当前 theme。
+ */
+const AppShell: React.FC = () => {
+  const { theme } = useKivoTheme();
 
-const App: React.FC = () => {
   const [tab, setTab] = useState<TabKey>("library");
   const [miniMode, setMiniMode] = useState(false);
 
   const togglePlay = usePlayerStore((s) => s.togglePlay);
   const next = usePlayerStore((s) => s.next);
   const prev = usePlayerStore((s) => s.prev);
+
+  // 根据当前 theme 生成根节点样式
+  const rootStyle: React.CSSProperties = {
+    height: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    background: theme.colors.appBackground,
+    color: theme.colors.textOnDark,
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
+  };
 
   // 进入 Mini 模式
   const enterMiniMode = useCallback(async () => {
@@ -97,10 +104,12 @@ const App: React.FC = () => {
             active.tagName === "TEXTAREA" ||
             (active as HTMLElement).isContentEditable)
         ) {
+          // 输入框内不拦截空格
           return;
         }
         e.preventDefault();
         togglePlay();
+        return;
       }
 
       // Ctrl + 右：下一首
@@ -133,6 +142,19 @@ const App: React.FC = () => {
         />
       )}
     </div>
+  );
+};
+
+/**
+ * 外层真正导出的 App 组件：
+ * - 包一层 KivoThemeProvider，给整个应用提供 theme 上下文。
+ * - 后续多皮肤切换只需要在 KivoThemeProvider 里切换 themeName 即可。
+ */
+const App: React.FC = () => {
+  return (
+    <KivoThemeProvider>
+      <AppShell />
+    </KivoThemeProvider>
   );
 };
 

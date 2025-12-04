@@ -1,6 +1,6 @@
 // src/components/common/KivoButton.tsx
 import React from "react";
-import { kivoTheme } from "../../styles/theme";
+import { useKivoTheme } from "../../styles/ThemeContext";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 type ButtonSize = "sm" | "md";
@@ -13,6 +13,16 @@ export interface KivoButtonProps
   iconRight?: React.ReactNode;
 }
 
+/**
+ * 通用按钮组件
+ *
+ * - variant: primary / secondary / ghost / danger
+ * - size: sm / md
+ * - iconLeft / iconRight: 左右图标插槽
+ *
+ * 这里刻意只使用 backgroundColor，不使用 background 简写，
+ * 以避免 React 关于 background/backgroundColor 的警告。
+ */
 export const KivoButton: React.FC<KivoButtonProps> = ({
   variant = "primary",
   size = "md",
@@ -20,83 +30,95 @@ export const KivoButton: React.FC<KivoButtonProps> = ({
   iconRight,
   children,
   style,
+  onMouseEnter,
+  onMouseLeave,
   ...rest
 }) => {
-  const { colors, radius, spacing } = kivoTheme;
+  const { theme } = useKivoTheme();
+  const { colors, radius, spacing } = theme;
 
-  const basePaddingX = size === "sm" ? spacing.md : spacing.lg;
-  const basePaddingY = size === "sm" ? spacing.xs : spacing.sm;
+  const paddingX = size === "sm" ? spacing.md : spacing.lg;
+  const paddingY = size === "sm" ? spacing.xs : spacing.sm;
   const fontSize = size === "sm" ? 12 : 14;
 
-  let background: string | undefined;
-  let borderColor: string | undefined;
-  let color = colors.textOnPrimary;
-  let hoverBackground: string | undefined;
-  let hoverBorderColor: string | undefined;
+  let baseBg: string;
+  let hoverBg: string;
+  let borderColor: string;
+  let hoverBorderColor: string;
+  let textColor: string;
 
   switch (variant) {
     case "primary":
-      background = colors.primary;
-      borderColor = "transparent";
-      hoverBackground = "#1d4ed8";
-      hoverBorderColor = borderColor;
+      baseBg = colors.primary;
+      hoverBg = "#1d4ed8";
+      borderColor = colors.primary;
+      hoverBorderColor = "#1d4ed8";
+      textColor = colors.textOnPrimary;
       break;
     case "secondary":
-      background = "rgba(15, 23, 42, 0.8)";
+      baseBg = "rgba(15, 23, 42, 0.25)";
+      hoverBg = "rgba(15, 23, 42, 0.5)";
       borderColor = colors.borderSubtle;
-      color = colors.textOnDark;
-      hoverBackground = "rgba(15, 23, 42, 1)";
       hoverBorderColor = colors.borderStrong;
+      textColor = colors.textOnDark;
       break;
     case "ghost":
-      background = "transparent";
-      borderColor = colors.borderSubtle;
-      color = colors.textOnDark;
-      hoverBackground = "rgba(15, 23, 42, 0.5)";
-      hoverBorderColor = colors.borderStrong;
+      baseBg = "transparent";
+      hoverBg = "rgba(15, 23, 42, 0.06)";
+      borderColor = "transparent";
+      hoverBorderColor = "rgba(148, 163, 184, 0.5)";
+      textColor = colors.textOnDark;
       break;
     case "danger":
-      background = "rgba(248, 113, 113, 0.1)";
+      baseBg = "rgba(248, 113, 113, 0.10)";
+      hoverBg = "rgba(248, 113, 113, 0.18)";
       borderColor = colors.danger;
-      color = colors.danger;
-      hoverBackground = "rgba(248, 113, 113, 0.2)";
       hoverBorderColor = colors.danger;
+      textColor = colors.danger;
       break;
+    default:
+      baseBg = colors.primary;
+      hoverBg = "#1d4ed8";
+      borderColor = colors.primary;
+      hoverBorderColor = "#1d4ed8";
+      textColor = colors.textOnPrimary;
   }
 
   const [isHover, setIsHover] = React.useState(false);
 
-  const resolvedBackground = isHover && hoverBackground ? hoverBackground : background;
-  const resolvedBorderColor = isHover && hoverBorderColor ? hoverBorderColor : borderColor;
+  const resolvedBg = !rest.disabled && isHover ? hoverBg : baseBg;
+  const resolvedBorder =
+    !rest.disabled && isHover ? hoverBorderColor : borderColor;
+
+  const handleMouseEnter: React.MouseEventHandler<HTMLButtonElement> = (e) => {
+    setIsHover(true);
+    onMouseEnter?.(e);
+  };
+
+  const handleMouseLeave: React.MouseEventHandler<HTMLButtonElement> = (e) => {
+    setIsHover(false);
+    onMouseLeave?.(e);
+  };
 
   return (
     <button
       {...rest}
-      onMouseEnter={(e) => {
-        setIsHover(true);
-        rest.onMouseEnter?.(e);
-      }}
-      onMouseLeave={(e) => {
-        setIsHover(false);
-        rest.onMouseLeave?.(e);
-      }}
+      type={rest.type ?? "button"}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        paddingLeft: basePaddingX,
-        paddingRight: basePaddingX,
-        paddingTop: basePaddingY,
-        paddingBottom: basePaddingY,
-        gap: 6,
-        fontSize,
-        fontWeight: 500,
+        padding: `${paddingY}px ${paddingX}px`,
         borderWidth: 1,
         borderStyle: "solid",
-        borderColor: resolvedBorderColor,
+        borderColor: resolvedBorder,
         borderRadius: radius.pill,
-        background: resolvedBackground,
-        color,
+        backgroundColor: resolvedBg, // ✅ 只用 backgroundColor
+        color: textColor,
+        fontSize,
+        fontWeight: 500,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
         cursor: rest.disabled ? "not-allowed" : "pointer",
         opacity: rest.disabled ? 0.5 : 1,
         whiteSpace: "nowrap",
@@ -112,3 +134,5 @@ export const KivoButton: React.FC<KivoButtonProps> = ({
     </button>
   );
 };
+
+export default KivoButton;

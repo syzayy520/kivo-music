@@ -1,57 +1,121 @@
 // src/components/playlists/PlaylistTable.tsx
 import React from "react";
 import { PlayerTrack } from "../../store/player";
-import { getTrackTitle, getTrackArtist, getTrackAlbum } from "../../library/libraryModel";
-import { playNext, appendToQueue, playFromQueue, getQueueSnapshot } from "../../playlists/playQueueModel";
+import {
+  getTrackTitle,
+  getTrackArtist,
+  getTrackAlbum,
+} from "../../library/libraryModel";
+import {
+  playNext,
+  appendToQueue,
+  playFromQueue,
+  getQueueSnapshot,
+} from "../../playlists/playQueueModel";
 
 interface PlaylistTableProps {
   tracks: PlayerTrack[];
+  /** 当前正在播放的索引（从 store 传进来，作为兜底） */
   currentIndex: number;
+  /** 生成稳定的 identity key，用于高亮、去重等 */
   makeIdentityKey: (track: any) => string;
 }
 
 /**
  * 播放列表页表格视图。
- * - 只负责“画列表 + 行内操作”：双击播放 / 下一首 / 加入队列。
- * - 具体从哪一组 tracks 来，由 PlaylistPage 决定。
+ *
+ * 设计原则：
+ * - 这里只负责 UI + 行为（双击播放 / 下一首 / 加入队列）。
+ * - 所有“真实队列”操作统一走 playQueueModel：
+ *   - playFromQueue / appendToQueue / playNext / getQueueSnapshot
+ * - 不直接操作 player store / playlist 数组。
  */
 const PlaylistTable: React.FC<PlaylistTableProps> = ({
   tracks,
   currentIndex,
   makeIdentityKey,
 }) => {
+  const safeTracks: PlayerTrack[] = Array.isArray(tracks)
+    ? (tracks as PlayerTrack[])
+    : [];
+
+  // 当前队列快照，用于判断“是否在队列中”“是否为当前播放曲目”
   const queueSnapshot = getQueueSnapshot();
-  const queueList = queueSnapshot.playlist;
+  const queuePlaylist = Array.isArray(queueSnapshot.playlist)
+    ? queueSnapshot.playlist
+    : [];
+  const queueCurrentIndex =
+    typeof queueSnapshot.currentIndex === "number" &&
+    queueSnapshot.currentIndex >= 0
+      ? queueSnapshot.currentIndex
+      : currentIndex;
 
-  const findIndexInQueue = (track: PlayerTrack): number => {
-    const key = makeIdentityKey(track);
-    if (!queueList || queueList.length === 0) return -1;
-    for (let i = 0; i < queueList.length; i += 1) {
-      if (makeIdentityKey(queueList[i]) === key) {
-        return i;
-      }
+  // 用 identity key 建一个“队列索引映射”，方便 O(1) 查找
+  const queueIndexByKey = new Map<string, number>();
+  queuePlaylist.forEach((t, i) => {
+    const key = makeIdentityKey(t);
+    if (key && !queueIndexByKey.has(key)) {
+      queueIndexByKey.set(key, i);
     }
-    return -1;
+  });
+
+  /** 双击行：如果在队列中 → playFromQueue；否则先 append 再从队列播放 */
+  const handleRowDoubleClick = (track: PlayerTrack): void => {
+    const identity = makeIdentityKey(track);
+    if (!identity) return;
+
+    let queueIndex =
+      queueIndexByKey.has(identity) && queueIndexByKey.get(identity) !== undefined
+        ? (queueIndexByKey.get(identity) as number)
+        : -1;
+
+    if (queueIndex < 0) {
+      // 不在当前队列：先追加，再从新队列中找到它并播
+      appendToQueue([track]);
+      const refreshed = getQueueSnapshot();
+      const list = Array.isArray(refreshed.playlist)
+        ? refreshed.playlist
+        : [];
+      queueIndex = list.findIndex(
+        (t) => makeIdentityKey(t) === identity,
+      );
+    }
+
+    if (queueIndex >= 0) {
+      playFromQueue(queueIndex);
+    }
   };
 
-  const handleRowDoubleClick = (track: PlayerTrack) => {
-    const idx = findIndexInQueue(track);
-    if (idx >= 0) {
-      playFromQueue(idx);
-    } else {
-      playNext([track]);
-    }
-  };
-
-  const handlePlayNext = (track: PlayerTrack) => {
+  /** 设为下一首播放（插入队列 currentIndex+1） */
+  const handlePlayNext = (track: PlayerTrack): void => {
     playNext([track]);
   };
 
-  const handleAppendToQueue = (track: PlayerTrack) => {
+  /** 追加到当前队列末尾 */
+  const handleAppendToQueue = (track: PlayerTrack): void => {
     appendToQueue([track]);
   };
 
-  const formatLastPlayed = (iso: string | null | undefined): string => {
+  const formatDuration = (
+    seconds: number | null | undefined,
+  ): string => {
+    if (seconds === null || seconds === undefined || Number.isNaN(seconds)) {
+      return "-";
+    }
+
+    const total = Math.floor(seconds);
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+
+    const mm = String(m).padStart(2, "0");
+    const ss = String(s).padStart(2, "0");
+
+    return `${mm}:${ss}`;
+  };
+
+  const formatLastPlayed = (
+    iso: string | null | undefined,
+  ): string => {
     if (!iso) return "-";
     const date = new Date(iso);
     if (Number.isNaN(date.getTime())) return "-";
@@ -66,240 +130,194 @@ const PlaylistTable: React.FC<PlaylistTableProps> = ({
     return `${y}/${m}/${d} ${hh}:${mm}:${ss}`;
   };
 
-  const headerCellBase: React.CSSProperties = {
-    padding: "8px 10px",
-    textAlign: "left",
-    fontWeight: 500,
-    fontSize: 12,
-    color: "#6b7280",
-    borderBottom: "1px solid #e5e7eb",
-    whiteSpace: "nowrap",
-  };
-
   return (
     <div
       style={{
-        flex: 1,
-        minHeight: 0,
+        width: "100%",
+        height: "100%",
         overflow: "auto",
-        background: "#ffffff",
-        borderRadius: 16,
-        boxShadow: "0 8px 24px rgba(15,23,42,0.08)",
+        borderRadius: 8,
+        borderWidth: 1,
+        borderStyle: "solid",
+        borderColor: "rgba(148,163,184,0.4)",
+        backgroundColor: "rgba(15,23,42,0.02)",
       }}
     >
       <table
         style={{
           width: "100%",
           borderCollapse: "collapse",
+          tableLayout: "fixed",
           fontSize: 13,
         }}
       >
         <thead>
           <tr
             style={{
-              background: "#f9fafb",
+              textAlign: "left",
+              userSelect: "none",
+              color: "#6b7280",
             }}
           >
-            <th
-              style={{
-                ...headerCellBase,
-                width: 48,
-                textAlign: "right",
-                paddingRight: 12,
-              }}
-            >
-              #
-            </th>
-            <th style={headerCellBase}>标题</th>
-            <th style={headerCellBase}>艺人</th>
-            <th style={headerCellBase}>专辑</th>
-            <th
-              style={{
-                ...headerCellBase,
-                textAlign: "right",
-                width: 80,
-              }}
-            >
-              播放次数
-            </th>
-            <th
-              style={{
-                ...headerCellBase,
-                width: 180,
-              }}
-            >
-              最近播放
-            </th>
-            <th
-              style={{
-                ...headerCellBase,
-                textAlign: "center",
-                width: 130,
-              }}
-            >
-              操作
-            </th>
+            <th style={{ width: 40, padding: "8px 12px" }}>#</th>
+            <th style={{ width: "28%", padding: "8px 12px" }}>标题</th>
+            <th style={{ width: "20%", padding: "8px 12px" }}>艺人</th>
+            <th style={{ width: "22%", padding: "8px 12px" }}>专辑</th>
+            <th style={{ width: 80, padding: "8px 12px" }}>播放次数</th>
+            <th style={{ width: 180, padding: "8px 12px" }}>最近播放</th>
+            <th style={{ width: 60, padding: "8px 12px" }}>喜欢</th>
+            <th style={{ width: 140, padding: "8px 12px" }}>操作</th>
           </tr>
         </thead>
         <tbody>
-          {tracks.length === 0 ? (
+          {safeTracks.length === 0 ? (
             <tr>
               <td
-                colSpan={7}
+                colSpan={8}
                 style={{
-                  padding: "40px 16px",
+                  padding: "16px 12px",
                   textAlign: "center",
-                  fontSize: 13,
                   color: "#9ca3af",
                 }}
               >
-                当前没有可显示的曲目。
+                当前列表暂无歌曲
               </td>
             </tr>
           ) : (
-            tracks.map((track, index) => {
-              const baseIndex = findIndexInQueue(track);
-              const isCurrent = baseIndex === currentIndex;
+            safeTracks.map((track, index) => {
+              const identity = makeIdentityKey(track);
+              const key =
+                identity ||
+                (track && (track as any).filePath) ||
+                `track-${index}`;
+
+              const queueIndex =
+                identity && queueIndexByKey.has(identity)
+                  ? (queueIndexByKey.get(identity) as number)
+                  : -1;
+
+              const isCurrent =
+                queueIndex >= 0 && queueIndex === queueCurrentIndex;
 
               const title = getTrackTitle(track as any);
               const artist = getTrackArtist(track as any);
               const album = getTrackAlbum(track as any);
-              const playCount = (track as any).playCount ?? 0;
-              const lastPlayedLabel = formatLastPlayed(
-                (track as any).lastPlayedAt,
+              const duration = formatDuration(
+                (track as any).duration ?? null,
               );
-
-              const filePath =
-                (track as any).filePath ??
-                (track as any).path ??
-                (track as any).location;
-              const idPart =
-                (track as any).id ??
-                (track as any).trackId ??
-                (filePath || title || "track");
-              const key = `${idPart}::${index}`;
+              const playCount = (track as any).playCount ?? 0;
+              const lastPlayed = formatLastPlayed(
+                (track as any).lastPlayedAt ?? null,
+              );
+              const isFavorite = !!(track as any).favorite;
 
               return (
                 <tr
                   key={key}
                   onDoubleClick={() => handleRowDoubleClick(track)}
                   style={{
-                    backgroundColor: isCurrent
-                      ? "rgba(37,99,235,0.06)"
-                      : index % 2 === 0
-                      ? "#ffffff"
-                      : "#f9fafb",
                     cursor: "pointer",
+                    backgroundColor: isCurrent
+                      ? "rgba(59,130,246,0.08)" // 当前播放高亮
+                      : index % 2 === 0
+                      ? "transparent"
+                      : "rgba(15,23,42,0.02)", // 轻微斑马纹
+                    transition: "background-color 120ms ease-out",
                   }}
                 >
-                  <td
-                    style={{
-                      padding: "6px 10px",
-                      textAlign: "right",
-                      fontVariantNumeric: "tabular-nums",
-                      color: isCurrent ? "#2563eb" : "#6b7280",
-                      borderBottom: "1px solid #f3f4f6",
-                    }}
-                  >
+                  <td style={{ padding: "6px 12px", color: "#6b7280" }}>
                     {index + 1}
                   </td>
                   <td
                     style={{
-                      padding: "6px 10px",
-                      maxWidth: 260,
+                      padding: "6px 12px",
                       whiteSpace: "nowrap",
-                      overflow: "hidden",
                       textOverflow: "ellipsis",
-                      borderBottom: "1px solid #f3f4f6",
+                      overflow: "hidden",
                     }}
                   >
                     {title}
                   </td>
                   <td
                     style={{
-                      padding: "6px 10px",
-                      maxWidth: 160,
+                      padding: "6px 12px",
                       whiteSpace: "nowrap",
-                      overflow: "hidden",
                       textOverflow: "ellipsis",
-                      borderBottom: "1px solid #f3f4f6",
-                      color: "#4b5563",
+                      overflow: "hidden",
                     }}
                   >
                     {artist}
                   </td>
                   <td
                     style={{
-                      padding: "6px 10px",
-                      maxWidth: 180,
+                      padding: "6px 12px",
                       whiteSpace: "nowrap",
-                      overflow: "hidden",
                       textOverflow: "ellipsis",
-                      borderBottom: "1px solid #f3f4f6",
-                      color: "#6b7280",
+                      overflow: "hidden",
                     }}
                   >
                     {album}
                   </td>
-                  <td
-                    style={{
-                      padding: "6px 10px",
-                      textAlign: "right",
-                      borderBottom: "1px solid #f3f4f6",
-                      fontVariantNumeric: "tabular-nums",
-                      color: "#4b5563",
-                    }}
-                  >
+                  <td style={{ padding: "6px 12px", textAlign: "right" }}>
                     {playCount}
                   </td>
                   <td
                     style={{
-                      padding: "6px 10px",
-                      borderBottom: "1px solid #f3f4f6",
-                      fontSize: 12,
-                      color: "#6b7280",
+                      padding: "6px 12px",
                       whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                      overflow: "hidden",
+                      color: "#6b7280",
                     }}
                   >
-                    {lastPlayedLabel}
+                    {lastPlayed}
                   </td>
                   <td
                     style={{
-                      padding: "6px 10px",
+                      padding: "6px 12px",
                       textAlign: "center",
-                      borderBottom: "1px solid #f3f4f6",
+                    }}
+                  >
+                    {isFavorite ? "★" : "☆"}
+                  </td>
+                  <td
+                    style={{
+                      padding: "6px 12px",
+                      whiteSpace: "nowrap",
                     }}
                   >
                     <button
+                      type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         handlePlayNext(track);
                       }}
                       style={{
-                        border: "none",
-                        background: "transparent",
-                        cursor: "pointer",
-                        fontSize: 12,
-                        color: "#2563eb",
+                        borderWidth: 0,
+                        padding: "2px 6px",
                         marginRight: 8,
+                        borderRadius: 999,
+                        fontSize: 12,
+                        cursor: "pointer",
+                        backgroundColor: "rgba(37,99,235,0.08)",
                       }}
-                      title="设为下一首播放"
                     >
-                      下一首
+                      设为下一首
                     </button>
                     <button
+                      type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleAppendToQueue(track);
                       }}
                       style={{
-                        border: "none",
-                        background: "transparent",
-                        cursor: "pointer",
+                        borderWidth: 0,
+                        padding: "2px 6px",
+                        borderRadius: 999,
                         fontSize: 12,
-                        color: "#6b7280",
+                        cursor: "pointer",
+                        backgroundColor: "rgba(15,23,42,0.04)",
                       }}
-                      title="添加到当前队列末尾"
                     >
                       加入队列
                     </button>

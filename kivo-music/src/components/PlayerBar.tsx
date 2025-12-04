@@ -1,6 +1,7 @@
+// src/components/PlayerBar.tsx
 import React, { useCallback } from "react";
 import { usePlayerStore } from "../store/player";
-import { kivoTheme } from "../styles/theme";
+import { useKivoTheme } from "../styles/ThemeContext";
 
 function formatTime(sec: number): string {
   if (!sec || !Number.isFinite(sec)) return "0:00";
@@ -10,7 +11,20 @@ function formatTime(sec: number): string {
   return `${m}:${rest.toString().padStart(2, "0")}`;
 }
 
+/**
+ * PlayerBar
+ *
+ * 全局底部播放器控制条：
+ * - 显示当前播放进度 / 时长；
+ * - 当前曲目信息；
+ * - 上一首 / 播放 / 下一首；
+ * - 音量调节。
+ *
+ * 样式完全走 theme，方便后续多皮肤切换。
+ */
 export const PlayerBar: React.FC = () => {
+  const { theme } = useKivoTheme();
+
   const playlist = usePlayerStore((s) => s.playlist);
   const currentIndex = usePlayerStore((s) => s.currentIndex);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
@@ -26,12 +40,15 @@ export const PlayerBar: React.FC = () => {
   const setVolume = usePlayerStore((s) => s.setVolume);
 
   const currentTrack =
-    currentIndex != null && currentIndex >= 0 && playlist
+    currentIndex != null &&
+    currentIndex >= 0 &&
+    Array.isArray(playlist) &&
+    currentIndex < playlist.length
       ? playlist[currentIndex]
       : undefined;
 
   const handleTogglePlay = useCallback(() => {
-    if (!playlist || playlist.length === 0) return;
+    if (!playlist || !Array.isArray(playlist) || playlist.length === 0) return;
 
     if (currentIndex == null || currentIndex < 0) {
       playTrack(0);
@@ -41,38 +58,58 @@ export const PlayerBar: React.FC = () => {
     togglePlay();
   }, [playlist, currentIndex, playTrack, togglePlay]);
 
-  const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const v = Number(e.target.value);
-    if (!Number.isFinite(v)) return;
-    seek(v);
-  };
+  const handleSeekChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const v = Number(e.target.value);
+      if (!Number.isFinite(v)) return;
+      seek(v);
+    },
+    [seek],
+  );
 
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const v = Number(e.target.value);
-    if (!Number.isFinite(v)) return;
-    setVolume(v);
-  };
+  const handleVolumeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const v = Number(e.target.value);
+      if (!Number.isFinite(v)) return;
+      setVolume(v);
+    },
+    [setVolume],
+  );
 
-  const safeDuration = Number.isFinite(duration) && duration > 0 ? duration : 0;
+  const safeDuration =
+    Number.isFinite(duration) && duration > 0 ? duration : 0;
   const safePosition =
     Number.isFinite(currentTime) && currentTime > 0
-      ? Math.min(currentTime, safeDuration)
+      ? Math.min(currentTime, safeDuration || 0)
       : 0;
 
+  const barStyle: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    gap: theme.spacing.xs,
+    fontSize: 12,
+    padding: `${theme.spacing.sm}px ${theme.spacing.lg}px`,
+    background: "rgba(15, 23, 42, 0.96)",
+    color: theme.colors.textOnDark,
+    backdropFilter: "blur(16px)",
+  };
+
+  const metaTextStyle: React.CSSProperties = {
+    fontSize: 11,
+    color: theme.colors.textMutedOnDark,
+  };
+
+  const controlButtonStyle: React.CSSProperties = {
+    border: "none",
+    background: "transparent",
+    cursor: "pointer",
+    fontSize: 16,
+    padding: "0 4px",
+    color: theme.colors.textOnDark,
+  };
+
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: kivoTheme.spacing.xs,
-        fontSize: 12,
-        padding: `${kivoTheme.spacing.sm}px ${kivoTheme.spacing.lg}px`,
-        borderTop: `1px solid ${kivoTheme.colors.borderSubtle}`,
-        background: "rgba(15, 23, 42, 0.96)",
-        color: kivoTheme.colors.textOnDark,
-        backdropFilter: "blur(16px)",
-      }}
-    >
+    <div style={barStyle}>
       {/* 进度条 */}
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <span style={{ minWidth: 40, textAlign: "right" }}>
@@ -87,17 +124,34 @@ export const PlayerBar: React.FC = () => {
           onChange={handleSeekChange}
           style={{ flex: 1 }}
         />
-        <span style={{ minWidth: 40 }}>{formatTime(safeDuration)}</span>
+        <span style={{ minWidth: 40, textAlign: "left" }}>
+          {formatTime(safeDuration)}
+        </span>
       </div>
 
       {/* 歌曲信息 + 播放控制 + 音量 */}
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         {/* 歌曲信息 */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13 }}>
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: 500,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
             {currentTrack ? currentTrack.title : "未选择歌曲"}
           </div>
-          <div style={{ fontSize: 11, color: "#6b7280" }}>
+          <div
+            style={{
+              ...metaTextStyle,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
             {currentTrack ? currentTrack.artist ?? "未知艺人" : "未知艺人"}
           </div>
         </div>
@@ -110,14 +164,30 @@ export const PlayerBar: React.FC = () => {
             gap: 4,
           }}
         >
-          <button onClick={prev}>⏮</button>
+          <button
+            onClick={prev}
+            style={controlButtonStyle}
+            title="上一首"
+            type="button"
+          >
+            ⏮
+          </button>
           <button
             onClick={handleTogglePlay}
-            style={{ fontSize: 14, padding: "0 6px" }}
+            style={{ ...controlButtonStyle, fontSize: 18 }}
+            title={isPlaying ? "暂停" : "播放"}
+            type="button"
           >
             {isPlaying ? "⏸" : "▶️"}
           </button>
-          <button onClick={next}>⏭</button>
+          <button
+            onClick={next}
+            style={controlButtonStyle}
+            title="下一首"
+            type="button"
+          >
+            ⏭
+          </button>
         </div>
 
         {/* 音量 */}
