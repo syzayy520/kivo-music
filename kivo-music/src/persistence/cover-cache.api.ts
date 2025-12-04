@@ -1,485 +1,340 @@
 // src/persistence/cover-cache.api.ts
+import { exists, copyFile, readDir, size } from "@tauri-apps/plugin-fs";
+import { dirname, extname, join } from "@tauri-apps/api/path";
+
 import {
-  copyFile,
-  exists,
-  readDir,
-  remove,
-  size,
-} from "@tauri-apps/plugin-fs";
-import { basename, dirname, extname, join } from "@tauri-apps/api/path";
-import { loadSettings } from "./SettingsPersistence";
+  ensureCoverCacheDirExists,
+  getCoverCacheDirPath,
+} from "./cover-cache.files";
 import {
-  KivoTrackLike,
-  FolderCoverRecord,
-  CoverCacheStats,
-  BrokenCoverCleanupResult,
-  FOLDER_COVER_CANDIDATES,
-  hashString,
-  formatBytes,
-  getTrackKey,
-  getTrackFilePath,
-} from "./cover-cache.index";
-import {
-  ensureDirExists,
-  getCoverCacheDir as getCoverCacheDirInternal,
   loadCoverIndex,
   saveCoverIndex,
   loadFolderCoverIndex,
   saveFolderCoverIndex,
-} from "./cover-cache.files";
+  cleanupBrokenCoverEntries,
+} from "./cover-cache.index";
+import type { FolderCoverIndex } from "./cover-cache.index";
 
-/**
- * 预热封面缓存系统：
- * - 确保封面缓存目录存在；
- * - 预读 covers.json / folder-covers.json。
- */
-export async function ensureCoverCacheReady(): Promise<void> {
-  const cacheDir = await getCoverCacheDirInternal();
-  await ensureDirExists(cacheDir);
-  await Promise.all([
-    loadCoverIndex(cacheDir),
-    loadFolderCoverIndex(cacheDir),
-  ]);
+// ------------ 类型 ------------
+
+export interface KivoTrackLike {
+  trackId?: string | number;
+  id?: string | number;
+  filePath?: string;
+  path?: string;
+  location?: string;
+  coverPath?: string;
+  cover?: string;
+  [key: string]: unknown;
 }
 
-/**
- * 对外暴露的封面缓存目录
- */
-export async function getCoverCacheDir(): Promise<string> {
-  return getCoverCacheDirInternal();
+export interface CoverCacheStats {
+  cacheDir: string;
+  fileCount: number;
+  totalBytes: number;
+  humanReadableSize: string;
+  trackEntries: number;
+  folderEntries: number;
 }
 
-/**
- * 把一张图片复制到封面缓存目录，并在 covers.json 中记录
- * 返回缓存后的文件绝对路径
- */
-export async function setCoverForTrack(
-  track: KivoTrackLike,
-  sourcePath: string,
-): Promise<string> {
-  const cacheDir = await getCoverCacheDirInternal();
-  await ensureDirExists(cacheDir);
+const FOLDER_COVER_CANDIDATES = [
+  "cover.jpg",
+  "folder.jpg",
+  "folder.png",
+  "cover.png",
+  "front.jpg",
+  "front.png",
+  "album.jpg",
+  "album.png",
+];
 
-  const ext = await extname(sourcePath);
-  const trackKey = getTrackKey(track);
-  const baseName = (await basename(sourcePath)) || "cover";
-  const hash = hashString(`${trackKey}:${sourcePath}:${Date.now()}`);
-  const fileName = `${hash}-${baseName}${ext || ".jpg"}`;
-  const destPath = await join(cacheDir, fileName);
+// ------------ 内部工具 ------------
 
-  try {
-    await copyFile(sourcePath, destPath);
-  } catch (error) {
-    console.error("[CoverCache] copyFile 失败:", { sourcePath, destPath }, error);
-    throw error;
+function hashString(input: string): string {
+  let hash = 0;
+  if (!input.length) return "0";
+  for (let i = 0; i < input.length; i++) {
+    const chr = input.charCodeAt(i);
+    hash = (hash << 5) - hash + chr;
+    hash |= 0;
   }
-
-  const index = await loadCoverIndex(cacheDir);
-  index[trackKey] = {
-    trackId: trackKey,
-    sourcePath,
-    cachedPath: destPath,
-    updatedAt: new Date().toISOString(),
-  };
-  await saveCoverIndex(index, cacheDir);
-
-  return destPath;
+  return String(Math.abs(hash));
 }
 
-/**
- * 仅按 trackId 查询封面缓存，不做文件夹扫描
- */
-export async function getCachedCoverPath(
-  track: KivoTrackLike,
-): Promise<string | null> {
-  const cacheDir = await getCoverCacheDirInternal();
-  const index = await loadCoverIndex(cacheDir);
-  const trackKey = getTrackKey(track);
-  const record = index[trackKey];
+function getTrackKey(track: KivoTrackLike | null | undefined): string {
+  if (!track) return "null";
+  if (track.trackId != null) return String(track.trackId);
+  if (track.id != null) return String(track.id);
+  if (typeof track.filePath === "string") return `path:${track.filePath}`;
+  if (typeof track.path === "string") return `path:${track.path}`;
+  if (typeof track.location === "string") return `loc:${track.location}`;
+  return hashString(JSON.stringify(track));
+}
 
-  if (!record || !record.cachedPath) {
-    return null;
+function getTrackFilePath(
+  track: KivoTrackLike | null | undefined,
+): string | null {
+  if (!track) return null;
+  if (typeof track.filePath === "string" && track.filePath.length > 0) {
+    return track.filePath;
   }
-
-  try {
-    if (await exists(record.cachedPath)) {
-      return record.cachedPath;
-    }
-
-    // 文件不存在了，顺便清理索引
-    delete index[trackKey];
-    await saveCoverIndex(index, cacheDir);
-  } catch (error) {
-    console.error("[CoverCache] 校验 cachedPath 失败:", record.cachedPath, error);
+  if (typeof track.path === "string" && track.path.length > 0) {
+    return track.path;
   }
-
+  if (typeof track.location === "string" && track.location.length > 0) {
+    return track.location;
+  }
   return null;
 }
 
 /**
- * 在文件夹内扫描 cover.jpg / folder.jpg 等，
- * 结果会缓存在 folder-covers.json 中（包括“没有封面”的情况）
+ * 确保给定文件夹有一条 folder-cover 记录：
+ * - 若已有且 cachedPath 存在则直接返回；
+ * - 否则在目录内扫描常见封面文件并记录；
+ * - 若仍找不到，则记一条 cachedPath=null，避免下次反复扫描。
  */
-export async function getFolderCoverForTrack(
-  track: KivoTrackLike,
+async function ensureFolderCover(
+  folderPath: string,
+  folderIndex: FolderCoverIndex,
 ): Promise<string | null> {
-  const filePath = getTrackFilePath(track);
-  if (!filePath) return null;
-
-  const folderPath = await dirname(filePath);
-  const cacheDir = await getCoverCacheDirInternal();
-  const folderIndex = await loadFolderCoverIndex(cacheDir);
   const existing = folderIndex[folderPath];
 
-  // 如果已经知道“没有封面”，直接返回 null，避免反复扫描
-  if (existing && existing.hasCover === false) {
-    return null;
-  }
-
-  // 如果之前已经扫描过并且文件还在，直接返回
   if (existing && existing.cachedPath) {
     try {
       if (await exists(existing.cachedPath)) {
         return existing.cachedPath;
       }
-    } catch (error) {
-      console.warn(
-        "[CoverCache] 文件夹封面缓存失效，准备重新扫描:",
-        existing.cachedPath,
-        error,
-      );
+    } catch {
+      // ignore，后面会重新扫描
     }
   }
-
-  // 重新扫描文件夹
-  let candidateSource: string | null = null;
 
   try {
     const entries = await readDir(folderPath);
-    for (const entry of entries) {
-      if (!entry.isFile) continue;
-      const nameLower = (entry.name ?? "").toLowerCase();
-      if (FOLDER_COVER_CANDIDATES.includes(nameLower)) {
-        candidateSource = await join(folderPath, entry.name ?? "");
-        break;
+    const names = new Set(entries.map((e) => e.name));
+    for (const candidate of FOLDER_COVER_CANDIDATES) {
+      if (names.has(candidate)) {
+        const candidatePath = await join(folderPath, candidate);
+        if (await exists(candidatePath)) {
+          folderIndex[folderPath] = {
+            folderPath,
+            cachedPath: candidatePath,
+            updatedAt: new Date().toISOString(),
+          };
+          await saveFolderCoverIndex(folderIndex);
+          return candidatePath;
+        }
       }
     }
   } catch (error) {
-    console.error("[CoverCache] readDir 扫描文件夹封面失败:", folderPath, error);
+    console.warn(
+      "[CoverCache] 扫描文件夹封面失败:",
+      folderPath,
+      error,
+    );
   }
 
-  const now = new Date().toISOString();
-  const folderRecord: FolderCoverRecord = {
+  folderIndex[folderPath] = {
     folderPath,
     cachedPath: null,
-    hasCover: false,
-    updatedAt: now,
+    updatedAt: new Date().toISOString(),
   };
-
-  if (!candidateSource) {
-    // 这个文件夹没有封面，记一笔，以后就不再重复尝试
-    folderIndex[folderPath] = folderRecord;
-    await saveFolderCoverIndex(folderIndex, cacheDir);
-    return null;
-  }
-
-  // 找到了候选封面，复制到缓存目录
-  const baseName = await basename(candidateSource);
-  const ext = await extname(candidateSource);
-  const hash = hashString(folderPath);
-  const destFileName = `${hash}-${baseName}${ext || ".jpg"}`;
-  const destPath = await join(cacheDir, destFileName);
-
-  try {
-    if (!(await exists(destPath))) {
-      await copyFile(candidateSource, destPath);
-    }
-  } catch (error) {
-    console.error(
-      "[CoverCache] 复制文件夹封面失败:",
-      { candidateSource, destPath },
-      error,
-    );
-    // 扫描到了但复制失败，不缓存，防止死循环
-    folderIndex[folderPath] = folderRecord;
-    await saveFolderCoverIndex(folderIndex, cacheDir);
-    return null;
-  }
-
-  // 更新文件夹索引
-  folderRecord.cachedPath = destPath;
-  folderRecord.hasCover = true;
-  folderRecord.updatedAt = now;
-  folderIndex[folderPath] = folderRecord;
-  await saveFolderCoverIndex(folderIndex, cacheDir);
-
-  // 给当前 track 也建一条 Track 索引，统一走 covers.json
-  const trackKey = getTrackKey(track);
-  const coverIndex = await loadCoverIndex(cacheDir);
-  coverIndex[trackKey] = {
-    trackId: trackKey,
-    sourcePath: candidateSource,
-    cachedPath: destPath,
-    updatedAt: now,
-  };
-  await saveCoverIndex(coverIndex, cacheDir);
-
-  return destPath;
+  await saveFolderCoverIndex(folderIndex);
+  return null;
 }
 
-/**
- * 统一的封面解析函数：
- * 1. 先用 trackId 在 covers.json 里找；
- * 2. 再看设置里是否允许“文件夹自动封面”，如果允许再按文件夹扫描；
- */
-export async function resolveCoverPathForTrack(
+// ------------ 对外 API ------------
+
+/** 封面缓存目录（会确保存在） */
+export async function getCoverCacheDir(): Promise<string> {
+  return getCoverCacheDirPath();
+}
+
+/** 确保封面缓存目录和两个索引文件都准备好。 */
+export async function ensureCoverCacheReady(): Promise<void> {
+  await ensureCoverCacheDirExists();
+  await saveCoverIndex({});
+  await saveFolderCoverIndex({});
+}
+
+/** 根据 track 在 covers.json 中查找已缓存的封面。 */
+export async function getCachedCoverPath(
   track: KivoTrackLike,
 ): Promise<string | null> {
-  // 1. 先看 track 级缓存
-  const byTrack = await getCachedCoverPath(track);
-  if (byTrack) return byTrack;
+  const key = getTrackKey(track);
+  const index = await loadCoverIndex();
+  const rec = index[key];
+  if (!rec || !rec.cachedPath) return null;
 
-  // 2. 再根据设置决定要不要用文件夹自动封面
-  let enableFolderAutoCover = true;
   try {
-    const settings = await loadSettings();
-    // 老版本 settings 里可能没有 enableFolderAutoCover 字段，这里兜底 true
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    enableFolderAutoCover = (settings as any).enableFolderAutoCover ?? true;
+    if (await exists(rec.cachedPath)) {
+      return rec.cachedPath;
+    }
   } catch (error) {
-    console.error(
-      "[CoverCache] 读取设置失败，默认启用文件夹自动封面:",
+    console.warn(
+      "[CoverCache] 检查缓存封面文件失败，将忽略并删除索引:",
+      rec.cachedPath,
       error,
     );
   }
 
-  if (!enableFolderAutoCover) {
-    return null;
-  }
-
-  const byFolder = await getFolderCoverForTrack(track);
-  if (byFolder) return byFolder;
-
+  delete index[key];
+  await saveCoverIndex(index);
   return null;
 }
 
 /**
- * 统计当前封面缓存的信息（文件数量 / 大小 / 索引条数）
+ * 为某个 track 设置封面：
+ * - 把源文件复制到封面缓存目录
+ * - 在 covers.json 中记录索引
+ * - 返回缓存文件路径
  */
-export async function getCoverCacheStats(): Promise<CoverCacheStats> {
-  const cacheDir = await getCoverCacheDirInternal();
-  await ensureDirExists(cacheDir);
+export async function setCoverForTrack(
+  track: KivoTrackLike,
+  sourcePath: string,
+): Promise<string | null> {
+  const cacheDir = await ensureCoverCacheDirExists();
+  const index = await loadCoverIndex();
 
-  let fileCount = 0;
-  let totalBytes = 0;
+  const key = getTrackKey(track);
+  const ext = extname(sourcePath) || ".jpg";
+  const fileName = `cover-${hashString(key)}${ext}`;
+  const destPath = await join(cacheDir, fileName);
 
   try {
-    const entries = await readDir(cacheDir);
-    for (const entry of entries) {
-      if (!entry.isFile) continue;
-      const fullPath = await join(cacheDir, entry.name ?? "");
-      try {
-        const info = await size(fullPath);
-        const bytes =
-          typeof info === "number" ? info : (info as any).size ?? 0;
-        totalBytes += bytes;
-        fileCount += 1;
-      } catch (error) {
-        console.error("[CoverCache] 统计文件大小失败:", fullPath, error);
-      }
-    }
+    await copyFile(sourcePath, destPath);
   } catch (error) {
-    console.error("[CoverCache] 遍历缓存目录失败:", cacheDir, error);
+    console.error("[CoverCache] 复制封面文件失败:", {
+      sourcePath,
+      destPath,
+      error,
+    });
+    return null;
   }
 
-  const coverIndex = await loadCoverIndex(cacheDir);
-  const folderIndex = await loadFolderCoverIndex(cacheDir);
+  index[key] = {
+    trackKey: key,
+    cachedPath: destPath,
+    updatedAt: new Date().toISOString(),
+  };
+
+  await saveCoverIndex(index);
+  return destPath;
+}
+
+/**
+ * 综合解析一个 track 的封面路径：
+ * 1. track.coverPath / cover
+ * 2. covers.json 索引
+ * 3. 文件夹自动封面
+ */
+export async function resolveCoverPathForTrack(
+  track: KivoTrackLike,
+): Promise<string | null> {
+  if (typeof track.coverPath === "string" && track.coverPath.length > 0) {
+    try {
+      if (await exists(track.coverPath)) {
+        return track.coverPath;
+      }
+    } catch {
+      // ignore
+    }
+  }
+  if (typeof track.cover === "string" && track.cover.length > 0) {
+    try {
+      if (await exists(track.cover)) {
+        return track.cover;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  const cached = await getCachedCoverPath(track);
+  if (cached) return cached;
+
+  const filePath = getTrackFilePath(track);
+  if (filePath) {
+    const folder = await dirname(filePath);
+    const folderIndex = await loadFolderCoverIndex();
+    const folderCover = await ensureFolderCover(folder, folderIndex);
+    if (folderCover) {
+      return folderCover;
+    }
+  }
+
+  return null;
+}
+
+/** 统计封面缓存占用情况。 */
+export async function getCoverCacheStats(): Promise<CoverCacheStats> {
+  const dir = await getCoverCacheDirPath();
+  const coverIndex = await loadCoverIndex();
+  const folderIndex = await loadFolderCoverIndex();
+
+  const uniquePaths = new Set<string>();
+
+  for (const rec of Object.values(coverIndex)) {
+    if (rec.cachedPath) uniquePaths.add(rec.cachedPath);
+  }
+  for (const rec of Object.values(folderIndex)) {
+    if (rec.cachedPath) uniquePaths.add(rec.cachedPath);
+  }
+
+  let totalBytes = 0;
+
+  for (const p of uniquePaths) {
+    try {
+      const fileSize = await size(p);
+      totalBytes += Number(fileSize || 0);
+    } catch {
+      // 忽略单个文件错误
+    }
+  }
+
+  const fileCount = uniquePaths.size;
+  const humanReadableSize = formatBytes(totalBytes);
 
   return {
-    cacheDir,
+    cacheDir: dir,
     fileCount,
     totalBytes,
-    humanReadableSize: formatBytes(totalBytes),
+    humanReadableSize,
     trackEntries: Object.keys(coverIndex).length,
     folderEntries: Object.keys(folderIndex).length,
   };
 }
 
-/**
- * 清空当前封面缓存目录（仅磁盘文件 + 两个索引文件）
- * 不会动 kivo-library.json
- */
+/** 清空封面缓存索引（不删除图片本身）。 */
 export async function clearCoverCache(): Promise<void> {
-  const cacheDir = await getCoverCacheDirInternal();
-  await ensureDirExists(cacheDir);
-
-  try {
-    const entries = await readDir(cacheDir);
-    for (const entry of entries) {
-      if (!entry.isFile) continue;
-      const fullPath = await join(cacheDir, entry.name ?? "");
-      try {
-        await remove(fullPath);
-      } catch (error) {
-        console.error("[CoverCache] 删除缓存文件失败:", fullPath, error);
-      }
-    }
-  } catch (error) {
-    console.error("[CoverCache] 清空缓存目录时 readDir 失败:", cacheDir, error);
-  }
-
-  await saveCoverIndex({}, cacheDir);
-  await saveFolderCoverIndex({}, cacheDir);
+  await saveCoverIndex({});
+  await saveFolderCoverIndex({});
 }
 
-/**
- * 清理“损坏的封面索引”
- */
-export async function cleanupBrokenCoverEntries(): Promise<BrokenCoverCleanupResult> {
-  const cacheDir = await getCoverCacheDirInternal();
-  await ensureDirExists(cacheDir);
-
-  const coverIndex = await loadCoverIndex(cacheDir);
-  const folderIndex = await loadFolderCoverIndex(cacheDir);
-
-  let coverChecked = 0;
-  let coverRemoved = 0;
-  let folderChecked = 0;
-  let folderRemoved = 0;
-
-  // Track 封面索引
-  for (const key of Object.keys(coverIndex)) {
-    const rec = coverIndex[key];
-    coverChecked += 1;
-
-    try {
-      if (!(await exists(rec.cachedPath))) {
-        delete coverIndex[key];
-        coverRemoved += 1;
-      }
-    } catch (error) {
-      console.warn(
-        "[CoverCache] 检查封面文件失败，将移除索引:",
-        rec.cachedPath,
-        error,
-      );
-      delete coverIndex[key];
-      coverRemoved += 1;
-    }
-  }
-
-  // 文件夹封面索引
-  for (const key of Object.keys(folderIndex)) {
-    const rec = folderIndex[key];
-    folderChecked += 1;
-
-    if (!rec.cachedPath) {
-      // “无封面”的标记留着即可
-      continue;
-    }
-
-    try {
-      if (!(await exists(rec.cachedPath))) {
-        delete folderIndex[key];
-        folderRemoved += 1;
-      }
-    } catch (error) {
-      console.warn(
-        "[CoverCache] 检查文件夹封面失败，将移除索引:",
-        rec.cachedPath,
-        error,
-      );
-      delete folderIndex[key];
-      folderRemoved += 1;
-    }
-  }
-
-  await saveCoverIndex(coverIndex, cacheDir);
-  await saveFolderCoverIndex(folderIndex, cacheDir);
-
-  return {
-    coverChecked,
-    coverRemoved,
-    folderChecked,
-    folderRemoved,
-  };
-}
+/** 自检 & 清理坏记录（具体统计逻辑在 cover-cache.index.ts）。 */
+export { cleanupBrokenCoverEntries };
 
 /**
- * 把封面缓存从 oldDir 迁移到 newDir：
- * - 复制旧目录下所有文件到新目录
- * - 更新 covers.json / folder-covers.json 里的 cachedPath
- * - 尝试清理旧目录下的封面文件
+ * 旧版 → 新版 封面缓存结构迁移入口。
+ * 目前只是确保目录和索引文件存在；参数暂时保留以兼容调用方。
  */
 export async function migrateCoverCache(
-  oldDir: string,
-  newDir: string,
+  _oldDir?: string,
+  _newDir?: string,
 ): Promise<void> {
-  if (!oldDir || !newDir || oldDir === newDir) return;
+  await ensureCoverCacheReady();
+}
 
-  await ensureDirExists(newDir);
+// ------------ 工具：formatBytes ------------
 
-  const coverIndex = await loadCoverIndex(oldDir);
-  const folderIndex = await loadFolderCoverIndex(oldDir);
-
-  // 复制所有文件
-  try {
-    const entries = await readDir(oldDir);
-    for (const entry of entries) {
-      if (!entry.isFile) continue;
-      const srcPath = await join(oldDir, entry.name ?? "");
-      const destPath = await join(newDir, entry.name ?? "");
-      try {
-        if (!(await exists(destPath))) {
-          await copyFile(srcPath, destPath);
-        }
-      } catch (error) {
-        console.error(
-          "[CoverCache] 迁移封面文件失败:",
-          { srcPath, destPath },
-          error,
-        );
-      }
-    }
-  } catch (error) {
-    console.error("[CoverCache] 迁移封面时 readDir 失败:", oldDir, error);
+export function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let index = 0;
+  let value = bytes;
+  while (value >= 1024 && index < units.length - 1) {
+    value /= 1024;
+    index += 1;
   }
-
-  const replaceDir = (p: string | null): string | null => {
-    if (!p) return p;
-    if (p.startsWith(oldDir)) {
-      return newDir + p.slice(oldDir.length);
-    }
-    return p;
-  };
-
-  // 更新索引里的 cachedPath
-  for (const key of Object.keys(coverIndex)) {
-    const rec = coverIndex[key];
-    rec.cachedPath = replaceDir(rec.cachedPath) ?? rec.cachedPath;
-  }
-  for (const key of Object.keys(folderIndex)) {
-    const rec = folderIndex[key];
-    rec.cachedPath = replaceDir(rec.cachedPath) ?? rec.cachedPath;
-  }
-
-  // 将新的索引写到新目录下
-  await saveCoverIndex(coverIndex, newDir);
-  await saveFolderCoverIndex(folderIndex, newDir);
-
-  // 尝试清理旧目录中的文件（不强求全部成功）
-  try {
-    const entries = await readDir(oldDir);
-    for (const entry of entries) {
-      if (!entry.isFile) continue;
-      const fullPath = await join(oldDir, entry.name ?? "");
-      try {
-        await remove(fullPath);
-      } catch (error) {
-        console.warn("[CoverCache] 删除旧缓存文件失败:", fullPath, error);
-      }
-    }
-  } catch (error) {
-    console.error("[CoverCache] 清理旧封面目录失败:", oldDir, error);
-  }
+  return `${value.toFixed(1)} ${units[index]}`;
 }

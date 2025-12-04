@@ -1,19 +1,20 @@
 // src/persistence/cover-cache.index.ts
+import { exists } from "@tauri-apps/plugin-fs";
+import {
+  getIndexFilePath,
+  readJsonFile,
+  writeJsonFile,
+} from "./cover-cache.files";
 
-export interface KivoTrackLike {
-  id?: string | number;
-  trackId?: string | number;
-  filePath?: string;
-  path?: string;
-  // 其他字段随意
-  [key: string]: unknown;
-}
+// ==== 类型定义 ====
 
 export interface CoverRecord {
-  trackId: string;
-  sourcePath: string;
+  trackKey: string;
   cachedPath: string;
-  updatedAt: string;
+  // 这些字段是可选的，兼容旧结构 / 预留扩展
+  sourcePath?: string;
+  trackId?: string | number;
+  updatedAt?: string;
 }
 
 export type CoverIndex = Record<string, CoverRecord>;
@@ -21,21 +22,12 @@ export type CoverIndex = Record<string, CoverRecord>;
 export interface FolderCoverRecord {
   folderPath: string;
   cachedPath: string | null;
-  hasCover: boolean;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 export type FolderCoverIndex = Record<string, FolderCoverRecord>;
 
-export interface CoverCacheStats {
-  cacheDir: string;
-  fileCount: number;
-  totalBytes: number;
-  humanReadableSize: string;
-  trackEntries: number;
-  folderEntries: number;
-}
-
+// Settings 面板会用到的清理结果类型
 export interface BrokenCoverCleanupResult {
   coverChecked: number;
   coverRemoved: number;
@@ -43,72 +35,103 @@ export interface BrokenCoverCleanupResult {
   folderRemoved: number;
 }
 
-// 文件夹封面候选文件名
-export const FOLDER_COVER_CANDIDATES = [
-  "cover.jpg",
-  "cover.jpeg",
-  "cover.png",
-  "folder.jpg",
-  "folder.jpeg",
-  "folder.png",
-  "album.jpg",
-  "album.jpeg",
-  "album.png",
-];
+// ==== 索引读写 ====
 
-export function hashString(input: string): string {
-  let hash = 0;
-  if (!input.length) return "0";
-  for (let i = 0; i < input.length; i++) {
-    const chr = input.charCodeAt(i);
-    hash = (hash << 5) - hash + chr;
-    hash |= 0; // 32bit
+const COVERS_INDEX_FILE = "covers.json";
+const FOLDER_COVERS_INDEX_FILE = "folder-covers.json";
+
+export async function loadCoverIndex(): Promise<CoverIndex> {
+  const path = await getIndexFilePath(COVERS_INDEX_FILE);
+  const data = await readJsonFile<CoverIndex | CoverRecord[] | null>(
+    path,
+    {},
+  );
+
+  // 兼容老格式：如果是数组就转成 map
+  if (Array.isArray(data)) {
+    const map: CoverIndex = {};
+    for (const item of data as CoverRecord[]) {
+      if (!item || !item.trackKey) continue;
+      map[item.trackKey] = item;
+    }
+    return map;
   }
-  return Math.abs(hash).toString(16);
+
+  // 默认就是 Record<string, CoverRecord> 或空对象
+  return data ?? {};
 }
 
-export function formatBytes(bytes: number): string {
-  if (bytes <= 0) return "0 B";
-  const units = ["B", "KB", "MB", "GB", "TB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  const value = bytes / Math.pow(1024, i);
-  return `${value.toFixed(1)} ${units[i]}`;
+export async function saveCoverIndex(index: CoverIndex): Promise<void> {
+  const path = await getIndexFilePath(COVERS_INDEX_FILE);
+  await writeJsonFile(path, index);
 }
 
-/**
- * 把 track 映射成索引用的 key
- */
-export function getTrackKey(
-  track: KivoTrackLike | null | undefined,
-): string {
-  if (!track) return "";
-  if (track.trackId !== undefined && track.trackId !== null) {
-    return String(track.trackId);
+export async function loadFolderCoverIndex(): Promise<FolderCoverIndex> {
+  const path = await getIndexFilePath(FOLDER_COVERS_INDEX_FILE);
+  const data =
+    await readJsonFile<FolderCoverIndex | FolderCoverRecord[] | null>(
+      path,
+      {},
+    );
+
+  // 兼容老格式：数组形式
+  if (Array.isArray(data)) {
+    const map: FolderCoverIndex = {};
+    for (const item of data as FolderCoverRecord[]) {
+      if (!item || !item.folderPath) continue;
+      map[item.folderPath] = item;
+    }
+    return map;
   }
-  if (track.id !== undefined && track.id !== null) {
-    return String(track.id);
-  }
-  if (typeof track.filePath === "string") {
-    return `path:${track.filePath}`;
-  }
-  if (typeof track.path === "string") {
-    return `path:${track.path}`;
-  }
-  return hashString(JSON.stringify(track));
+
+  return data ?? {};
 }
 
-/**
- * 尝试从 track 中拿出真实文件路径
- */
-export function getTrackFilePath(
-  track: KivoTrackLike | null | undefined,
-): string | null {
-  if (!track) return null;
-  if (typeof track.filePath === "string" && track.filePath.length > 0) {
-    return track.filePath;
+export async function saveFolderCoverIndex(
+  index: FolderCoverIndex,
+): Promise<void> {
+  const path = await getIndexFilePath(FOLDER_COVERS_INDEX_FILE);
+  await writeJsonFile(path, index);
+}
+
+// ==== 自检 & 清理坏记录 ====
+
+export async function cleanupBrokenCoverEntries(): Promise<BrokenCoverCleanupResult> {
+  const coverIndex = await loadCoverIndex();
+  const folderIndex = await loadFolderCoverIndex();
+
+  let coverChecked = 0;
+  let coverRemoved = 0;
+  let folderChecked = 0;
+  let folderRemoved = 0;
+
+  // Track 封面索引：删除指向不存在文件的记录
+  for (const key of Object.keys(coverIndex)) {
+    const rec = coverIndex[key];
+    coverChecked += 1;
+    if (!rec.cachedPath || !(await exists(rec.cachedPath))) {
+      delete coverIndex[key];
+      coverRemoved += 1;
+    }
   }
-  if (typeof track.path === "string" && track.path.length > 0) {
-    return track.path;
+
+  // 文件夹封面索引：把失效的 cachedPath 置为 null（保留记录避免下次重复扫）
+  for (const key of Object.keys(folderIndex)) {
+    const rec = folderIndex[key];
+    folderChecked += 1;
+    if (rec.cachedPath && !(await exists(rec.cachedPath))) {
+      folderIndex[key] = { ...rec, cachedPath: null };
+      folderRemoved += 1;
+    }
   }
-  return null;
+
+  await saveCoverIndex(coverIndex);
+  await saveFolderCoverIndex(folderIndex);
+
+  return {
+    coverChecked,
+    coverRemoved,
+    folderChecked,
+    folderRemoved,
+  };
 }

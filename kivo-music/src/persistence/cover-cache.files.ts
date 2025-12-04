@@ -1,83 +1,67 @@
 // src/persistence/cover-cache.files.ts
-import { exists, mkdir } from "@tauri-apps/plugin-fs";
+import {
+  exists,
+  mkdir,
+  readTextFile,
+  writeTextFile,
+} from "@tauri-apps/plugin-fs";
 import { join } from "@tauri-apps/api/path";
 import { getEffectiveCoverCacheDir } from "./SettingsPersistence";
-import type { CoverIndex, FolderCoverIndex } from "./cover-cache.index";
-import { safeReadJson, safeWriteJson } from "./jsonSafe";
-import { log } from "../utils/log";
 
-export const COVERS_INDEX_FILE = "covers.json";
-export const FOLDER_COVERS_INDEX_FILE = "folder-covers.json";
+// 确保封面缓存目录存在，并返回绝对路径
+export async function ensureCoverCacheDirExists(): Promise<string> {
+  const dir = await getEffectiveCoverCacheDir();
+  if (!(await exists(dir))) {
+    await mkdir(dir, { recursive: true });
+  }
+  return dir;
+}
 
-/**
- * 确保目录存在
- */
-export async function ensureDirExists(dir: string): Promise<void> {
+// 获取封面缓存目录路径（会顺便确保目录存在）
+export async function getCoverCacheDirPath(): Promise<string> {
+  return ensureCoverCacheDirExists();
+}
+
+// 获取某个索引文件的完整路径（例如 covers.json）
+export async function getIndexFilePath(fileName: string): Promise<string> {
+  const dir = await ensureCoverCacheDirExists();
+  return await join(dir, fileName);
+}
+
+// 安全读取 JSON 文件；损坏或不存在时返回 fallback
+export async function readJsonFile<T>(
+  path: string,
+  fallback: T,
+): Promise<T> {
   try {
-    if (!(await exists(dir))) {
-      await mkdir(dir, { recursive: true });
+    if (!(await exists(path))) return fallback;
+    const raw = await readTextFile(path);
+    if (!raw.trim()) return fallback;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object") {
+      return parsed as T;
     }
   } catch (error) {
-    log.error("CoverCache", "ensureDirExists 失败", { dir, error });
+    console.warn("[CoverCacheFiles] 读取 JSON 失败，将使用默认值:", {
+      path,
+      error,
+    });
   }
+  return fallback;
 }
 
-async function getIndexFilePath(
-  fileName: string,
-  cacheDirOverride?: string,
-): Promise<string> {
-  const cacheDir = cacheDirOverride ?? (await getEffectiveCoverCacheDir());
-  await ensureDirExists(cacheDir);
-  return await join(cacheDir, fileName);
-}
-
-export async function loadCoverIndex(
-  cacheDirOverride?: string,
-): Promise<CoverIndex> {
-  const indexPath = await getIndexFilePath(
-    COVERS_INDEX_FILE,
-    cacheDirOverride,
-  );
-  return await safeReadJson<CoverIndex>(indexPath, {});
-}
-
-export async function saveCoverIndex(
-  index: CoverIndex,
-  cacheDirOverride?: string,
+// 安全写入 JSON 文件
+export async function writeJsonFile<T>(
+  path: string,
+  data: T,
 ): Promise<void> {
-  const indexPath = await getIndexFilePath(
-    COVERS_INDEX_FILE,
-    cacheDirOverride,
-  );
-  await safeWriteJson<CoverIndex>(indexPath, index ?? {});
-}
-
-export async function loadFolderCoverIndex(
-  cacheDirOverride?: string,
-): Promise<FolderCoverIndex> {
-  const indexPath = await getIndexFilePath(
-    FOLDER_COVERS_INDEX_FILE,
-    cacheDirOverride,
-  );
-  return await safeReadJson<FolderCoverIndex>(indexPath, {});
-}
-
-export async function saveFolderCoverIndex(
-  index: FolderCoverIndex,
-  cacheDirOverride?: string,
-): Promise<void> {
-  const indexPath = await getIndexFilePath(
-    FOLDER_COVERS_INDEX_FILE,
-    cacheDirOverride,
-  );
-  await safeWriteJson<FolderCoverIndex>(indexPath, index ?? {});
-}
-
-/**
- * 返回当前生效的封面缓存目录（会确保目录存在）
- */
-export async function getCoverCacheDir(): Promise<string> {
-  const cacheDir = await getEffectiveCoverCacheDir();
-  await ensureDirExists(cacheDir);
-  return cacheDir;
+  try {
+    const json = JSON.stringify(data ?? {}, null, 2);
+    await writeTextFile(path, json);
+  } catch (error) {
+    console.error("[CoverCacheFiles] 写入 JSON 失败:", {
+      path,
+      error,
+    });
+  }
 }

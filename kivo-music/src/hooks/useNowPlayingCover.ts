@@ -1,5 +1,5 @@
 // src/hooks/useNowPlayingCover.ts
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import type { KivoTrackLike } from "../persistence/CoverCache";
@@ -10,27 +10,27 @@ import {
 import { log } from "../utils/log";
 
 export interface UseNowPlayingCoverResult {
+  /** 实际解析出来的封面文件绝对路径（缓存或原始文件） */
   resolvedCoverPath: string | null;
+  /** 可以直接给 <img src=...> 用的地址（通过 convertFileSrc 包装过） */
   coverSrc: string | null;
+  /** 是否正在读取 / 写入封面 */
   isLoading: boolean;
+  /** 本次操作是否出现错误（不会阻断播放） */
   hasError: boolean;
+  /** 让用户从本地选择一张图片作为当前曲目的封面 */
   pickCover: () => Promise<void>;
 }
 
 /**
- * v3 版封面 Hook：
- * 1. 读封面：
- *    - 优先 track 自带 coverPath / cover / filePath / path
- *    - 否则走 CoverCache（covers.json + folder-covers.json）
- * 2. 选封面（pickCover）：
- *    - 打开文件选择器选一张图片
- *    - 调 setCoverForTrack 写入封面缓存目录 + 索引
- *    - 立即更新本地 state（resolvedCoverPath + coverSrc），UI 立刻刷新
+ * 负责“正在播放曲目”的封面解析 + 手动选择封面。
+ *
+ * 只依赖传入的 track / playlist / currentIndex，不直接操作全局 store。
  */
 export function useNowPlayingCover(
-  track: any,
-  _playlist: any[],
-  _currentIndex: number,
+  track: any | null,
+  playlist: any[],
+  currentIndex: number,
 ): UseNowPlayingCoverResult {
   const [resolvedCoverPath, setResolvedCoverPath] = useState<string | null>(
     null,
@@ -39,82 +39,84 @@ export function useNowPlayingCover(
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
 
-  // 稳定 key，避免 track 引用变化导致死循环
-  const trackKey = useMemo(() => {
-    if (!track) return "";
-    if (track.trackId != null) return String(track.trackId);
-    if (track.id != null) return String(track.id);
-    if (typeof track.filePath === "string") return `path:${track.filePath}`;
-    if (typeof track.path === "string") return `path:${track.path}`;
-    return JSON.stringify({
-      title: track?.title,
-      name: track?.name,
-      filePath: track?.filePath,
-      path: track?.path,
-    });
-  }, [track]);
+  // 如果上层传进来的 track 为空，就尝试用 playlist[currentIndex]
+  const effectiveTrack = useMemo(() => {
+    if (track) return track;
+    if (
+      Array.isArray(playlist) &&
+      playlist.length > 0 &&
+      currentIndex >= 0 &&
+      currentIndex < playlist.length
+    ) {
+      return playlist[currentIndex];
+    }
+    return null;
+  }, [track, playlist, currentIndex]);
 
-  // 统一的“读取当前封面路径”逻辑
+  // 把任何 track 映射成 KivoTrackLike，大多数字段只在 CoverCache 内部用到
+  const asKivoTrack = useCallback(
+    (value: any | null): KivoTrackLike | null => {
+      if (!value) return null;
+      const anyTrack = value as any;
+
+      const candidate: KivoTrackLike = {
+        id: anyTrack.id ?? anyTrack.trackId ?? anyTrack._id,
+        trackId: anyTrack.trackId ?? anyTrack.id,
+        filePath:
+          anyTrack.filePath ??
+          anyTrack.path ??
+          anyTrack.location ??
+          anyTrack.fullPath,
+        path: anyTrack.path ?? anyTrack.filePath,
+        location: anyTrack.location,
+        coverPath: anyTrack.coverPath ?? anyTrack.cover,
+        cover: anyTrack.cover,
+      };
+
+      return candidate;
+    },
+    [],
+  );
+
+  // 当“当前曲目”变化时，重新解析封面
   useEffect(() => {
     let cancelled = false;
 
-    async function run() {
+    async function loadCover() {
+      if (!effectiveTrack) {
+        setResolvedCoverPath(null);
+        setCoverSrc(null);
+        setHasError(false);
+        return;
+      }
+
       setIsLoading(true);
       setHasError(false);
 
       try {
-        if (!track) {
-          if (!cancelled) {
-            setResolvedCoverPath(null);
-            setCoverSrc(null);
-          }
+        const kivoTrack = asKivoTrack(effectiveTrack);
+        if (!kivoTrack) {
+          setResolvedCoverPath(null);
+          setCoverSrc(null);
           return;
         }
 
-        // 1. 先尝试 track 自带的封面路径
-        let path: string | null =
-          (track.coverPath as string | undefined) ??
-          (track.cover as string | undefined) ??
-          (track.filePath as string | undefined) ??
-          (track.path as string | undefined) ??
-          null;
+        const path = await resolveCoverPathForTrack(kivoTrack);
+        if (cancelled) return;
 
-        // 2. 如果没有，再走 CoverCache / 文件夹自动封面
-        if (!path) {
-          try {
-            path = await resolveCoverPathForTrack(
-              track as KivoTrackLike,
-            );
-          } catch (error) {
-            log.error(
-              "NowPlayingCover",
-              "resolveCoverPathForTrack 失败",
-              { error },
-            );
-          }
-        }
-
-        if (!path) {
-          if (!cancelled) {
-            setResolvedCoverPath(null);
-            setCoverSrc(null);
-          }
-          return;
-        }
-
-        const assetUrl = convertFileSrc(path);
-
-        if (!cancelled) {
+        if (path) {
           setResolvedCoverPath(path);
-          setCoverSrc(assetUrl);
-        }
-      } catch (error) {
-        log.error("NowPlayingCover", "解析封面失败", { error });
-        if (!cancelled) {
-          setHasError(true);
+          setCoverSrc(convertFileSrc(path));
+        } else {
           setResolvedCoverPath(null);
           setCoverSrc(null);
         }
+      } catch (error) {
+        if (cancelled) return;
+        log.error("NowPlayingCover", "加载封面失败", { error });
+        setResolvedCoverPath(null);
+        setCoverSrc(null);
+        setHasError(true);
       } finally {
         if (!cancelled) {
           setIsLoading(false);
@@ -122,22 +124,21 @@ export function useNowPlayingCover(
       }
     }
 
-    run();
+    void loadCover();
 
     return () => {
       cancelled = true;
     };
-  }, [trackKey, track]);
+  }, [effectiveTrack, asKivoTrack]);
 
   /**
-   * 选封面流程：
-   * 1. 没有当前曲目就直接返回
-   * 2. 用 plugin-dialog 打开文件选择器（只让选图片）
-   * 3. 调 setCoverForTrack(track, sourcePath) 写入缓存目录
-   * 4. 用 convertFileSrc 转成可用的 URL，立刻更新本地 state
+   * 让用户手动选择一张图片作为封面：
+   * - 只对当前曲目生效；
+   * - 会写入封面缓存，并更新 hook 内部状态。
    */
-  const pickCover = async () => {
-    if (!track) {
+  const pickCover = useCallback(async () => {
+    const targetTrack = asKivoTrack(effectiveTrack);
+    if (!targetTrack) {
       log.debug(
         "NowPlayingCover",
         "pickCover 被调用时没有当前曲目，忽略。",
@@ -151,6 +152,8 @@ export function useNowPlayingCover(
     try {
       const selected = await open({
         multiple: false,
+        directory: false,
+        title: "选择封面图片",
         filters: [
           {
             name: "图片文件",
@@ -160,44 +163,31 @@ export function useNowPlayingCover(
       });
 
       if (!selected) {
-        // 用户取消选择，直接返回即可
-        log.debug("NowPlayingCover", "pickCover 用户取消选择");
+        // 用户取消选择
         return;
       }
 
-      if (Array.isArray(selected)) {
-        log.warn(
-          "NowPlayingCover",
-          "pickCover 收到多个文件，仅取第一个。",
-        );
+      const sourcePath = String(selected);
+
+      const cachedPath = await setCoverForTrack(targetTrack, sourcePath);
+
+      if (!cachedPath) {
+        setHasError(true);
+        return;
       }
-
-      const sourcePath = Array.isArray(selected)
-        ? String(selected[0])
-        : String(selected);
-
-      const cachedPath = await setCoverForTrack(
-        track as KivoTrackLike,
-        sourcePath,
-      );
 
       const assetUrl = convertFileSrc(cachedPath);
 
       setResolvedCoverPath(cachedPath);
       setCoverSrc(assetUrl);
       setHasError(false);
-
-      log.info("NowPlayingCover", "封面设置成功", {
-        sourcePath,
-        cachedPath,
-      });
     } catch (error) {
       log.error("NowPlayingCover", "pickCover 失败", { error });
       setHasError(true);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [effectiveTrack, asKivoTrack]);
 
   return {
     resolvedCoverPath,

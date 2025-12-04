@@ -4,7 +4,11 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { usePlayerStore } from "../store/player";
 import { saveLibrary } from "../persistence/LibraryPersistence";
-import { setCoverForTrack, getCachedCoverPath } from "../persistence/CoverCache";
+import {
+  setCoverForTrack,
+  getCachedCoverPath,
+} from "../persistence/CoverCache";
+import { VisualizerPanel } from "../components/now-playing/VisualizerPanel";
 
 function formatTime(value: number | undefined): string {
   if (!value || !Number.isFinite(value)) return "0:00";
@@ -32,7 +36,9 @@ const NowPlayingPage: React.FC = () => {
   const [seekValue, setSeekValue] = useState(0);
 
   // 真正用于渲染封面的路径
-  const [resolvedCoverPath, setResolvedCoverPath] = useState<string | null>(null);
+  const [resolvedCoverPath, setResolvedCoverPath] = useState<string | null>(
+    null,
+  );
   const [coverError, setCoverError] = useState(false);
 
   // 当前曲目变化时，尝试自动补齐封面：
@@ -369,12 +375,18 @@ const NowPlayingPage: React.FC = () => {
               max={duration || 0}
               step={0.1}
               value={seeking ? seekValue : currentTime}
-              onChange={(e) => handleSeekChange(Number(e.target.value) || 0)}
+              onChange={(e) =>
+                handleSeekChange(Number(e.target.value) || 0)
+              }
               onMouseUp={(e) =>
-                handleSeekCommit(Number((e.target as HTMLInputElement).value) || 0)
+                handleSeekCommit(
+                  Number((e.target as HTMLInputElement).value) || 0,
+                )
               }
               onTouchEnd={(e) =>
-                handleSeekCommit(Number((e.target as HTMLInputElement).value) || 0)
+                handleSeekCommit(
+                  Number((e.target as HTMLInputElement).value) || 0,
+                )
               }
               style={{
                 width: "100%",
@@ -446,6 +458,11 @@ const NowPlayingPage: React.FC = () => {
           >
             封面和时间信息会与底部播放器联动同步。
             以后可以在这里扩展歌词、接下来播放的曲目等。
+          </div>
+
+          {/* 频谱可视化面板 */}
+          <div style={{ marginTop: 16 }}>
+            <VisualizerPanel />
           </div>
         </div>
       </div>

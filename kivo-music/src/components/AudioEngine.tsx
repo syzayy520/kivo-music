@@ -4,6 +4,7 @@ import { usePlayerStore } from "../store/player";
 import type { AudioBackend } from "../audio-backend/AudioBackend";
 import { HtmlAudioBackend } from "../audio-backend/html/HtmlAudioBackend";
 import { log } from "../utils/log";
+import { initVisualizerForAudioElement } from "../audio-backend/VisualizerBus";
 
 /**
  * AudioEngine
@@ -55,7 +56,10 @@ export const AudioEngine: React.FC = () => {
     backendRef.current = backend;
 
     if (audioRef.current) {
+      // 把隐藏的 <audio> 交给 HtmlAudioBackend 管
       backend.attachAudioElement(audioRef.current);
+      // 同时把它接入 Web Audio 频谱分析（如果环境支持）
+      initVisualizerForAudioElement(audioRef.current);
     }
 
     return () => {
