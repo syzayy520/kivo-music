@@ -88,11 +88,14 @@ export const AudioEngine: React.FC = () => {
 
     // 如果当前应该是播放状态，就自动开播
     if (isPlaying) {
-      audio
-        .play()
-        .catch((err) =>
-          console.error("[AudioEngine] play error after track change", err),
-        );
+      audio.play().catch((err: any) => {
+  // 这种情况是 play() 被立即 pause() 打断，属于正常现象，直接忽略
+  if (err && err.name === "AbortError") {
+    return;
+  }
+  console.error("[AudioEngine] play error after track change", err);
+});
+
     }
   }, [currentTrack && currentTrack.filePath]); // 只关心曲目变化
 
@@ -102,11 +105,14 @@ export const AudioEngine: React.FC = () => {
     if (!audio || !currentTrack) return;
 
     if (isPlaying) {
-      audio
-        .play()
-        .catch((err) =>
-          console.error("[AudioEngine] play error on toggle", err),
-        );
+      audio.play().catch((err: any) => {
+  if (err && err.name === "AbortError") {
+    // 快速点击播放/暂停时也会出现 AbortError，同样是正常现象
+    return;
+  }
+  console.error("[AudioEngine] play error on toggle", err);
+});
+
     } else {
       audio.pause();
     }
