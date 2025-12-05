@@ -9,6 +9,7 @@ interface LibraryTrackContextMenuProps {
   onPlay: () => void;
   onPlayNext: () => void;
   onAppendToQueue: () => void;
+  onOpenInFolder: () => void;
 }
 
 /**
@@ -16,7 +17,16 @@ interface LibraryTrackContextMenuProps {
  */
 export const LibraryTrackContextMenu: React.FC<
   LibraryTrackContextMenuProps
-> = ({ visible, x, y, onClose, onPlay, onPlayNext, onAppendToQueue }) => {
+> = ({
+  visible,
+  x,
+  y,
+  onClose,
+  onPlay,
+  onPlayNext,
+  onAppendToQueue,
+  onOpenInFolder,
+}) => {
   if (!visible) return null;
 
   return (
@@ -47,6 +57,7 @@ export const LibraryTrackContextMenu: React.FC<
         <MenuItem onClick={onPlay}>播放此歌曲</MenuItem>
         <MenuItem onClick={onPlayNext}>设为下一首播放</MenuItem>
         <MenuItem onClick={onAppendToQueue}>添加到当前队列末尾</MenuItem>
+        <MenuItem onClick={onOpenInFolder}>打开文件所在文件夹</MenuItem>
       </div>
     </div>
   );

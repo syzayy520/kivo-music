@@ -24,11 +24,10 @@ interface PlaylistTableProps {
 /**
  * 播放列表页表格视图。
  *
- * 设计原则：
- * - 这里只负责 UI + 行为（双击播放 / 下一首 / 加入队列）。
+ * 职责：
+ * - 只负责 UI + 行为（双击播放 / 下一首 / 加入队列）。
  * - 所有“真实队列”操作统一走 playQueueModel：
  *   - playFromQueue / appendToQueue / playNext / getQueueSnapshot
- * - 不直接操作 player store / playlist 数组。
  */
 const PlaylistTable: React.FC<PlaylistTableProps> = ({
   tracks,
@@ -50,7 +49,7 @@ const PlaylistTable: React.FC<PlaylistTableProps> = ({
       ? queueSnapshot.currentIndex
       : currentIndex;
 
-  // 用 identity key 建一个“队列索引映射”，方便 O(1) 查找
+  // 用 identity key 建一个“队列索引映射”
   const queueIndexByKey = new Map<string, number>();
   queuePlaylist.forEach((t, i) => {
     const key = makeIdentityKey(t);
@@ -94,23 +93,6 @@ const PlaylistTable: React.FC<PlaylistTableProps> = ({
   /** 追加到当前队列末尾 */
   const handleAppendToQueue = (track: PlayerTrack): void => {
     appendToQueue([track]);
-  };
-
-  const formatDuration = (
-    seconds: number | null | undefined,
-  ): string => {
-    if (seconds === null || seconds === undefined || Number.isNaN(seconds)) {
-      return "-";
-    }
-
-    const total = Math.floor(seconds);
-    const m = Math.floor(total / 60);
-    const s = total % 60;
-
-    const mm = String(m).padStart(2, "0");
-    const ss = String(s).padStart(2, "0");
-
-    return `${mm}:${ss}`;
   };
 
   const formatLastPlayed = (
@@ -186,10 +168,11 @@ const PlaylistTable: React.FC<PlaylistTableProps> = ({
           ) : (
             safeTracks.map((track, index) => {
               const identity = makeIdentityKey(track);
-              const key =
-                identity ||
-                (track && (track as any).filePath) ||
-                `track-${index}`;
+              const filePath =
+                (track as any).filePath ?? (track as any).path ?? "";
+              const baseKey = identity || filePath || "track";
+              // 确保 key 在列表内绝对唯一
+              const key = `${baseKey}::${index}`;
 
               const queueIndex =
                 identity && queueIndexByKey.has(identity)
@@ -202,9 +185,6 @@ const PlaylistTable: React.FC<PlaylistTableProps> = ({
               const title = getTrackTitle(track as any);
               const artist = getTrackArtist(track as any);
               const album = getTrackAlbum(track as any);
-              const duration = formatDuration(
-                (track as any).duration ?? null,
-              );
               const playCount = (track as any).playCount ?? 0;
               const lastPlayed = formatLastPlayed(
                 (track as any).lastPlayedAt ?? null,

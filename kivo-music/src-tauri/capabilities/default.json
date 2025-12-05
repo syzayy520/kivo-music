@@ -13,6 +13,7 @@
   },
   "permissions": [
     "core:default",
+    "opener:default",
     "dialog:default",
     "dialog:allow-open",
     "fs:default",
@@ -52,7 +53,6 @@
         { "path": "**" }
       ]
     },
-
     {
       "identifier": "fs:allow-read-dir",
       "allow": [

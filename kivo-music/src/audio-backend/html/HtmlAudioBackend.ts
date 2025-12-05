@@ -10,14 +10,14 @@ import type {
 /**
  * 基于 <audio> 的播放后端实现（HTML 音频内核）。
  *
- * 设计原则：
- * - 不直接依赖任何 store，只通过 AudioBackendContext 回调与上层通信；
- * - 所有与 <audio> 的 DOM 交互都集中在这里，外层完全不关心；
+ * 职责：
+ * - 持有一个隐藏的 <audio> 元素；
+ * - 根据 PlayerSnapshot 驱动底层播放状态；
+ * - 把进度 / 结束 / 错误通过 AudioBackendContext 回调给上层；
  * - 对异常场景（坏文件 / 路径失效 / 解码失败）做“可恢复”的处理：
- *   - 不中断应用；
- *   - 尝试自动跳过到下一首；
- *   - 写清晰日志，方便排查。
- * - 对“空队列 / 正常加载波动”等情况不报黄灯，避免控制台被 warn 淹没。
+ *   - 不崩溃、不白屏；
+ *   - 坏文件自动跳到下一首；
+ *   - 统一打日志，方便后续在 Developer 面板里展示。
  */
 export class HtmlAudioBackend implements AudioBackend {
   private audio: HTMLAudioElement | null = null;
@@ -58,11 +58,35 @@ export class HtmlAudioBackend implements AudioBackend {
   }
 
   /**
+   * 释放资源并解绑事件。
+   */
+  destroy(): void {
+    if (!this.audio) return;
+
+    try {
+      this.detachEvents(this.audio);
+    } catch (err) {
+      log.warn("HtmlAudioBackend", "destroy() 时解绑事件失败", { err });
+    }
+
+    try {
+      this.audio.pause();
+      this.audio.removeAttribute("src");
+      this.audio.load();
+    } catch (err) {
+      log.warn("HtmlAudioBackend", "destroy() 时重置 audio 元素失败", { err });
+    }
+
+    this.audio = null;
+    this.snapshot = null;
+  }
+
+  /**
    * 根据 player 最小状态快照更新底层播放状态。
    *
    * 约定：
    * - 当队列为空时：这是正常状态，不视为错误，不触发 onEnded；
-   * - 当有队列但 currentIndex 无效 或 track 无法解析到有效路径时：
+   * - 当有队列但 currentIndex 无效 / track 无法解析到有效路径时：
    *   - 视为“当前曲目无法播放 / 已结束”，调用 onEnded，让上层决定下一步（下一首 / 停止）。
    */
   async updateFromState(snapshot: PlayerSnapshot): Promise<void> {
@@ -85,10 +109,19 @@ export class HtmlAudioBackend implements AudioBackend {
 
     // 1. 队列为空 → 正常状态（例如应用刚启动、用户清空队列）
     if (!hasPlaylist) {
-      log.debug("HtmlAudioBackend", "当前没有播放队列，忽略 updateFromState 请求", {
-        currentIndex,
-      });
-      audio.pause();
+      log.debug(
+        "HtmlAudioBackend",
+        "当前没有播放队列，停止播放并清空 src",
+        { currentIndex },
+      );
+      try {
+        audio.pause();
+        audio.removeAttribute("src");
+        audio.load();
+      } catch (err) {
+        log.warn("HtmlAudioBackend", "清空队列时重置 audio 失败", { err });
+      }
+      this.context.onTimeUpdate?.(0, null);
       return;
     }
 
@@ -96,42 +129,57 @@ export class HtmlAudioBackend implements AudioBackend {
     if (!track) {
       log.warn(
         "HtmlAudioBackend",
-        "当前索引不存在对应曲目，视为队列已结束，交给上层按 ended 逻辑处理",
-        {
-          playlistLength: playlist.length,
-          currentIndex,
-        },
+        "playlist 存在但 currentIndex 无效，视为当前曲目结束，交给上层处理",
+        { currentIndex, playlistLength: playlist.length },
       );
-      audio.pause();
+      try {
+        audio.pause();
+      } catch {
+        // ignore
+      }
       this.context.onEnded?.();
       return;
     }
 
-    // 3. 无法解析出有效的文件路径 → 视为当前曲目坏了，自动跳过
-    const srcPath = this.getTrackFilePath(track);
-    if (!srcPath) {
+    // 3. 无法解析出文件路径 → 认为是坏数据，跳过
+    const filePath = this.getTrackFilePath(track);
+    if (!filePath) {
+      const error = new Error(
+        "当前曲目缺少可用的文件路径 (filePath/path/location/src)",
+      );
       log.warn(
         "HtmlAudioBackend",
-        "无法从曲目中解析出可用的文件路径，自动跳过当前曲目",
-        { track },
+        "无法从 track 中解析出文件路径，自动跳过该曲目",
+        { currentIndex, track },
       );
-      audio.pause();
+      this.context.onError?.(error);
       this.context.onEnded?.();
       return;
     }
 
-    // 4. 使用 Tauri 的 convertFileSrc 把本地路径转成可播放的 URL
-    const srcUrl = convertFileSrc(srcPath);
+    const srcUrl = convertFileSrc(filePath);
 
+    // 4. 如果切换了曲目 / 路径，与当前 src 不同，则重新加载
     if (audio.src !== srcUrl) {
-      log.debug("HtmlAudioBackend", "切换音频源", {
-        srcPath,
-        srcUrl,
+      log.debug("HtmlAudioBackend", "切换底层 audio.src", {
         currentIndex,
+        filePath,
+        srcUrl,
       });
-      audio.src = srcUrl;
-      // 重置缓冲状态
-      audio.load();
+
+      try {
+        audio.src = srcUrl;
+        audio.load();
+      } catch (err) {
+        log.error("HtmlAudioBackend", "设置 audio.src 或 load() 失败，将跳过当前曲目", {
+          err,
+          filePath,
+          srcUrl,
+        });
+        this.context.onError?.(err);
+        this.context.onEnded?.();
+        return;
+      }
     }
 
     // 5. 播放 / 暂停
@@ -149,12 +197,26 @@ export class HtmlAudioBackend implements AudioBackend {
           return;
         }
 
-        // 其余情况属于真正的播放失败
+        // 其余情况属于真正的播放失败 → 记录错误并自动跳过
+        log.error("HtmlAudioBackend", "play() 调用失败，将尝试跳过当前曲目", {
+          err,
+          currentIndex,
+          filePath,
+        });
         this.context.onError?.(err);
-        log.error("HtmlAudioBackend", "play() 调用失败", { err });
+        try {
+          audio.pause();
+        } catch {
+          // ignore
+        }
+        this.context.onEnded?.();
       }
     } else {
-      audio.pause();
+      try {
+        audio.pause();
+      } catch (err) {
+        log.warn("HtmlAudioBackend", "调用 pause() 失败", { err });
+      }
     }
   }
 
@@ -195,25 +257,6 @@ export class HtmlAudioBackend implements AudioBackend {
     audio.volume = safeVolume;
   }
 
-  /**
-   * 释放资源并解绑事件。
-   * - 重要：清空 audio.src，辅助操作系统释放文件句柄（尤其是 Windows）。
-   */
-  destroy(): void {
-    if (this.audio) {
-      this.detachEvents(this.audio);
-      try {
-        this.audio.src = "";
-        // load 一下可以强制浏览器“忘掉”当前资源
-        this.audio.load();
-      } catch (err) {
-        log.warn("HtmlAudioBackend", "destroy() 时重置 audio 元素失败", { err });
-      }
-      this.audio = null;
-    }
-    this.snapshot = null;
-  }
-
   // === 事件绑定相关 ===
 
   private attachEvents(audio: HTMLAudioElement) {
@@ -248,17 +291,18 @@ export class HtmlAudioBackend implements AudioBackend {
     const audio = this.audio;
     if (!audio) return;
 
-    const duration =
-      Number.isFinite(audio.duration) && audio.duration > 0
-        ? audio.duration
-        : null;
-
-    this.context.onTimeUpdate?.(audio.currentTime || 0, duration);
+    try {
+      const currentTime = audio.currentTime || 0;
+      const duration =
+        Number.isFinite(audio.duration) && audio.duration > 0
+          ? audio.duration
+          : null;
+      this.context.onTimeUpdate?.(currentTime, duration);
+    } catch (err) {
+      log.warn("HtmlAudioBackend", "读取 audio 进度失败", { err });
+    }
   }
 
-  /**
-   * 播放自然结束。
-   */
   private handleEnded() {
     log.debug("HtmlAudioBackend", "音频播放结束 (ended)");
     this.context.onEnded?.();
@@ -306,25 +350,33 @@ export class HtmlAudioBackend implements AudioBackend {
     if (code === 1) {
       log.debug(
         "HtmlAudioBackend",
-        "MediaError: 播放被中断 (MEDIA_ERR_ABORTED)，通常是切歌/暂停触发",
+        "收到 MEDIA_ERR_ABORTED（通常是用户中断播放），忽略",
         { code, message },
       );
       return;
     }
 
-    // 3 = MEDIA_ERR_DECODE / 4 = MEDIA_ERR_SRC_NOT_SUPPORTED
-    // → 视为当前曲目损坏或格式不支持，自动跳到下一首
+    // 3 = MEDIA_ERR_DECODE，4 = MEDIA_ERR_SRC_NOT_SUPPORTED
     if (code === 3 || code === 4) {
-      log.warn("HtmlAudioBackend", "MediaError: 解码失败或格式不支持，自动跳过", {
-        code,
-        message,
-      });
+      log.warn(
+        "HtmlAudioBackend",
+        "媒体解码失败或格式不受支持，视为坏文件，自动跳过当前曲目",
+        { code, message },
+      );
+      this.context.onError?.(mediaError);
+
+      try {
+        audio.pause();
+      } catch {
+        // ignore
+      }
+
       this.context.onEnded?.();
       return;
     }
 
-    // 其他错误：抛给上层
-    log.error("HtmlAudioBackend", "MediaError: 未知播放错误", { code, message });
+    // 其他错误：上抛 + 记 error 日志
+    log.error("HtmlAudioBackend", "audio 触发未知错误", { code, message });
     this.context.onError?.(mediaError);
   }
 
@@ -335,12 +387,19 @@ export class HtmlAudioBackend implements AudioBackend {
    * - 兼容多种字段命名，避免前后版本不一致导致播放失败。
    */
   private getTrackFilePath(track: any): string | null {
-    return (
-      track?.filePath ??
-      track?.path ??
-      track?.location ??
-      track?.src ??
-      null
-    );
+    if (!track || typeof track !== "object") return null;
+
+    const candidate =
+      track.filePath ??
+      track.path ??
+      track.location ??
+      track.src ??
+      null;
+
+    if (typeof candidate !== "string" || candidate.trim().length === 0) {
+      return null;
+    }
+
+    return candidate;
   }
 }
