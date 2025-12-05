@@ -1,10 +1,17 @@
-import React from "react";
-import { invoke } from "@tauri-apps/api/core";
-import { LibraryTrack, getTrackTitle } from "../../library/libraryModel";
-import { usePlayerStore, PlayerTrack } from "../../store/player";
+// src/components/library/LibraryTracksView.tsx
+import React, { useCallback, useMemo, useState } from "react";
+import type { LibraryTrack, PlayerTrack } from "../../types/track";
+import {
+  getTrackAlbum,
+  getTrackArtist,
+  getTrackIdentity,
+  getTrackTitle,
+} from "../../library/libraryModel";
+import { usePlayerStore } from "../../store/player";
 import { appendToQueue, playNext } from "../../playlists/playQueueModel";
 import { LibraryTrackRow } from "./LibraryTrackRow";
 import { LibraryTrackContextMenu } from "./LibraryTrackContextMenu";
+import { invoke } from "@tauri-apps/api/core";
 import { log } from "../../utils/log";
 
 interface Props {
@@ -16,198 +23,252 @@ interface ContextMenuState {
   visible: boolean;
   clientX: number;
   clientY: number;
+  rowIndex: number | null;
   track: LibraryTrack | null;
-  rowIndex: number;
 }
 
 /**
- * 为调用 tauri-plugin-opener 规整 Windows 扩展路径：
- * - \\?\C:\Music\xxx      => C:\Music\xxx
- * - \\?\UNC\Nas\12t\xxx   => \\Nas\12t\xxx
+ * LibraryTrack -> PlayerTrack（给播放队列用）
  */
-const normalizePathForReveal = (rawPath: string): string => {
-  let p = rawPath;
+function makePlayerTrackFromLibraryTrack(track: LibraryTrack): PlayerTrack {
+  const anyTrack = track as any;
 
-  const extendedUncPrefix = "\\\\?\\UNC\\";
-  if (p.startsWith(extendedUncPrefix)) {
-    const rest = p.slice(extendedUncPrefix.length);
-    // 还原成标准 UNC：\\Nas\12t\...
-    return "\\\\" + rest;
-  }
+  const filePath: string =
+    anyTrack.filePath || anyTrack.path || anyTrack.location || "";
 
-  const extendedLocalPrefix = "\\\\?\\";
-  if (p.startsWith(extendedLocalPrefix)) {
-    // 本地盘：去掉 \\?\ 前缀
-    return p.slice(extendedLocalPrefix.length);
-  }
+  const title = getTrackTitle(track);
+  const artist = getTrackArtist(track);
+  const album = getTrackAlbum(track) ?? "";
 
-  return p;
-};
+  const idSource =
+    anyTrack.trackId ?? anyTrack.id ?? filePath ?? `${artist}-${title}`;
+
+  const durationValue: number | undefined =
+    typeof anyTrack.duration === "number"
+      ? anyTrack.duration
+      : typeof anyTrack.length === "number"
+      ? anyTrack.length
+      : undefined;
+
+  return {
+    id: String(idSource),
+    title,
+    artist,
+    album,
+    filePath,
+    duration: durationValue,
+    coverId: anyTrack.coverId,
+    coverPath: anyTrack.coverPath,
+  };
+}
 
 /**
- * 本地资料库 - “按歌曲”视图（壳组件）
- * - 负责：
- *   - 从 player store 里拿当前正在播放的曲目
- *   - 维护右键菜单的 state
- *   - 把单行渲染交给 LibraryTrackRow
+ * 提取文件所在目录
  */
-export const LibraryTracksView: React.FC<Props> = ({ tracks, onPlayTrack }) => {
-  const currentPlaylist = usePlayerStore(
-    (s: any) => s.playlist ?? s.tracks ?? [],
+function getDirectoryPathFromTrack(track: LibraryTrack): string | null {
+  const anyTrack = track as any;
+  const raw =
+    anyTrack.filePath || anyTrack.path || anyTrack.location || null;
+  if (!raw) return null;
+
+  const normalized = String(raw);
+  const lastSep = Math.max(
+    normalized.lastIndexOf("\\"),
+    normalized.lastIndexOf("/"),
   );
-  const currentIndex = usePlayerStore((s: any) => s.currentIndex ?? -1);
+  if (lastSep <= 0) return null;
+  return normalized.slice(0, lastSep);
+}
 
-  const currentTrack =
-    Array.isArray(currentPlaylist) &&
-    currentIndex >= 0 &&
-    currentIndex < currentPlaylist.length
-      ? (currentPlaylist[currentIndex] as any)
-      : null;
+/**
+ * 处理 Windows 下 \\?\UNC\ 前缀，给 opener 用
+ */
+function normalizeWindowsDirPath(dirPath: string): string {
+  if (dirPath.startsWith("\\\\?\\UNC\\")) {
+    // \\?\UNC\server\share\path -> \\server\share\path
+    return "\\" + dirPath.slice("\\\\?\\UNC\\".length);
+  }
+  if (dirPath.startsWith("\\\\?\\")) {
+    // \\?\C:\Music -> C:\Music
+    return dirPath.slice("\\\\?\\".length);
+  }
+  return dirPath;
+}
 
-  const currentFilePath: string | undefined =
-    currentTrack?.filePath ?? currentTrack?.path ?? currentTrack?.location;
+/**
+ * 调用 tauri-plugin-opener 打开文件所在目录（只用 open_path，不再用 reveal_item_in_dir）
+ */
+async function openFolderForTrack(track: LibraryTrack): Promise<void> {
+  const dirPathRaw = getDirectoryPathFromTrack(track);
+  if (!dirPathRaw) {
+    log.warn(
+      "[Kivo][LibraryTracksView]",
+      "无法解析曲目的所在目录",
+      { track },
+    );
+    return;
+  }
 
-  const [contextMenu, setContextMenu] = React.useState<ContextMenuState>({
+  const dirPath = normalizeWindowsDirPath(dirPathRaw);
+
+  try {
+    await invoke("plugin:opener|open_path", { path: dirPath });
+  } catch (error) {
+    log.warn(
+      "[Kivo][LibraryTracksView]",
+      "调用 opener 打开文件所在目录失败（插件未配置、路径不兼容或权限不足）",
+      {
+        filePath:
+          (track as any).filePath ||
+          (track as any).path ||
+          (track as any).location,
+        dirPath,
+        err: String(error),
+      },
+    );
+  }
+}
+
+export const LibraryTracksView: React.FC<Props> = ({
+  tracks,
+  onPlayTrack,
+}) => {
+  const [contextMenu, setContextMenu] = useState<ContextMenuState>({
     visible: false,
     clientX: 0,
     clientY: 0,
+    rowIndex: null,
     track: null,
-    rowIndex: -1,
   });
 
-  const handleRowDoubleClick = (track: LibraryTrack, index: number) => {
-    onPlayTrack(track, index);
-  };
-
-  const handlePlayNext = (track: LibraryTrack) => {
-    const asPlayerTrack = track as unknown as PlayerTrack;
-    playNext([asPlayerTrack]);
-  };
-
-  const handleAppendToQueue = (track: LibraryTrack) => {
-    const asPlayerTrack = track as unknown as PlayerTrack;
-    appendToQueue([asPlayerTrack]);
-  };
-
-  const handleOpenInFolder = (track: LibraryTrack) => {
-    const rawPath =
-      (track as any).filePath ??
-      (track as any).path ??
-      (track as any).location ??
-      "";
-
-    const filePath = typeof rawPath === "string" ? rawPath : "";
-
-    if (!filePath) {
-      log.warn(
-        "LibraryTracksView",
-        "无法打开文件所在文件夹：当前曲目缺少 filePath/path/location 字段",
-        { track },
-      );
-      return;
+  const currentIdentity = usePlayerStore((state) => {
+    const current = state.playlist[state.currentIndex] as
+      | PlayerTrack
+      | undefined;
+    if (!current) return null;
+    try {
+      return getTrackIdentity(current as any);
+    } catch {
+      return (current as any).id ?? null;
     }
-
-    const normalizedPath = normalizePathForReveal(filePath);
-
-    // UNC 路径（NAS / 共享盘）：reveal_item_in_dir 对这种路径兼容性不好，
-    // 这里退一步，直接打开所在目录。
-    const isUncPath =
-      normalizedPath.startsWith("\\\\") && !/^[a-zA-Z]:\\/.test(normalizedPath);
-
-    if (isUncPath) {
-      const lastSlashIndex = Math.max(
-        normalizedPath.lastIndexOf("\\"),
-        normalizedPath.lastIndexOf("/"),
-      );
-
-      const dirPath =
-        lastSlashIndex > 1
-          ? normalizedPath.slice(0, lastSlashIndex)
-          : normalizedPath;
-
-      invoke("plugin:opener|open_path", { path: dirPath }).catch(
-        (err: unknown) => {
-          log.warn(
-            "LibraryTracksView",
-            "调用 opener 打开 UNC 目录失败（插件未配置、路径不兼容或权限不足）",
-            { filePath, normalizedPath, dirPath, err },
-          );
-        },
-      );
-      return;
-    }
-
-    // 本地盘路径：使用 reveal_item_in_dir 在资源管理器中高亮文件。
-    invoke("plugin:opener|reveal_item_in_dir", {
-      path: normalizedPath,
-    }).catch((err: unknown) => {
-      log.warn(
-        "LibraryTracksView",
-        "调用 opener 插件打开文件所在文件夹失败（插件未配置、路径不兼容或权限不足）",
-        { filePath, normalizedPath, err },
-      );
-    });
-  };
-
-  const openContextMenu = (
-    event: React.MouseEvent<HTMLTableRowElement>,
-    track: LibraryTrack,
-    index: number,
-  ) => {
-    event.preventDefault();
-    setContextMenu({
-      visible: true,
-      clientX: event.clientX,
-      clientY: event.clientY,
-      track,
-      rowIndex: index,
-    });
-  };
-
-  const closeContextMenu = () => {
-    setContextMenu((prev) => ({
-      ...prev,
-      visible: false,
-      track: null,
-      rowIndex: -1,
-    }));
-  };
+  });
 
   const headerCellBase: React.CSSProperties = {
-    padding: "8px 10px",
-    textAlign: "left",
-    fontWeight: 500,
+    padding: "6px 10px",
     fontSize: 12,
     color: "#6b7280",
-    borderBottom: "1px solid #e5e7eb",
+    fontWeight: 500,
+    borderBottom: "1px solid #1f2937",
+    userSelect: "none",
     whiteSpace: "nowrap",
   };
 
+  const handleRowPlay = useCallback(
+    (track: LibraryTrack, index: number) => {
+      onPlayTrack(track, index);
+    },
+    [onPlayTrack],
+  );
+
+  const handleRowPlayNext = useCallback((track: LibraryTrack) => {
+    playNext([makePlayerTrackFromLibraryTrack(track)]);
+  }, []);
+
+  const handleRowAppendToQueue = useCallback((track: LibraryTrack) => {
+    appendToQueue([makePlayerTrackFromLibraryTrack(track)]);
+  }, []);
+
+  const handleRowContextMenu = useCallback(
+    (
+      event: React.MouseEvent<HTMLTableRowElement>,
+      track: LibraryTrack,
+      index: number,
+    ) => {
+      event.preventDefault();
+      setContextMenu({
+        visible: true,
+        clientX: event.clientX,
+        clientY: event.clientY,
+        rowIndex: index,
+        track,
+      });
+    },
+    [],
+  );
+
+  const closeContextMenu = useCallback(() => {
+    setContextMenu((prev) =>
+      prev.visible ? { ...prev, visible: false } : prev,
+    );
+  }, []);
+
+  const handleContextPlay = () => {
+    if (!contextMenu.track || contextMenu.rowIndex == null) return;
+    onPlayTrack(contextMenu.track, contextMenu.rowIndex);
+    closeContextMenu();
+  };
+
+  const handleContextPlayNext = () => {
+    if (!contextMenu.track) return;
+    playNext([makePlayerTrackFromLibraryTrack(contextMenu.track)]);
+    closeContextMenu();
+  };
+
+  const handleContextAppendToQueue = () => {
+    if (!contextMenu.track) return;
+    appendToQueue([makePlayerTrackFromLibraryTrack(contextMenu.track)]);
+    closeContextMenu();
+  };
+
+  const handleContextOpenFolder = () => {
+    if (!contextMenu.track) return;
+    void openFolderForTrack(contextMenu.track);
+    closeContextMenu();
+  };
+
+  const rows = useMemo(
+    () =>
+      tracks.map((track, index) => {
+        const identity = getTrackIdentity(track);
+        const isCurrent =
+          identity != null &&
+          currentIdentity != null &&
+          identity === currentIdentity;
+
+        return (
+          <LibraryTrackRow
+            key={(identity ?? `${getTrackTitle(track)}-${index}`).toString()}
+            track={track}
+            index={index}
+            isCurrent={!!isCurrent}
+            onPlay={handleRowPlay}
+            onPlayNext={handleRowPlayNext}
+            onAppendToQueue={handleRowAppendToQueue}
+            onContextMenu={handleRowContextMenu}
+          />
+        );
+      }),
+    [
+      tracks,
+      currentIdentity,
+      handleRowPlay,
+      handleRowPlayNext,
+      handleRowAppendToQueue,
+      handleRowContextMenu,
+    ],
+  );
+
   return (
-    <div
-      style={{
-        position: "relative",
-        flex: 1,
-        minHeight: 0,
-        overflow: "auto",
-        backgroundColor: "#ffffff",
-        borderRadius: 16,
-        boxShadow: "0 8px 24px rgba(15,23,42,0.08)",
-      }}
-    >
+    <div style={{ width: "100%", height: "100%", overflow: "auto" }}>
       <table
         style={{
           width: "100%",
           borderCollapse: "collapse",
-          fontSize: 13,
+          tableLayout: "fixed",
         }}
       >
         <thead>
-          <tr
-            style={{
-              backgroundColor: "#f9fafb",
-            }}
-          >
+          <tr>
             <th
               style={{
                 ...headerCellBase,
@@ -218,14 +279,44 @@ export const LibraryTracksView: React.FC<Props> = ({ tracks, onPlayTrack }) => {
             >
               #
             </th>
-            <th style={headerCellBase}>标题</th>
-            <th style={headerCellBase}>艺人</th>
-            <th style={headerCellBase}>专辑</th>
             <th
               style={{
                 ...headerCellBase,
-                textAlign: "right",
+                minWidth: 160,
+              }}
+            >
+              标题
+            </th>
+            <th
+              style={{
+                ...headerCellBase,
+                minWidth: 140,
+              }}
+            >
+              艺人
+            </th>
+            <th
+              style={{
+                ...headerCellBase,
+                minWidth: 140,
+              }}
+            >
+              专辑
+            </th>
+            <th
+              style={{
+                ...headerCellBase,
                 width: 80,
+                textAlign: "right",
+              }}
+            >
+              时长
+            </th>
+            <th
+              style={{
+                ...headerCellBase,
+                width: 100,
+                textAlign: "right",
               }}
             >
               播放次数
@@ -233,7 +324,7 @@ export const LibraryTracksView: React.FC<Props> = ({ tracks, onPlayTrack }) => {
             <th
               style={{
                 ...headerCellBase,
-                width: 180,
+                width: 140,
               }}
             >
               最近播放
@@ -241,103 +332,26 @@ export const LibraryTracksView: React.FC<Props> = ({ tracks, onPlayTrack }) => {
             <th
               style={{
                 ...headerCellBase,
+                width: 80,
                 textAlign: "center",
-                width: 60,
-              }}
-            >
-              喜欢
-            </th>
-            <th
-              style={{
-                ...headerCellBase,
-                textAlign: "center",
-                width: 130,
               }}
             >
               操作
             </th>
           </tr>
         </thead>
-        <tbody>
-          {tracks.length === 0 ? (
-            <tr>
-              <td
-                colSpan={8}
-                style={{
-                  padding: 32,
-                  textAlign: "center",
-                  color: "#9ca3af",
-                  fontSize: 13,
-                }}
-              >
-                当前没有可显示的曲目，请先导入本地音乐。
-              </td>
-            </tr>
-          ) : (
-            tracks.map((track, index) => {
-              const filePath =
-                (track as any).filePath ??
-                (track as any).path ??
-                (track as any).location ??
-                "";
-              const isCurrent =
-                !!currentFilePath && !!filePath && currentFilePath === filePath;
-
-              const idCandidate =
-                (track as any).id ??
-                (track as any).trackId ??
-                filePath ??
-                getTrackTitle(track);
-
-              const idPart =
-                idCandidate && String(idCandidate).length > 0
-                  ? String(idCandidate)
-                  : "track";
-
-              const rowKey = `${idPart}::${index}`;
-
-              return (
-                <LibraryTrackRow
-                  key={rowKey}
-                  track={track}
-                  index={index}
-                  isCurrent={isCurrent}
-                  onPlay={handleRowDoubleClick}
-                  onPlayNext={handlePlayNext}
-                  onAppendToQueue={handleAppendToQueue}
-                  onContextMenu={openContextMenu}
-                />
-              );
-            })
-          )}
-        </tbody>
+        <tbody>{rows}</tbody>
       </table>
 
       <LibraryTrackContextMenu
-        visible={contextMenu.visible && !!contextMenu.track}
+        visible={contextMenu.visible}
         x={contextMenu.clientX}
         y={contextMenu.clientY}
         onClose={closeContextMenu}
-        onPlay={() => {
-          if (!contextMenu.track || contextMenu.rowIndex < 0) return;
-          handleRowDoubleClick(contextMenu.track, contextMenu.rowIndex);
-          closeContextMenu();
-        }}
-        onPlayNext={() => {
-          if (!contextMenu.track) return;
-          handlePlayNext(contextMenu.track);
-          closeContextMenu();
-        }}
-        onAppendToQueue={() => {
-          if (!contextMenu.track) return;
-          handleAppendToQueue(contextMenu.track);
-          closeContextMenu();
-        }}
-        onOpenInFolder={() => {
-          if (!contextMenu.track) return;
-          handleOpenInFolder(contextMenu.track);
-          closeContextMenu();
-        }}
+        onPlay={handleContextPlay}
+        onPlayNext={handleContextPlayNext}
+        onAppendToQueue={handleContextAppendToQueue}
+        onOpenFolder={handleContextOpenFolder}
       />
     </div>
   );

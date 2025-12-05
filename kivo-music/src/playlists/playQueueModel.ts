@@ -1,5 +1,6 @@
 // src/playlists/playQueueModel.ts
-import { usePlayerStore, PlayerTrack } from "../store/player";
+import { usePlayerStore } from "../store/player";
+import type { PlayerTrack } from "../types/track";
 
 /**
  * 播放队列相关的业务封装。

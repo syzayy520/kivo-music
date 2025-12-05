@@ -1,13 +1,13 @@
 // src/components/now-playing/UpNextRow.tsx
 import React from "react";
-import type { PlayerTrack } from "../../store/player";
+import type { PlayerTrack } from "../../types/track";
 import {
   KivoContextMenu,
   KivoContextMenuItem,
 } from "../common/KivoContextMenu";
 
 export interface UpNextRowProps {
-  track: PlayerTrack | any;
+  track: PlayerTrack;
   index: number;
   isCurrent: boolean;
   isNext: boolean;
@@ -18,6 +18,7 @@ export interface UpNextRowProps {
   onMoveUp: () => void;
   onMoveDown: () => void;
   onRemove?: () => void;
+  onOpenFolder: () => void;
 }
 
 /**
@@ -27,7 +28,7 @@ export interface UpNextRowProps {
  * - 双击播放；
  * - 上移 / 下移；
  * - 删除（可选）；
- * - 右键菜单（复用上述能力）。
+ * - 右键菜单（复用上述能力 + 打开文件所在文件夹）。
  *
  * 真正的队列修改逻辑由调用方（UpNextPanel）通过回调提供。
  */
@@ -43,9 +44,10 @@ export const UpNextRow: React.FC<UpNextRowProps> = ({
   onMoveUp,
   onMoveDown,
   onRemove,
+  onOpenFolder,
 }) => {
   const title = track?.title || "未知标题";
-  const artist = track?.artist || "未知艺人";
+  const artist = (track as any)?.artist || "未知艺人";
 
   // 右键菜单状态
   const [menuVisible, setMenuVisible] = React.useState(false);
@@ -119,6 +121,13 @@ export const UpNextRow: React.FC<UpNextRowProps> = ({
       disabled: !canMoveDown,
     },
     {
+      key: "openFolder",
+      label: "打开文件所在文件夹",
+      onClick: () => {
+        onOpenFolder();
+      },
+    },
+    {
       key: "remove",
       label: "从当前队列中移除",
       onClick: () => {
@@ -141,7 +150,7 @@ export const UpNextRow: React.FC<UpNextRowProps> = ({
           padding: "6px 10px",
           fontSize: 12,
           cursor: "pointer",
-          backgroundColor: isCurrent ? "rgba(37,99,235,0.10)" : "transparent",
+          backgroundColor: isCurrent ? "rgba(37,99,235,0.1)" : "transparent",
           borderBottom: "1px solid rgba(148,163,184,0.25)",
         }}
       >

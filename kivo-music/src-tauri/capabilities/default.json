@@ -73,6 +73,12 @@
         { "path": "$APPDATA/**" },
         { "path": "**" }
       ]
+    },
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [
+        { "path": "**" }
+      ]
     }
   ]
 }

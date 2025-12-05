@@ -1,6 +1,8 @@
 // src/components/now-playing/UpNextPanel.tsx
 import React from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { usePlayerStore } from "../../store/player";
+import type { PlayerTrack } from "../../types/track";
 import { kivoTheme } from "../../styles/theme";
 import {
   clearQueue,
@@ -9,6 +11,7 @@ import {
   moveInQueue,
 } from "../../playlists/playQueueModel";
 import { UpNextRow } from "./UpNextRow";
+import { log } from "../../utils/log";
 
 /**
  * 接下来播放（Up Next）面板。
@@ -19,7 +22,9 @@ import { UpNextRow } from "./UpNextRow";
  * - 所有对队列的修改统一走 playQueueModel。
  */
 export const UpNextPanel: React.FC = () => {
-  const playlist = usePlayerStore((s) => s.playlist);
+  const playlist = usePlayerStore(
+    (s) => s.playlist as PlayerTrack[] | undefined,
+  );
   const currentIndex = usePlayerStore((s) => s.currentIndex);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
 
@@ -206,6 +211,9 @@ export const UpNextPanel: React.FC = () => {
             const handleMoveUp = () => moveInQueue(index, index - 1);
             const handleMoveDown = () => moveInQueue(index, index + 1);
             const handleRemove = () => removeFromQueue(index);
+            const handleOpenFolder = () => {
+              void openFolderForTrack(track);
+            };
 
             return (
               <UpNextRow
@@ -222,6 +230,7 @@ export const UpNextPanel: React.FC = () => {
                 onMoveUp={handleMoveUp}
                 onMoveDown={handleMoveDown}
                 onRemove={canRemove ? handleRemove : undefined}
+                onOpenFolder={handleOpenFolder}
               />
             );
           })}
@@ -231,13 +240,79 @@ export const UpNextPanel: React.FC = () => {
   );
 };
 
-function buildTrackRowKey(track: any, index: number): string {
-  const filePath = track?.filePath ?? track?.path ?? track?.location ?? "";
+function buildTrackRowKey(track: PlayerTrack, index: number): string {
+  const filePath =
+    (track as any).filePath ??
+    (track as any).path ??
+    (track as any).location ??
+    "";
   const idPart =
-    track?.id ??
-    track?.trackId ??
-    (filePath ? filePath : track?.title ?? "track");
+    (track as any).id ??
+    (track as any).trackId ??
+    (filePath ? filePath : (track as any).title ?? "track");
   return `${idPart}::${index}`;
+}
+
+/**
+ * 提取文件所在目录
+ */
+function getDirectoryPathFromTrack(track: PlayerTrack): string | null {
+  const fullPath =
+    (track as any).filePath ??
+    (track as any).path ??
+    (track as any).location ??
+    null;
+  if (!fullPath || typeof fullPath !== "string") return null;
+
+  const lastSep = Math.max(
+    fullPath.lastIndexOf("\\"),
+    fullPath.lastIndexOf("/"),
+  );
+  if (lastSep <= 0) return null;
+
+  return fullPath.slice(0, lastSep);
+}
+
+/**
+ * 处理 Windows 下 \\?\UNC\ 前缀，给 opener 用
+ */
+function normalizeWindowsDirPath(dirPath: string): string {
+  if (dirPath.startsWith("\\\\?\\UNC\\")) {
+    // \\?\UNC\server\share\path -> \\server\share\path
+    return "\\" + dirPath.slice("\\\\?\\UNC\\".length);
+  }
+  if (dirPath.startsWith("\\\\?\\")) {
+    // \\?\C:\Music -> C:\Music
+    return dirPath.slice("\\\\?\\".length);
+  }
+  return dirPath;
+}
+
+/**
+ * 调用 tauri-plugin-opener 打开文件所在目录（统一用 open_path）
+ */
+async function openFolderForTrack(track: PlayerTrack): Promise<void> {
+  const rawDir = getDirectoryPathFromTrack(track);
+  if (!rawDir) {
+    log.warn("UpNextPanel", "无法解析曲目的所在目录", { track });
+    return;
+  }
+
+  const dirPath = normalizeWindowsDirPath(rawDir);
+
+  try {
+    await invoke("plugin:opener|open_path", { path: dirPath });
+  } catch (err) {
+    log.warn(
+      "UpNextPanel",
+      "调用 opener 打开文件所在目录失败（插件未配置、路径不兼容或权限不足）",
+      {
+        dirPath,
+        err,
+        track,
+      },
+    );
+  }
 }
 
 export default UpNextPanel;

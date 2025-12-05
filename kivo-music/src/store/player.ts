@@ -1,6 +1,12 @@
+// src/store/player.ts
 import { create } from "zustand";
+import {
+  PlayMode as CorePlayMode,
+  computeNextIndex,
+  computePrevIndex,
+} from "../playerStateMachine";
 
-export type PlayMode = "order" | "repeat-all" | "repeat-one";
+export type PlayMode = CorePlayMode;
 
 export interface PlayerTrack {
   id: string;
@@ -57,12 +63,30 @@ function clampVolume(v: number): number {
   return v;
 }
 
-function getTrackIdentity(t: PlayerTrack | undefined): string | null {
-  if (!t) return null;
-  return t.id || t.filePath || null;
+function clampIndex(index: number, list: unknown[]): number {
+  if (!Array.isArray(list) || list.length === 0) return -1;
+  if (index < 0) return 0;
+  if (index >= list.length) return list.length - 1;
+  return index;
 }
 
-export const usePlayerStore = create<PlayerState>((set, get) => ({
+/**
+ * 尝试从 track 对象中解析出“身份 Id”，用于在列表变动后保持当前播放行。
+ */
+function getTrackIdentity(track: PlayerTrack | undefined): string | null {
+  if (!track) return null;
+  if (track.id) return String(track.id);
+  if (track.filePath) return track.filePath;
+
+  const anyTrack = track as any;
+  if (anyTrack.identity) return String(anyTrack.identity);
+  if (anyTrack.path) return String(anyTrack.path);
+  if (anyTrack.location) return String(anyTrack.location);
+
+  return null;
+}
+
+export const usePlayerStore = create<PlayerState>((set) => ({
   playlist: [],
   tracks: [],
 
@@ -120,10 +144,30 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       };
     }),
 
-  setTracks: (tracks) => {
-    const list = Array.isArray(tracks) ? tracks : [];
-    get().setPlaylist(list as PlayerTrack[]);
-  },
+  setTracks: (tracks) =>
+    set((state) => {
+      const nextList = Array.isArray(tracks) ? tracks.slice() : [];
+
+      if (nextList.length === 0) {
+        return {
+          ...state,
+          playlist: [],
+          tracks: [],
+          currentIndex: -1,
+          isPlaying: false,
+          currentTime: 0,
+          duration: 0,
+          pendingSeek: null,
+        };
+      }
+
+      return {
+        ...state,
+        playlist: nextList,
+        tracks: nextList,
+        currentIndex: clampIndex(state.currentIndex, nextList),
+      };
+    }),
 
   playTrack: (index) =>
     set((state) => {
@@ -131,61 +175,63 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       if (!list || list.length === 0) {
         return state;
       }
-      let idx = index;
-      if (idx < 0) idx = 0;
-      if (idx >= list.length) idx = list.length - 1;
+
+      const safeIndex = clampIndex(index, list);
+      if (safeIndex < 0) {
+        return state;
+      }
 
       return {
         ...state,
-        currentIndex: idx,
-        isPlaying: true,
+        currentIndex: safeIndex,
         pendingSeek: 0,
         currentTime: 0,
+        isPlaying: true,
       };
     }),
 
   togglePlay: () =>
     set((state) => {
-      if (!state.playlist.length) {
+      if (!state.playlist || state.playlist.length === 0) {
         return state;
       }
+
+      // 如果还没有 currentIndex，默认从 0 开始播放
+      const newIndex =
+        state.currentIndex < 0
+          ? 0
+          : clampIndex(state.currentIndex, state.playlist);
+
       return {
         ...state,
+        currentIndex: newIndex,
         isPlaying: !state.isPlaying,
       };
     }),
 
   setVolume: (value) =>
-    set(() => ({
+    set((state) => ({
+      ...state,
       volume: clampVolume(value),
     })),
 
   seek: (seconds) =>
     set((state) => ({
       ...state,
-      pendingSeek: seconds,
-      currentTime: seconds,
+      pendingSeek: Number.isFinite(seconds) ? Math.max(seconds, 0) : 0,
     })),
 
   setPosition: (seconds) =>
-    set((state) => {
-      if (!Number.isFinite(seconds)) return state;
-      return {
-        ...state,
-        currentTime: seconds,
-      };
-    }),
+    set((state) => ({
+      ...state,
+      currentTime: Number.isFinite(seconds) ? Math.max(seconds, 0) : 0,
+    })),
 
   setDuration: (seconds) =>
-    set((state) => {
-      if (!Number.isFinite(seconds) || seconds <= 0) {
-        return state;
-      }
-      return {
-        ...state,
-        duration: seconds,
-      };
-    }),
+    set((state) => ({
+      ...state,
+      duration: Number.isFinite(seconds) ? Math.max(seconds, 0) : 0,
+    })),
 
   clearPendingSeek: () =>
     set((state) => ({
@@ -206,52 +252,24 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         return state;
       }
 
-      const lastIndex = list.length - 1;
+      const cursor = {
+        length: list.length,
+        currentIndex: state.currentIndex,
+      };
 
-      // 单曲循环：只回到本曲开头
-      if (state.mode === "repeat-one") {
-        return {
-          ...state,
-          pendingSeek: 0,
-          currentTime: 0,
-          isPlaying: true,
-        };
-      }
+      const nextIndex = computeNextIndex(cursor, state.mode);
 
-      // 当前还没确定 index 时，直接从 0 开始
-      if (state.currentIndex < 0) {
-        return {
-          ...state,
-          currentIndex: 0,
-          pendingSeek: 0,
-          currentTime: 0,
-          isPlaying: true,
-        };
-      }
-
-      // 已经是最后一首
-      if (state.currentIndex >= lastIndex) {
-        if (state.mode === "repeat-all") {
-          // 列表循环：回到第一首
-          return {
-            ...state,
-            currentIndex: 0,
-            pendingSeek: 0,
-            currentTime: 0,
-            isPlaying: true,
-          };
-        }
-        // 顺序播放：停在最后一首并暂停
+      // 顺序播放且已经到尾：停止播放，不改 index
+      if (nextIndex === -1) {
         return {
           ...state,
           isPlaying: false,
         };
       }
 
-      // 正常下一首
       return {
         ...state,
-        currentIndex: state.currentIndex + 1,
+        currentIndex: nextIndex,
         pendingSeek: 0,
         currentTime: 0,
         isPlaying: true,
@@ -264,9 +282,6 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       if (!list || list.length === 0) {
         return state;
       }
-      if (state.currentIndex < 0) {
-        return state;
-      }
 
       // 若当前已播放超过 3 秒，先回到本曲开头
       if (state.currentTime > 3) {
@@ -277,8 +292,19 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         };
       }
 
-      // 已经是第一首了，就只回到头
-      if (state.currentIndex === 0) {
+      const cursor = {
+        length: list.length,
+        currentIndex:
+          state.currentIndex < 0
+            ? 0
+            : clampIndex(state.currentIndex, list),
+      };
+
+      const prevIndex = computePrevIndex(cursor, state.mode);
+
+      // prevIndex 可能等于当前 index（例如 repeat-one / index=0 时），
+      // 这里仍然把它当成“回到本曲开头处理”，不强制改变播放状态。
+      if (prevIndex === state.currentIndex) {
         return {
           ...state,
           pendingSeek: 0,
@@ -286,10 +312,9 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         };
       }
 
-      // 正常上一首
       return {
         ...state,
-        currentIndex: state.currentIndex - 1,
+        currentIndex: prevIndex,
         pendingSeek: 0,
         currentTime: 0,
         isPlaying: true,

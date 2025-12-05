@@ -1,6 +1,6 @@
-// src/components/playlists/PlaylistTable.tsx
 import React from "react";
-import { PlayerTrack } from "../../store/player";
+import { invoke } from "@tauri-apps/api/core";
+import type { PlayerTrack } from "../../types/track";
 import {
   getTrackTitle,
   getTrackArtist,
@@ -12,6 +12,8 @@ import {
   playFromQueue,
   getQueueSnapshot,
 } from "../../playlists/playQueueModel";
+import { LibraryTrackContextMenu } from "../library/LibraryTrackContextMenu";
+import { log } from "../../utils/log";
 
 interface PlaylistTableProps {
   tracks: PlayerTrack[];
@@ -21,11 +23,78 @@ interface PlaylistTableProps {
   makeIdentityKey: (track: any) => string;
 }
 
+interface ContextMenuState {
+  visible: boolean;
+  x: number;
+  y: number;
+  track: PlayerTrack | null;
+}
+
+/**
+ * 提取文件所在目录
+ */
+function getDirectoryPathFromTrack(track: PlayerTrack): string | null {
+  const anyTrack = track as any;
+  const fullPath =
+    anyTrack.filePath ?? anyTrack.path ?? anyTrack.location ?? null;
+  if (!fullPath || typeof fullPath !== "string") return null;
+
+  const lastSep = Math.max(
+    fullPath.lastIndexOf("\\"),
+    fullPath.lastIndexOf("/"),
+  );
+  if (lastSep <= 0) return null;
+
+  return fullPath.slice(0, lastSep);
+}
+
+/**
+ * 处理 Windows 下 \\?\UNC\ 前缀，给 opener 用
+ */
+function normalizeWindowsDirPath(dirPath: string): string {
+  if (dirPath.startsWith("\\\\?\\UNC\\")) {
+    // \\?\UNC\server\share\path -> \\server\share\path
+    return "\\" + dirPath.slice("\\\\?\\UNC\\".length);
+  }
+  if (dirPath.startsWith("\\\\?\\")) {
+    // \\?\C:\Music -> C:\Music
+    return dirPath.slice("\\\\?\\".length);
+  }
+  return dirPath;
+}
+
+/**
+ * 调用 tauri-plugin-opener 打开文件所在目录（统一用 open_path）
+ */
+async function openFolderForTrack(track: PlayerTrack): Promise<void> {
+  const rawDir = getDirectoryPathFromTrack(track);
+  if (!rawDir) {
+    log.warn("PlaylistTable", "无法解析曲目的所在目录", { track });
+    return;
+  }
+
+  const dirPath = normalizeWindowsDirPath(rawDir);
+
+  try {
+    await invoke("plugin:opener|open_path", { path: dirPath });
+  } catch (err) {
+    log.warn(
+      "PlaylistTable",
+      "调用 opener 打开文件所在目录失败（插件未配置、路径不兼容或权限不足）",
+      {
+        dirPath,
+        err,
+        track,
+      },
+    );
+  }
+}
+
 /**
  * 播放列表页表格视图。
  *
  * 职责：
- * - 只负责 UI + 行为（双击播放 / 下一首 / 加入队列）。
+ * - 只负责 UI + 行为（双击播放 / 下一首 / 加入队列 / 右键菜单）。
  * - 所有“真实队列”操作统一走 playQueueModel：
  *   - playFromQueue / appendToQueue / playNext / getQueueSnapshot
  */
@@ -37,6 +106,13 @@ const PlaylistTable: React.FC<PlaylistTableProps> = ({
   const safeTracks: PlayerTrack[] = Array.isArray(tracks)
     ? (tracks as PlayerTrack[])
     : [];
+
+  const [contextMenu, setContextMenu] = React.useState<ContextMenuState>({
+    visible: false,
+    x: 0,
+    y: 0,
+    track: null,
+  });
 
   // 当前队列快照，用于判断“是否在队列中”“是否为当前播放曲目”
   const queueSnapshot = getQueueSnapshot();
@@ -93,6 +169,25 @@ const PlaylistTable: React.FC<PlaylistTableProps> = ({
   /** 追加到当前队列末尾 */
   const handleAppendToQueue = (track: PlayerTrack): void => {
     appendToQueue([track]);
+  };
+
+  const handleOpenContextMenu = (
+    event: React.MouseEvent<HTMLTableRowElement>,
+    track: PlayerTrack,
+  ) => {
+    event.preventDefault();
+    setContextMenu({
+      visible: true,
+      x: event.clientX,
+      y: event.clientY,
+      track,
+    });
+  };
+
+  const handleCloseContextMenu = () => {
+    setContextMenu((prev) =>
+      prev.visible ? { ...prev, visible: false, track: null } : prev,
+    );
   };
 
   const formatLastPlayed = (
@@ -195,6 +290,7 @@ const PlaylistTable: React.FC<PlaylistTableProps> = ({
                 <tr
                   key={key}
                   onDoubleClick={() => handleRowDoubleClick(track)}
+                  onContextMenu={(e) => handleOpenContextMenu(e, track)}
                   style={{
                     cursor: "pointer",
                     backgroundColor: isCurrent
@@ -308,6 +404,33 @@ const PlaylistTable: React.FC<PlaylistTableProps> = ({
           )}
         </tbody>
       </table>
+
+      <LibraryTrackContextMenu
+        visible={contextMenu.visible && !!contextMenu.track}
+        x={contextMenu.x}
+        y={contextMenu.y}
+        onClose={handleCloseContextMenu}
+        onPlay={() => {
+          if (!contextMenu.track) return;
+          handleRowDoubleClick(contextMenu.track);
+          handleCloseContextMenu();
+        }}
+        onPlayNext={() => {
+          if (!contextMenu.track) return;
+          handlePlayNext(contextMenu.track);
+          handleCloseContextMenu();
+        }}
+        onAppendToQueue={() => {
+          if (!contextMenu.track) return;
+          handleAppendToQueue(contextMenu.track);
+          handleCloseContextMenu();
+        }}
+        onOpenFolder={() => {
+          if (!contextMenu.track) return;
+          void openFolderForTrack(contextMenu.track);
+          handleCloseContextMenu();
+        }}
+      />
     </div>
   );
 };
