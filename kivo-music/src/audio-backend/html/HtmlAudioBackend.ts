@@ -1,6 +1,7 @@
 // src/audio-backend/html/HtmlAudioBackend.ts
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { log } from "../../utils/log";
+import { bumpPlayStatsForTrack } from "../../library/libraryModel";
 import type {
   AudioBackend,
   AudioBackendContext,
@@ -21,10 +22,10 @@ import type {
  */
 export class HtmlAudioBackend implements AudioBackend {
   private audio: HTMLAudioElement | null = null;
-  private readonly context: AudioBackendContext;
+  private context: AudioBackendContext;
   private snapshot: PlayerSnapshot | null = null;
 
-  // 事件绑定引用，保持 this 指向稳定
+  // 统一绑定到 audio 事件的回调，避免频繁创建新函数
   private boundOnTimeUpdate = () => this.handleTimeUpdate();
   private boundOnLoadedMetadata = () => this.handleTimeUpdate();
   private boundOnDurationChange = () => this.handleTimeUpdate();
@@ -103,83 +104,83 @@ export class HtmlAudioBackend implements AudioBackend {
       return;
     }
 
-    const { playlist, currentIndex, isPlaying } = snapshot;
-    const hasPlaylist = Array.isArray(playlist) && playlist.length > 0;
-    const track = hasPlaylist ? playlist[currentIndex] : null;
+    const playlist = Array.isArray(snapshot.playlist) ? snapshot.playlist : [];
+    const currentIndex =
+      typeof snapshot.currentIndex === "number" ? snapshot.currentIndex : -1;
+    const isPlaying = !!snapshot.isPlaying;
 
-    // 1. 队列为空 → 正常状态（例如应用刚启动、用户清空队列）
-    if (!hasPlaylist) {
+    // 1. 队列为空：重置 audio 状态，视为正常 idle，不回调 onEnded
+    if (playlist.length === 0 || currentIndex < 0) {
       log.debug(
         "HtmlAudioBackend",
-        "当前没有播放队列，停止播放并清空 src",
-        { currentIndex },
+        "队列为空或索引无效，重置 audio 至空闲状态",
+        { currentIndex, playlistLength: playlist.length },
       );
       try {
         audio.pause();
         audio.removeAttribute("src");
         audio.load();
       } catch (err) {
-        log.warn("HtmlAudioBackend", "清空队列时重置 audio 失败", { err });
+        log.warn(
+          "HtmlAudioBackend",
+          "重置空闲状态时操作 audio 失败（忽略）",
+          { err },
+        );
       }
-      this.context.onTimeUpdate?.(0, null);
       return;
     }
 
-    // 2. 队列存在但当前索引找不到曲目 → 通常是越界 / 状态不同步
-    if (!track) {
-      log.warn(
-        "HtmlAudioBackend",
-        "playlist 存在但 currentIndex 无效，视为当前曲目结束，交给上层处理",
-        { currentIndex, playlistLength: playlist.length },
-      );
-      try {
-        audio.pause();
-      } catch {
-        // ignore
-      }
-      this.context.onEnded?.();
-      return;
-    }
+    // 2. 解析当前 track 对应的文件路径
+    const track = playlist[currentIndex];
+    const filePath = this.resolveTrackFilePath(track);
 
-    // 3. 无法解析出文件路径 → 认为是坏数据，跳过
-    const filePath = this.getTrackFilePath(track);
     if (!filePath) {
-      const error = new Error(
-        "当前曲目缺少可用的文件路径 (filePath/path/location/src)",
-      );
       log.warn(
         "HtmlAudioBackend",
-        "无法从 track 中解析出文件路径，自动跳过该曲目",
+        "当前曲目无法解析到有效文件路径，将视为已结束并交给上层处理",
         { currentIndex, track },
       );
-      this.context.onError?.(error);
       this.context.onEnded?.();
       return;
     }
 
-    const srcUrl = convertFileSrc(filePath);
+    // 3. 如果 src 发生变化，则切歌
+    const nextSrc = convertFileSrc(filePath);
 
-    // 4. 如果切换了曲目 / 路径，与当前 src 不同，则重新加载
-    if (audio.src !== srcUrl) {
-      log.debug("HtmlAudioBackend", "切换底层 audio.src", {
+    if (audio.src !== nextSrc) {
+      log.debug("HtmlAudioBackend", "检测到切歌，更新 audio.src", {
         currentIndex,
         filePath,
-        srcUrl,
       });
+      try {
+        audio.pause();
+      } catch (err) {
+        log.warn("HtmlAudioBackend", "切歌前 pause() 失败（忽略）", { err });
+      }
 
       try {
-        audio.src = srcUrl;
-        audio.load();
+        audio.src = nextSrc;
+        // 切歌后重置进度，让 loadedmetadata/durationchange 事件重新上报
+        audio.currentTime = 0;
       } catch (err) {
-        log.error("HtmlAudioBackend", "设置 audio.src 或 load() 失败，将跳过当前曲目", {
+        log.error("HtmlAudioBackend", "设置 audio.src 失败，将尝试跳过当前曲目", {
           err,
           filePath,
-          srcUrl,
         });
         this.context.onError?.(err);
         this.context.onEnded?.();
         return;
       }
+    }
+
+    // 4. 根据 isPlaying 决定播放 / 暂停
+    if (!isPlaying) {
+      try {
+        audio.pause();
+      } catch (err) {
+        log.warn("HtmlAudioBackend", "调用 pause() 失败", { err });
+      }
+      return;
     }
 
     // 5. 播放 / 暂停
@@ -221,8 +222,7 @@ export class HtmlAudioBackend implements AudioBackend {
   }
 
   /**
-   * 应用一次 pendingSeek 请求。
-   * - 由 AudioEngine 控制 pendingSeek 生命周期，这里只负责“执行”。
+   * 应用 pendingSeek：这里直接修改 audio.currentTime。
    */
   applyPendingSeek(pendingSeek: number | null): void {
     const audio = this.audio;
@@ -230,34 +230,30 @@ export class HtmlAudioBackend implements AudioBackend {
 
     try {
       audio.currentTime = pendingSeek;
-      // 立即同步一次进度给上层，避免 UI 跳动不及时
-      const duration =
-        Number.isFinite(audio.duration) && audio.duration > 0
-          ? audio.duration
-          : null;
-      this.context.onTimeUpdate?.(audio.currentTime || 0, duration);
     } catch (err) {
-      log.warn("HtmlAudioBackend", "applyPendingSeek 失败", {
+      log.warn("HtmlAudioBackend", "应用 pendingSeek 失败（忽略）", {
         pendingSeek,
         err,
       });
-      this.context.onError?.(err);
     }
   }
 
   /**
-   * 设置播放音量（0 ~ 1）。
+   * 设置音量（0~1）
    */
   setVolume(volume: number): void {
     const audio = this.audio;
     if (!audio) return;
 
-    // 做一层兜底，避免组件传入越界值
-    const safeVolume = Math.min(1, Math.max(0, volume));
-    audio.volume = safeVolume;
+    const clamped = Math.max(0, Math.min(1, volume));
+    try {
+      audio.volume = clamped;
+    } catch (err) {
+      log.warn("HtmlAudioBackend", "设置音量失败（忽略）", { volume, err });
+    }
   }
 
-  // === 事件绑定相关 ===
+  // === 内部事件处理 & 工具方法 ===
 
   private attachEvents(audio: HTMLAudioElement) {
     audio.addEventListener("timeupdate", this.boundOnTimeUpdate);
@@ -279,32 +275,49 @@ export class HtmlAudioBackend implements AudioBackend {
     audio.removeEventListener("suspend", this.boundOnSuspend);
   }
 
-  // === 事件处理 ===
-
   /**
-   * 统一处理进度更新：
-   * - timeupdate
-   * - loadedmetadata
-   * - durationchange
+   * 同步当前时间 & 时长到上层。
+   * - timeupdate / loadedmetadata / durationchange 都会触发这里。
    */
   private handleTimeUpdate() {
     const audio = this.audio;
     if (!audio) return;
 
-    try {
-      const currentTime = audio.currentTime || 0;
-      const duration =
-        Number.isFinite(audio.duration) && audio.duration > 0
-          ? audio.duration
-          : null;
-      this.context.onTimeUpdate?.(currentTime, duration);
-    } catch (err) {
-      log.warn("HtmlAudioBackend", "读取 audio 进度失败", { err });
-    }
+    const currentTime = audio.currentTime ?? 0;
+    const duration =
+      audio.duration && Number.isFinite(audio.duration)
+        ? audio.duration
+        : null;
+
+    this.context.onTimeUpdate?.(currentTime, duration);
   }
 
   private handleEnded() {
     log.debug("HtmlAudioBackend", "音频播放结束 (ended)");
+
+    // 在“自然播放结束”时更新一次播放统计：
+    // - 只在正常 ended 事件中统计，不在错误 / 路径无效时统计；
+    // - 利用当前快照中的 playlist/currentIndex 找到对应曲目，
+    //   交给 libraryModel 负责持久化和归一化。
+    try {
+      const snapshot = this.snapshot;
+      const list = Array.isArray(snapshot?.playlist) ? snapshot!.playlist : [];
+      const index =
+        typeof snapshot?.currentIndex === "number" ? snapshot!.currentIndex : -1;
+
+      if (index >= 0 && index < list.length) {
+        const finishedTrack = list[index];
+        // 这里不关心 track 的具体结构，由 bumpPlayStatsForTrack 负责做 identity 匹配。
+        // 即使库里没有这首歌，也只是静默忽略。
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        bumpPlayStatsForTrack(finishedTrack as any);
+      }
+    } catch (err) {
+      log.warn("HtmlAudioBackend", "handleEnded 统计播放次数失败（忽略此错误）", {
+        err,
+      });
+    }
+
     this.context.onEnded?.();
   }
 
@@ -330,8 +343,7 @@ export class HtmlAudioBackend implements AudioBackend {
 
   /**
    * audio 元素报错：
-   * - code === 1 (MEDIA_ERR_ABORTED)：通常是用户切歌 / 手动中断 → 记 debug 即可；
-   * - code === 3/4：解码失败 / 格式不支持 → 视为当前曲目坏了，自动当作 ended；
+   * - code === 1 (MEDIA_ERR_ABORTED)：通常是被用户中断，视为正常；
    * - 其他：通过 onError 抛给上层，并写 error 日志。
    */
   private handleError() {
@@ -346,47 +358,27 @@ export class HtmlAudioBackend implements AudioBackend {
 
     const { code, message } = mediaError as any;
 
-    // 1 = MEDIA_ERR_ABORTED：一般是用户操作中断播放
     if (code === 1) {
+      // 用户中断（例如切歌），不视为错误
       log.debug(
         "HtmlAudioBackend",
-        "收到 MEDIA_ERR_ABORTED（通常是用户中断播放），忽略",
+        "audio 报错 code=1 (MEDIA_ERR_ABORTED)，视为用户中断",
         { code, message },
       );
       return;
     }
 
-    // 3 = MEDIA_ERR_DECODE，4 = MEDIA_ERR_SRC_NOT_SUPPORTED
-    if (code === 3 || code === 4) {
-      log.warn(
-        "HtmlAudioBackend",
-        "媒体解码失败或格式不受支持，视为坏文件，自动跳过当前曲目",
-        { code, message },
-      );
-      this.context.onError?.(mediaError);
+    log.error("HtmlAudioBackend", "audio 报错", { code, message });
 
-      try {
-        audio.pause();
-      } catch {
-        // ignore
-      }
-
-      this.context.onEnded?.();
-      return;
-    }
-
-    // 其他错误：上抛 + 记 error 日志
-    log.error("HtmlAudioBackend", "audio 触发未知错误", { code, message });
     this.context.onError?.(mediaError);
   }
 
-  // === 工具方法 ===
-
   /**
-   * 尝试从 track 对象中解析出本地文件路径。
-   * - 兼容多种字段命名，避免前后版本不一致导致播放失败。
+   * 尝试从 playlist 的 track 对象中解析出文件路径：
+   * - 兼容多种字段命名；
+   * - 如果都拿不到，返回 null。
    */
-  private getTrackFilePath(track: any): string | null {
+  private resolveTrackFilePath(track: any): string | null {
     if (!track || typeof track !== "object") return null;
 
     const candidate =

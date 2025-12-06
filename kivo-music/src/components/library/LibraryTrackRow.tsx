@@ -7,6 +7,7 @@ import {
   getTrackAlbum,
   toggleFavorite,
 } from "../../library/libraryModel";
+import { useI18n } from "../../i18n";
 
 interface LibraryTrackRowProps {
   track: LibraryTrack;
@@ -23,10 +24,10 @@ interface LibraryTrackRowProps {
 }
 
 /**
- * 单行曲目展示行：
+ * 单行曲目：
  * - 双击播放
- * - ♥ 喜欢
- * - “下一首 / 加入队列”按钮
+ * - 喜欢 ♥
+ * - “下一首 / 加入队列”按钮（走 i18n 文案）
  * - 行右键触发外部的 context menu
  */
 export const LibraryTrackRow: React.FC<LibraryTrackRowProps> = ({
@@ -38,11 +39,29 @@ export const LibraryTrackRow: React.FC<LibraryTrackRowProps> = ({
   onAppendToQueue,
   onContextMenu,
 }) => {
-  const title = getTrackTitle(track);
-  const artist = getTrackArtist(track);
-  const album = getTrackAlbum(track);
+  const { t } = useI18n();
+
+  const rawTitle = getTrackTitle(track);
+  const rawArtist = getTrackArtist(track);
+  const rawAlbum = getTrackAlbum(track);
+
+  const title =
+    rawTitle && rawTitle.trim().length > 0
+      ? rawTitle
+      : t("library.tracks.fallbackTitle");
+  const artist =
+    rawArtist && rawArtist.trim().length > 0
+      ? rawArtist
+      : t("library.tracks.fallbackArtist");
+  const album =
+    rawAlbum && rawAlbum.trim().length > 0
+      ? rawAlbum
+      : t("library.tracks.fallbackAlbum");
+
   const playCount = (track as any).playCount ?? 0;
-  const lastPlayedLabel = formatLastPlayed((track as any).lastPlayedAt);
+  const lastPlayedLabel = formatLastPlayed(
+    (track as any).lastPlayedAt ?? null,
+  );
   const favorite = !!(track as any).favorite;
 
   const handleDoubleClick = () => {
@@ -78,6 +97,7 @@ export const LibraryTrackRow: React.FC<LibraryTrackRowProps> = ({
         transition: "background-color 0.12s ease-out",
       }}
     >
+      {/* 序号 */}
       <td
         style={{
           padding: "6px 10px",
@@ -89,18 +109,23 @@ export const LibraryTrackRow: React.FC<LibraryTrackRowProps> = ({
       >
         {index + 1}
       </td>
+
+      {/* 标题 */}
       <td
         style={{
           padding: "6px 10px",
-          maxWidth: 260,
+          maxWidth: 240,
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
           borderBottom: "1px solid #f3f4f6",
+          color: "#111827",
         }}
       >
         {title}
       </td>
+
+      {/* 艺人 */}
       <td
         style={{
           padding: "6px 10px",
@@ -114,6 +139,8 @@ export const LibraryTrackRow: React.FC<LibraryTrackRowProps> = ({
       >
         {artist}
       </td>
+
+      {/* 专辑 */}
       <td
         style={{
           padding: "6px 10px",
@@ -125,19 +152,23 @@ export const LibraryTrackRow: React.FC<LibraryTrackRowProps> = ({
           color: "#6b7280",
         }}
       >
-        {album || "-"}
+        {album}
       </td>
+
+      {/* 播放次数 */}
       <td
         style={{
           padding: "6px 10px",
           textAlign: "right",
-          borderBottom: "1px solid #f3f4f6",
           fontVariantNumeric: "tabular-nums",
+          borderBottom: "1px solid #f3f4f6",
           color: "#4b5563",
         }}
       >
         {playCount}
       </td>
+
+      {/* 最近播放时间 */}
       <td
         style={{
           padding: "6px 10px",
@@ -149,6 +180,8 @@ export const LibraryTrackRow: React.FC<LibraryTrackRowProps> = ({
       >
         {lastPlayedLabel}
       </td>
+
+      {/* 喜欢 ♥ */}
       <td
         style={{
           padding: "6px 10px",
@@ -165,16 +198,24 @@ export const LibraryTrackRow: React.FC<LibraryTrackRowProps> = ({
             fontSize: 16,
             color: favorite ? "#f97316" : "#d1d5db",
           }}
-          title={favorite ? "取消喜欢" : "标记为喜欢"}
+          title={
+            favorite
+              ? t("library.tracks.favorite.tooltip.on")
+              : t("library.tracks.favorite.tooltip.off")
+          }
         >
           {favorite ? "♥" : "♡"}
         </button>
       </td>
+
+      {/* 行内操作按钮：下一首 / 加入队列 */}
       <td
         style={{
           padding: "6px 10px",
-          textAlign: "center",
           borderBottom: "1px solid #f3f4f6",
+          fontSize: 12,
+          color: "#2563eb",
+          whiteSpace: "nowrap",
         }}
       >
         <button
@@ -187,10 +228,11 @@ export const LibraryTrackRow: React.FC<LibraryTrackRowProps> = ({
             color: "#2563eb",
             marginRight: 8,
           }}
-          title="设为下一首播放"
+          title={t("library.contextMenu.playNext")}
         >
-          下一首
+          {t("library.contextMenu.playNext")}
         </button>
+
         <button
           onClick={handleAppendClick}
           style={{
@@ -200,9 +242,9 @@ export const LibraryTrackRow: React.FC<LibraryTrackRowProps> = ({
             fontSize: 12,
             color: "#6b7280",
           }}
-          title="添加到当前队列末尾"
+          title={t("library.contextMenu.appendToQueue")}
         >
-          加入队列
+          {t("library.contextMenu.appendToQueue")}
         </button>
       </td>
     </tr>

@@ -3,6 +3,7 @@ import React from "react";
 import type { PlayerTrack } from "../../store/player";
 import { useKivoTheme } from "../../styles/ThemeContext";
 import { KivoButton } from "../common/KivoButton";
+import { useI18n } from "../../i18n";
 
 export type PlaylistTabKey =
   | "queue"
@@ -51,23 +52,28 @@ const PlaylistHeader: React.FC<PlaylistHeaderProps> = ({
 }) => {
   const { theme } = useKivoTheme();
   const { colors, radius, spacing } = theme;
+  const { t } = useI18n();
 
   const totalCount = tabs.find((t) => t.key === "queue")?.count ?? 0;
 
-  const description = `根据“当前队列 / 最近添加 / 最近播放 / 常常播放 / 喜欢的歌曲”等模式，从当前曲目集合生成智能播放列表。目前共有 ${totalCount} 首曲目可供排列组合。`;
+  const description = t("playlists.header.description").replace(
+    "{count}",
+    String(totalCount),
+  );
 
   const currentTitle =
     currentTrack?.title ||
     // 兼容可能存在的 name 字段
     // @ts-expect-error 兼容旧数据结构
     currentTrack?.name ||
-    "当前没有正在播放的歌曲";
+    t("playlists.header.current.fallbackTitle");
 
   const currentArtist =
     currentTrack?.artist ||
+    // 兼容可能存在的 name 字段
     // @ts-expect-error 兼容旧数据结构
     currentTrack?.artistName ||
-    "选择一首歌开始播放，或从任意列表中双击添加到队列";
+    t("playlists.header.current.fallbackSubtitle");
 
   const containerStyle: React.CSSProperties = {
     padding: spacing.lg,
@@ -86,7 +92,7 @@ const PlaylistHeader: React.FC<PlaylistHeaderProps> = ({
     gap: spacing.lg,
     padding: spacing.lg,
     borderRadius: radius.xl,
-    backgroundColor: "#0f172a", // 深底色
+    backgroundColor: "#0f172a",
     backgroundImage:
       "radial-gradient(circle at 0% 0%, rgba(59,130,246,0.6), transparent 55%), radial-gradient(circle at 120% 120%, rgba(56,189,248,0.35), transparent 55%)",
     backgroundRepeat: "no-repeat",
@@ -146,12 +152,14 @@ const PlaylistHeader: React.FC<PlaylistHeaderProps> = ({
     backgroundColor: "rgba(15,23,42,0.75)",
     borderWidth: 1,
     borderStyle: "solid",
-    borderColor: "rgba(148,163,184,0.6)",
+    borderColor: "rgba(148,163,184,0.55)",
+    marginBottom: 6,
   };
 
   const tabsRowStyle: React.CSSProperties = {
     marginTop: spacing.md,
     display: "flex",
+    flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
   };
@@ -169,8 +177,16 @@ const PlaylistHeader: React.FC<PlaylistHeaderProps> = ({
     <header style={containerStyle}>
       {/* 顶部智能列表说明 + 当前播放卡片 */}
       <div style={heroStyle}>
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={titleStyle}>播放列表 & 智能列表</div>
+        <div
+          style={{
+            flex: 1,
+            minWidth: 0,
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+          }}
+        >
+          <div style={titleStyle}>{t("playlists.header.title")}</div>
           <div style={descStyle}>{description}</div>
           <div
             style={{
@@ -179,12 +195,14 @@ const PlaylistHeader: React.FC<PlaylistHeaderProps> = ({
               color: "rgba(191,219,254,0.95)",
             }}
           >
-            智能列表会优先考虑你的最近播放、播放次数和“喜欢的歌曲”等行为数据。
+            {t("playlists.header.smartListTip")}
           </div>
         </div>
 
         <div style={currentCardStyle}>
-          <span style={badgeStyle}>正在播放</span>
+          <span style={badgeStyle}>
+            {t("playlists.header.current.badgeNowPlaying")}
+          </span>
           <div style={currentTitleStyle}>{currentTitle}</div>
           <div style={currentArtistStyle}>{currentArtist}</div>
         </div>
@@ -217,7 +235,6 @@ const PlaylistHeader: React.FC<PlaylistHeaderProps> = ({
                   alignItems: "center",
                   gap: 6,
                   cursor: "pointer",
-                  whiteSpace: "nowrap",
                 }}
               >
                 <span>{tab.label}</span>
@@ -226,8 +243,9 @@ const PlaylistHeader: React.FC<PlaylistHeaderProps> = ({
                     fontSize: 11,
                     padding: "0 6px",
                     borderRadius: 9999,
-                    backgroundColor: "rgba(15,23,42,0.18)",
-                    color: colors.textOnLight,
+                    backgroundColor: isActive
+                      ? "rgba(15,23,42,0.9)"
+                      : "rgba(15,23,42,0.08)",
                   }}
                 >
                   {tab.count}
@@ -241,7 +259,7 @@ const PlaylistHeader: React.FC<PlaylistHeaderProps> = ({
 
         {/* 清空队列按钮 */}
         <KivoButton variant="danger" size="sm" onClick={onClearQueue}>
-          清空当前播放队列
+          {t("playlists.header.actions.clearQueue")}
         </KivoButton>
       </div>
     </header>

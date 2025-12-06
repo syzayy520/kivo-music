@@ -13,6 +13,7 @@ import { LibraryTrackRow } from "./LibraryTrackRow";
 import { LibraryTrackContextMenu } from "./LibraryTrackContextMenu";
 import { invoke } from "@tauri-apps/api/core";
 import { log } from "../../utils/log";
+import { useI18n } from "../../i18n";
 
 interface Props {
   tracks: LibraryTrack[];
@@ -140,6 +141,8 @@ export const LibraryTracksView: React.FC<Props> = ({
     rowIndex: null,
     track: null,
   });
+
+  const { t } = useI18n();
 
   const currentIdentity = usePlayerStore((state) => {
     const current = state.playlist[state.currentIndex] as
@@ -285,7 +288,7 @@ export const LibraryTracksView: React.FC<Props> = ({
                 minWidth: 160,
               }}
             >
-              标题
+              {t("library.table.header.title")}
             </th>
             <th
               style={{
@@ -293,7 +296,7 @@ export const LibraryTracksView: React.FC<Props> = ({
                 minWidth: 140,
               }}
             >
-              艺人
+              {t("library.table.header.artist")}
             </th>
             <th
               style={{
@@ -301,7 +304,7 @@ export const LibraryTracksView: React.FC<Props> = ({
                 minWidth: 140,
               }}
             >
-              专辑
+              {t("library.table.header.album")}
             </th>
             <th
               style={{
@@ -310,7 +313,7 @@ export const LibraryTracksView: React.FC<Props> = ({
                 textAlign: "right",
               }}
             >
-              时长
+              {t("library.table.header.duration")}
             </th>
             <th
               style={{
@@ -319,7 +322,7 @@ export const LibraryTracksView: React.FC<Props> = ({
                 textAlign: "right",
               }}
             >
-              播放次数
+              {t("library.table.header.playCount")}
             </th>
             <th
               style={{
@@ -327,7 +330,7 @@ export const LibraryTracksView: React.FC<Props> = ({
                 width: 140,
               }}
             >
-              最近播放
+              {t("library.table.header.lastPlayed")}
             </th>
             <th
               style={{
@@ -336,7 +339,7 @@ export const LibraryTracksView: React.FC<Props> = ({
                 textAlign: "center",
               }}
             >
-              操作
+              {t("library.table.header.actions")}
             </th>
           </tr>
         </thead>

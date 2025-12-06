@@ -13,6 +13,8 @@ import {
 import { UpNextRow } from "./UpNextRow";
 import { log } from "../../utils/log";
 
+import { useI18n } from "../../i18n";
+
 /**
  * 接下来播放（Up Next）面板。
  *
@@ -22,6 +24,8 @@ import { log } from "../../utils/log";
  * - 所有对队列的修改统一走 playQueueModel。
  */
 export const UpNextPanel: React.FC = () => {
+  const { t } = useI18n();
+
   const playlist = usePlayerStore(
     (s) => s.playlist as PlayerTrack[] | undefined,
   );
@@ -50,23 +54,35 @@ export const UpNextPanel: React.FC = () => {
         }}
       >
         <div style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>
-          接下来播放
+          {t("nowPlaying.upNext.empty.title")}
         </div>
         <div>
-          当前播放队列为空。可以在资料库或播放列表中选择歌曲开始播放。
+          {t("nowPlaying.upNext.empty.description")}
         </div>
       </div>
     );
   }
 
   const total = playlist.length;
-  const headerTitle = "接下来播放";
-  const statusText =
-    currentIndex >= 0 && currentIndex < total
-      ? `当前第 ${currentIndex + 1} / ${total} 首 · ${
-          isPlaying ? "播放中" : "已暂停"
-        }`
-      : `共 ${total} 首曲目`;
+  const headerTitle = t("nowPlaying.upNext.header.title");
+
+  let statusText: string;
+  if (currentIndex >= 0 && currentIndex < total) {
+    const stateLabel = t(
+      isPlaying
+        ? "nowPlaying.info.status.playing"
+        : "nowPlaying.info.status.paused",
+    );
+    statusText = t("nowPlaying.upNext.header.status.withIndex")
+      .replace("{index}", String(currentIndex + 1))
+      .replace("{total}", String(total))
+      .replace("{state}", stateLabel);
+  } else {
+    statusText = t("nowPlaying.upNext.header.status.totalOnly").replace(
+      "{total}",
+      String(total),
+    );
+  }
 
   const handleClear = () => clearQueue();
 
@@ -100,7 +116,6 @@ export const UpNextPanel: React.FC = () => {
             style={{
               fontSize: 14,
               fontWeight: 600,
-              marginBottom: 2,
             }}
           >
             {headerTitle}
@@ -128,7 +143,7 @@ export const UpNextPanel: React.FC = () => {
             whiteSpace: "nowrap",
           }}
         >
-          清空队列
+          {t("nowPlaying.upNext.clearButton")}
         </button>
       </div>
 
@@ -172,7 +187,7 @@ export const UpNextPanel: React.FC = () => {
               minWidth: 0,
             }}
           >
-            曲目 / 艺人
+            {t("nowPlaying.upNext.column.trackAndArtist")}
           </div>
           <div
             style={{
@@ -180,7 +195,7 @@ export const UpNextPanel: React.FC = () => {
               textAlign: "right",
             }}
           >
-            状态
+            {t("nowPlaying.upNext.column.status")}
           </div>
           <div
             style={{
@@ -188,7 +203,7 @@ export const UpNextPanel: React.FC = () => {
               textAlign: "right",
             }}
           >
-            操作
+            {t("nowPlaying.upNext.column.actions")}
           </div>
         </div>
 
@@ -249,8 +264,10 @@ function buildTrackRowKey(track: PlayerTrack, index: number): string {
   const idPart =
     (track as any).id ??
     (track as any).trackId ??
-    (filePath ? filePath : (track as any).title ?? "track");
-  return `${idPart}::${index}`;
+    (track as any).trackID ??
+    "";
+  const safeId = String(idPart || index);
+  return `${filePath}::${safeId}`;
 }
 
 /**
@@ -274,15 +291,15 @@ function getDirectoryPathFromTrack(track: PlayerTrack): string | null {
 }
 
 /**
- * 处理 Windows 下 \\?\UNC\ 前缀，给 opener 用
+ * 处理 Windows 下 \\?\\UNC\\ 前缀，给 opener 用
  */
 function normalizeWindowsDirPath(dirPath: string): string {
   if (dirPath.startsWith("\\\\?\\UNC\\")) {
-    // \\?\UNC\server\share\path -> \\server\share\path
+    // \\?\\UNC\\server\\share\\path -> \\server\\share\\path
     return "\\" + dirPath.slice("\\\\?\\UNC\\".length);
   }
   if (dirPath.startsWith("\\\\?\\")) {
-    // \\?\C:\Music -> C:\Music
+    // \\?\\C:\\Music -> C:\\Music
     return dirPath.slice("\\\\?\\".length);
   }
   return dirPath;

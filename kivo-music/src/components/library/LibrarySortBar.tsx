@@ -1,5 +1,6 @@
 // src/components/library/LibrarySortBar.tsx
 import React from "react";
+import { useI18n } from "../../i18n";
 
 type SortKey = "none" | "title" | "artist";
 
@@ -17,6 +18,8 @@ export const LibrarySortBar: React.FC<LibrarySortBarProps> = ({
   sortAsc,
   onToggleSort,
 }) => {
+  const { t } = useI18n();
+
   const sortLabel = (key: SortKey) => {
     if (sortKey !== key) return "";
     return sortAsc ? "▲" : "▼";
@@ -43,8 +46,9 @@ export const LibrarySortBar: React.FC<LibrarySortBarProps> = ({
             color: sortKey === "none" ? "#111827" : "#6b7280",
           }}
         >
-          默认顺序
+          {t("library.sortBar.option.none")}
         </button>
+
         <button
           type="button"
           onClick={() => onToggleSort("title")}
@@ -55,8 +59,9 @@ export const LibrarySortBar: React.FC<LibrarySortBarProps> = ({
             color: sortKey === "title" ? "#111827" : "#6b7280",
           }}
         >
-          标题 {sortLabel("title")}
+          {t("library.sortBar.option.title")} {sortLabel("title")}
         </button>
+
         <button
           type="button"
           onClick={() => onToggleSort("artist")}
@@ -67,13 +72,11 @@ export const LibrarySortBar: React.FC<LibrarySortBarProps> = ({
             color: sortKey === "artist" ? "#111827" : "#6b7280",
           }}
         >
-          艺人 {sortLabel("artist")}
+          {t("library.sortBar.option.artist")} {sortLabel("artist")}
         </button>
       </div>
 
-      <div>
-        双击任意一行即可播放，使用当前筛选结果作为播放队列。
-      </div>
+      <div>{t("library.sortBar.hint.doubleClickToPlay")}</div>
     </div>
   );
 };

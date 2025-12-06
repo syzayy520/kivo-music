@@ -1,9 +1,11 @@
+// src/components/library/LibraryGroupViews.tsx
 import React, { useMemo } from "react";
 import {
   LibraryTrack,
   getTrackAlbum,
   getTrackArtist,
 } from "../../library/libraryModel";
+import { useI18n } from "../../i18n";
 
 type Mode = "albums" | "artists";
 
@@ -31,8 +33,12 @@ export const LibraryGroupViews: React.FC<Props> = ({
   tracks,
   onPlayGroup,
 }) => {
+  const { t } = useI18n();
+
+  // 分组：按专辑
   const albumGroups = useMemo<AlbumGroup[]>(() => {
     if (mode !== "albums") return [];
+
     const map = new Map<string, AlbumGroup>();
 
     for (const track of tracks) {
@@ -51,28 +57,35 @@ export const LibraryGroupViews: React.FC<Props> = ({
     return Array.from(map.values()).sort((a, b) =>
       a.album.localeCompare(b.album, "zh-CN"),
     );
-  }, [tracks, mode]);
+  }, [mode, tracks]);
 
+  // 分组：按艺人
   const artistGroups = useMemo<ArtistGroup[]>(() => {
     if (mode !== "artists") return [];
+
     const map = new Map<string, ArtistGroup>();
 
     for (const track of tracks) {
-      const artist = getTrackArtist(track);
-      const key = artist || "未知艺人";
+      const rawArtist = getTrackArtist(track) || "";
+      const key =
+        rawArtist && rawArtist.trim().length > 0
+          ? rawArtist
+          : "__UNKNOWN_ARTIST__";
+
       const existing = map.get(key);
       if (existing) {
         existing.tracks.push(track);
       } else {
-        map.set(key, { key, artist, tracks: [track] });
+        map.set(key, { key, artist: rawArtist, tracks: [track] });
       }
     }
 
     return Array.from(map.values()).sort((a, b) =>
-      a.artist.localeCompare(b.artist, "zh-CN"),
+      (a.artist || "").localeCompare(b.artist || "", "zh-CN"),
     );
-  }, [tracks, mode]);
+  }, [mode, tracks]);
 
+  // mode === "albums" · 按专辑视图
   if (mode === "albums") {
     if (albumGroups.length === 0) {
       return (
@@ -90,7 +103,7 @@ export const LibraryGroupViews: React.FC<Props> = ({
             color: "#9ca3af",
           }}
         >
-          当前筛选条件下没有专辑。
+          {t("library.groups.albums.empty")}
         </div>
       );
     }
@@ -115,6 +128,23 @@ export const LibraryGroupViews: React.FC<Props> = ({
         {albumGroups.map((group) => {
           const trackCount = group.tracks.length;
           const favoriteCount = group.tracks.filter((t) => t.favorite).length;
+
+          const trackCountLabel = t(
+            "library.groups.albums.card.trackCount",
+          ).replace("{count}", String(trackCount));
+
+          const favoriteCountLabel =
+            favoriteCount > 0
+              ? t("library.groups.albums.card.favoriteCount").replace(
+                  "{count}",
+                  String(favoriteCount),
+                )
+              : "";
+
+          const artistLabel =
+            group.artist && group.artist.trim().length > 0
+              ? group.artist
+              : t("library.groups.unknownArtistLabel");
 
           return (
             <div
@@ -150,8 +180,9 @@ export const LibraryGroupViews: React.FC<Props> = ({
               </div>
               <div
                 style={{
-                  fontSize: 14,
-                  fontWeight: 600,
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: "#111827",
                   marginBottom: 2,
                 }}
               >
@@ -164,7 +195,7 @@ export const LibraryGroupViews: React.FC<Props> = ({
                   marginBottom: 4,
                 }}
               >
-                {group.artist}
+                {artistLabel}
               </div>
               <div
                 style={{
@@ -172,8 +203,8 @@ export const LibraryGroupViews: React.FC<Props> = ({
                   color: "#9ca3af",
                 }}
               >
-                {trackCount} 首歌曲
-                {favoriteCount > 0 ? ` · ${favoriteCount} 首已标记喜欢` : ""}
+                {trackCountLabel}
+                {favoriteCountLabel}
               </div>
             </div>
           );
@@ -182,7 +213,7 @@ export const LibraryGroupViews: React.FC<Props> = ({
     );
   }
 
-  // mode === "artists"
+  // mode === "artists" · 按艺人视图
   if (artistGroups.length === 0) {
     return (
       <div
@@ -199,7 +230,7 @@ export const LibraryGroupViews: React.FC<Props> = ({
           color: "#9ca3af",
         }}
       >
-        当前筛选条件下没有艺人。
+        {t("library.groups.artists.empty")}
       </div>
     );
   }
@@ -240,7 +271,7 @@ export const LibraryGroupViews: React.FC<Props> = ({
                 color: "#6b7280",
               }}
             >
-              艺人
+              {t("library.groups.artists.header.artist")}
             </th>
             <th
               style={{
@@ -251,7 +282,7 @@ export const LibraryGroupViews: React.FC<Props> = ({
                 width: "20%",
               }}
             >
-              歌曲数量
+              {t("library.groups.artists.header.trackCount")}
             </th>
             <th
               style={{
@@ -262,7 +293,7 @@ export const LibraryGroupViews: React.FC<Props> = ({
                 width: "25%",
               }}
             >
-              专辑数量
+              {t("library.groups.artists.header.albumCount")}
             </th>
           </tr>
         </thead>
@@ -273,6 +304,11 @@ export const LibraryGroupViews: React.FC<Props> = ({
               group.tracks.map((t) => getTrackAlbum(t)),
             );
 
+            const artistLabel =
+              group.artist && group.artist.trim().length > 0
+                ? group.artist
+                : t("library.groups.unknownArtistLabel");
+
             return (
               <tr
                 key={group.key}
@@ -282,7 +318,7 @@ export const LibraryGroupViews: React.FC<Props> = ({
                   cursor: "default",
                 }}
               >
-                <td style={{ padding: "6px 12px" }}>{group.artist}</td>
+                <td style={{ padding: "6px 12px" }}>{artistLabel}</td>
                 <td
                   style={{
                     padding: "6px 12px",

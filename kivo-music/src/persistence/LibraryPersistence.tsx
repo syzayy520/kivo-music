@@ -82,15 +82,16 @@ function normalizeTrack(raw: any, index: number): MusicTrack {
       ? obj.name
       : fallbackTitle;
 
-  const artist: string =
+    const artist: string =
     typeof obj.artist === "string" && obj.artist.length > 0
       ? obj.artist
-      : "未知艺人";
+      : "";
 
   const album: string =
     typeof obj.album === "string" && obj.album.length > 0
       ? obj.album
-      : "未知专辑";
+      : "";
+
 
   const duration =
     typeof obj.duration === "number" && Number.isFinite(obj.duration)

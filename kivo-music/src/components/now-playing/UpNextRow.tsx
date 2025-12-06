@@ -6,6 +6,8 @@ import {
   KivoContextMenuItem,
 } from "../common/KivoContextMenu";
 
+import { useI18n } from "../../i18n";
+
 export interface UpNextRowProps {
   track: PlayerTrack;
   index: number;
@@ -46,8 +48,31 @@ export const UpNextRow: React.FC<UpNextRowProps> = ({
   onRemove,
   onOpenFolder,
 }) => {
-  const title = track?.title || "未知标题";
-  const artist = (track as any)?.artist || "未知艺人";
+  const { t } = useI18n();
+
+  const rawTitle =
+    (track as any)?.title ??
+    (track as any)?.name ??
+    "";
+
+  const rawArtist = (track as any)?.artist ?? "";
+
+  const normalizedArtist = (() => {
+    const trimmed = typeof rawArtist === "string" ? rawArtist.trim() : "";
+    if (!trimmed) return "";
+    if (trimmed === "未知艺人") return "";
+    return trimmed;
+  })();
+
+  const title =
+    rawTitle && String(rawTitle).trim().length > 0
+      ? String(rawTitle)
+      : t("library.tracks.fallbackTitle");
+
+  const artist =
+    normalizedArtist && normalizedArtist.length > 0
+      ? normalizedArtist
+      : t("library.tracks.fallbackArtist");
 
   // 右键菜单状态
   const [menuVisible, setMenuVisible] = React.useState(false);
@@ -69,9 +94,9 @@ export const UpNextRow: React.FC<UpNextRowProps> = ({
   };
 
   const handleRowDoubleClick: React.MouseEventHandler<HTMLDivElement> = (
-    event,
+    ev,
   ) => {
-    event.stopPropagation();
+    ev.stopPropagation();
     onPlay();
   };
 
@@ -99,14 +124,14 @@ export const UpNextRow: React.FC<UpNextRowProps> = ({
   const contextMenuItems: KivoContextMenuItem[] = [
     {
       key: "play",
-      label: "播放此曲目",
+      label: t("nowPlaying.upNext.menu.playThisTrack"),
       onClick: () => {
         onPlay();
       },
     },
     {
       key: "moveUp",
-      label: "上移一位",
+      label: t("nowPlaying.upNext.menu.moveUpOne"),
       onClick: () => {
         onMoveUp();
       },
@@ -114,7 +139,7 @@ export const UpNextRow: React.FC<UpNextRowProps> = ({
     },
     {
       key: "moveDown",
-      label: "下移一位",
+      label: t("nowPlaying.upNext.menu.moveDownOne"),
       onClick: () => {
         onMoveDown();
       },
@@ -122,14 +147,14 @@ export const UpNextRow: React.FC<UpNextRowProps> = ({
     },
     {
       key: "openFolder",
-      label: "打开文件所在文件夹",
+      label: t("nowPlaying.upNext.menu.openContainingFolder"),
       onClick: () => {
         onOpenFolder();
       },
     },
     {
       key: "remove",
-      label: "从当前队列中移除",
+      label: t("nowPlaying.upNext.menu.removeFromQueue"),
       onClick: () => {
         onRemove && onRemove();
       },
@@ -180,7 +205,7 @@ export const UpNextRow: React.FC<UpNextRowProps> = ({
             style={{
               fontSize: 13,
               fontWeight: isCurrent ? 600 : 500,
-              color: "#111827",
+              color: isCurrent ? "#111827" : "#111827",
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -210,7 +235,11 @@ export const UpNextRow: React.FC<UpNextRowProps> = ({
             color: isCurrent ? "#2563eb" : "#6b7280",
           }}
         >
-          {isCurrent ? "正在播放" : isNext ? "下一首" : ""}
+          {isCurrent
+            ? t("nowPlaying.upNext.flag.current")
+            : isNext
+            ? t("nowPlaying.upNext.flag.next")
+            : ""}
         </div>
 
         {/* 队列操作按钮：上移 / 下移 / 删除 */}
@@ -227,7 +256,7 @@ export const UpNextRow: React.FC<UpNextRowProps> = ({
             <button
               onClick={handleMoveUpClick}
               style={iconButtonStyle}
-              title="上移一位"
+              title={t("nowPlaying.upNext.button.moveUp.title")}
             >
               ↑
             </button>
@@ -236,7 +265,7 @@ export const UpNextRow: React.FC<UpNextRowProps> = ({
             <button
               onClick={handleMoveDownClick}
               style={iconButtonStyle}
-              title="下移一位"
+              title={t("nowPlaying.upNext.button.moveDown.title")}
             >
               ↓
             </button>
@@ -245,7 +274,7 @@ export const UpNextRow: React.FC<UpNextRowProps> = ({
             <button
               onClick={handleRemoveClick}
               style={iconButtonStyle}
-              title="从当前队列中移除这首歌"
+              title={t("nowPlaying.upNext.button.remove.title")}
             >
               ✕
             </button>

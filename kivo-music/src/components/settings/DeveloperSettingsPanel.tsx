@@ -1,4 +1,6 @@
+// src/components/settings/DeveloperSettingsPanel.tsx
 import React, { useEffect, useState } from "react";
+import { useI18n } from "../../i18n";
 
 type LogLevel = "debug" | "info" | "warn" | "error";
 
@@ -8,6 +10,8 @@ const VISUALIZER_ENABLED_KEY = "kivo.feature.visualizer.enabled";
 const VISUALIZER_TOGGLE_EVENT = "kivo-visualizer-toggle";
 
 export const DeveloperSettingsPanel: React.FC = () => {
+  const { t } = useI18n();
+
   const [logLevel, setLogLevel] = useState<LogLevel>("info");
   const [showDebugOverlay, setShowDebugOverlay] = useState(false);
   const [visualizerEnabled, setVisualizerEnabled] = useState(false);
@@ -15,10 +19,12 @@ export const DeveloperSettingsPanel: React.FC = () => {
   // 初次挂载时，从 localStorage 读取旧值
   useEffect(() => {
     try {
-      const storedLevel = window.localStorage.getItem(LOG_LEVEL_KEY) as
-        | LogLevel
-        | null;
-      if (storedLevel) setLogLevel(storedLevel);
+      const storedLevel = window.localStorage.getItem(
+        LOG_LEVEL_KEY,
+      ) as LogLevel | null;
+      if (storedLevel) {
+        setLogLevel(storedLevel);
+      }
 
       const storedOverlay = window.localStorage.getItem(
         SHOW_DEBUG_OVERLAY_KEY,
@@ -91,15 +97,20 @@ export const DeveloperSettingsPanel: React.FC = () => {
         gap: 16,
       }}
     >
-      <h2 style={{ margin: 0, fontSize: 18 }}>开发者设置（预留）</h2>
+      <h2 style={{ margin: 0, fontSize: 18 }}>
+        {t("settings.developer.title")}
+      </h2>
       <p style={{ margin: "4px 0 8px", color: "#888", fontSize: 13 }}>
-        这些选项当前只会保存在本机 localStorage 中，暂时不会直接影响播放内核。
-        以后可以在此基础上接入 log.ts、调试信息 Overlay、频谱可视化等功能。
+        {t("settings.developer.description.line1")}
+        <br />
+        {t("settings.developer.description.line2")}
       </p>
 
       {/* 日志等级 */}
       <div>
-        <label style={{ fontSize: 13, fontWeight: 500 }}>日志等级（预留）</label>
+        <label style={{ fontSize: 13, fontWeight: 500 }}>
+          {t("settings.developer.logLevel.label")}
+        </label>
         <div style={{ marginTop: 4 }}>
           <select
             value={logLevel}
@@ -113,14 +124,22 @@ export const DeveloperSettingsPanel: React.FC = () => {
               color: "inherit",
             }}
           >
-            <option value="debug">Debug（最详细）</option>
-            <option value="info">Info（默认）</option>
-            <option value="warn">Warn（仅警告+错误）</option>
-            <option value="error">Error（仅错误）</option>
+            <option value="debug">
+              {t("settings.developer.logLevel.option.debug")}
+            </option>
+            <option value="info">
+              {t("settings.developer.logLevel.option.info")}
+            </option>
+            <option value="warn">
+              {t("settings.developer.logLevel.option.warn")}
+            </option>
+            <option value="error">
+              {t("settings.developer.logLevel.option.error")}
+            </option>
           </select>
         </div>
         <p style={{ margin: "4px 0 0", color: "#888", fontSize: 12 }}>
-          将来可以连接 log.ts 控制全局日志输出。
+          {t("settings.developer.logLevel.note")}
         </p>
       </div>
 
@@ -133,10 +152,10 @@ export const DeveloperSettingsPanel: React.FC = () => {
             onChange={(e) => setShowDebugOverlay(e.target.checked)}
             style={{ marginRight: 6 }}
           />
-          显示调试信息 Overlay（预留）
+          {t("settings.developer.overlay.label")}
         </label>
         <p style={{ margin: "4px 0 0", color: "#888", fontSize: 12 }}>
-          将来可以在界面上显示当前播放状态、内存占用等实时调试信息。
+          {t("settings.developer.overlay.note")}
         </p>
       </div>
 
@@ -149,11 +168,10 @@ export const DeveloperSettingsPanel: React.FC = () => {
             onChange={(e) => setVisualizerEnabled(e.target.checked)}
             style={{ marginRight: 6 }}
           />
-          启用 Web Audio 频谱可视化（实验性）
+          {t("settings.developer.visualizer.label")}
         </label>
         <p style={{ margin: "4px 0 0", color: "#888", fontSize: 12 }}>
-          开启后，“正在播放”页面会显示一个简单的频谱条形图，
-          可能会略微增加 CPU 占用。
+          {t("settings.developer.visualizer.note")}
         </p>
       </div>
     </div>

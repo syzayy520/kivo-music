@@ -1,7 +1,8 @@
 // src/components/PlayerBar.tsx
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { usePlayerStore } from "../store/player";
 import { useKivoTheme } from "../styles/ThemeContext";
+import { useI18n } from "../i18n";
 
 function formatTime(sec: number): string {
   if (!sec || !Number.isFinite(sec)) return "0:00";
@@ -15,14 +16,16 @@ function formatTime(sec: number): string {
  * PlayerBar
  *
  * 全局底部播放器控制条：
- * - 显示当前播放进度 / 时长；
- * - 当前曲目信息；
- * - 上一首 / 播放 / 下一首；
- * - 音量调节。
+ * - 展示当前播放进度 / 总时长
+ * - 展示当前曲目标题 & 艺人
+ * - 提供上一首 / 播放暂停 / 下一首
+ * - 提供音量调节
  *
- * 样式完全走 theme，方便后续多皮肤切换。
+ * 注意：所有实际播放行为仍通过 player store（AudioEngine）统一处理，
+ * 这里不直接接触 audio 元素。
  */
 export const PlayerBar: React.FC = () => {
+  const { t } = useI18n();
   const { theme } = useKivoTheme();
 
   const playlist = usePlayerStore((s) => s.playlist);
@@ -39,16 +42,20 @@ export const PlayerBar: React.FC = () => {
   const seek = usePlayerStore((s) => s.seek);
   const setVolume = usePlayerStore((s) => s.setVolume);
 
-  const currentTrack =
-    currentIndex != null &&
-    currentIndex >= 0 &&
-    Array.isArray(playlist) &&
-    currentIndex < playlist.length
-      ? playlist[currentIndex]
-      : undefined;
+  const currentTrack = useMemo(() => {
+    if (!Array.isArray(playlist) || playlist.length === 0) return null;
+    if (
+      currentIndex == null ||
+      currentIndex < 0 ||
+      currentIndex >= playlist.length
+    ) {
+      return playlist[0];
+    }
+    return playlist[currentIndex];
+  }, [playlist, currentIndex]);
 
   const handleTogglePlay = useCallback(() => {
-    if (!playlist || !Array.isArray(playlist) || playlist.length === 0) return;
+    if (!Array.isArray(playlist) || playlist.length === 0) return;
 
     if (currentIndex == null || currentIndex < 0) {
       playTrack(0);
@@ -108,6 +115,24 @@ export const PlayerBar: React.FC = () => {
     color: theme.colors.textOnDark,
   };
 
+  const displayTitle =
+    (currentTrack && (currentTrack as any).title) ||
+    t("player.bar.fallbackTitle");
+  const displayArtist = (() => {
+    if (!currentTrack) {
+      return t("player.bar.fallbackArtist");
+    }
+    const rawArtist =
+      typeof (currentTrack as any).artist === "string"
+        ? ((currentTrack as any).artist as string)
+        : "";
+    const trimmed = rawArtist.trim();
+    if (!trimmed || trimmed === "未知艺人") {
+      return t("player.bar.fallbackArtist");
+    }
+    return trimmed;
+  })();
+
   return (
     <div style={barStyle}>
       {/* 进度条 */}
@@ -142,7 +167,7 @@ export const PlayerBar: React.FC = () => {
               textOverflow: "ellipsis",
             }}
           >
-            {currentTrack ? currentTrack.title : "未选择歌曲"}
+            {displayTitle}
           </div>
           <div
             style={{
@@ -152,7 +177,7 @@ export const PlayerBar: React.FC = () => {
               textOverflow: "ellipsis",
             }}
           >
-            {currentTrack ? currentTrack.artist ?? "未知艺人" : "未知艺人"}
+            {displayArtist}
           </div>
         </div>
 
@@ -167,7 +192,8 @@ export const PlayerBar: React.FC = () => {
           <button
             onClick={prev}
             style={controlButtonStyle}
-            title="上一首"
+            title={t("player.bar.tooltip.prev")}
+            aria-label={t("player.bar.tooltip.prev")}
             type="button"
           >
             ⏮
@@ -175,7 +201,16 @@ export const PlayerBar: React.FC = () => {
           <button
             onClick={handleTogglePlay}
             style={{ ...controlButtonStyle, fontSize: 18 }}
-            title={isPlaying ? "暂停" : "播放"}
+            title={
+              isPlaying
+                ? t("player.bar.tooltip.pause")
+                : t("player.bar.tooltip.play")
+            }
+            aria-label={
+              isPlaying
+                ? t("player.bar.tooltip.pause")
+                : t("player.bar.tooltip.play")
+            }
             type="button"
           >
             {isPlaying ? "⏸" : "▶️"}
@@ -183,7 +218,8 @@ export const PlayerBar: React.FC = () => {
           <button
             onClick={next}
             style={controlButtonStyle}
-            title="下一首"
+            title={t("player.bar.tooltip.next")}
+            aria-label={t("player.bar.tooltip.next")}
             type="button"
           >
             ⏭

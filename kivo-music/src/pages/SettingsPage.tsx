@@ -3,18 +3,20 @@ import { useState } from "react";
 import { GeneralSettingsPanel } from "../components/settings/GeneralSettingsPanel";
 import { CoverCachePanel } from "../components/settings/CoverCachePanel";
 import { DeveloperSettingsPanel } from "../components/settings/DeveloperSettingsPanel";
+import { useI18n } from "../i18n";
 
 type SettingsTab = "general" | "coverCache" | "developer";
 
-const tabLabels: Record<SettingsTab, string> = {
-  general: "常规",
-  coverCache: "封面缓存",
-  developer: "开发者",
+const tabLabelKeys: Record<SettingsTab, string> = {
+  general: "settings.tabs.general",
+  coverCache: "settings.tabs.coverCache",
+  developer: "settings.tabs.developer",
 };
 
 export default function SettingsPage() {
   // 为了和现在行为一致，这里默认选中“封面缓存”tab
   const [activeTab, setActiveTab] = useState<SettingsTab>("coverCache");
+  const { t } = useI18n();
 
   function renderActivePanel() {
     switch (activeTab) {
@@ -45,10 +47,11 @@ export default function SettingsPage() {
         style={{
           fontSize: 20,
           fontWeight: 600,
-          marginBottom: 4,
+          letterSpacing: 0.2,
+          margin: 0,
         }}
       >
-        设置
+        {t("settings.page.title")}
       </h1>
 
       <div
@@ -78,7 +81,7 @@ export default function SettingsPage() {
               opacity: 0.9,
             }}
           >
-            设置分类
+            {t("settings.page.sidebar.sectionLabel")}
           </div>
 
           {(["general", "coverCache", "developer"] as SettingsTab[]).map(
@@ -90,12 +93,13 @@ export default function SettingsPage() {
                   type="button"
                   onClick={() => setActiveTab(tab)}
                   style={{
-                    textAlign: "left",
+                    display: "flex",
                     width: "100%",
                     padding: "6px 10px",
-                    fontSize: 13,
                     borderRadius: 8,
-                    border: "none",
+                    borderWidth: 0,
+                    fontSize: 14,
+                    textAlign: "left",
                     cursor: "pointer",
                     backgroundColor: isActive
                       ? "rgba(255,255,255,0.12)"
@@ -104,7 +108,7 @@ export default function SettingsPage() {
                     marginBottom: 2,
                   }}
                 >
-                  {tabLabels[tab]}
+                  {t(tabLabelKeys[tab])}
                 </button>
               );
             },

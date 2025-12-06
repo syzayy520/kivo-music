@@ -2,12 +2,15 @@
 import React from "react";
 import { usePlayerStore } from "../store/player";
 import { useNowPlayingCover } from "../hooks/useNowPlayingCover";
+import { useI18n } from "../i18n";
 
 interface MiniPlayerProps {
   onExitMiniMode?: () => void;
 }
 
 const MiniPlayer: React.FC<MiniPlayerProps> = ({ onExitMiniMode }) => {
+  const { t } = useI18n();
+
   const playlist = usePlayerStore((s) => s.playlist);
   const currentIndex = usePlayerStore((s) => s.currentIndex);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
@@ -19,19 +22,39 @@ const MiniPlayer: React.FC<MiniPlayerProps> = ({ onExitMiniMode }) => {
   const next = usePlayerStore((s) => s.next);
   const prev = usePlayerStore((s) => s.prev);
   const setVolume = usePlayerStore((s) => s.setVolume);
+  const playTrack = usePlayerStore((s) => s.playTrack);
 
-  const track = playlist[currentIndex] ?? null;
+  const track = Array.isArray(playlist) ? playlist[currentIndex] ?? null : null;
   const { coverSrc } = useNowPlayingCover(track, playlist, currentIndex);
 
   const safeProgress =
-    duration && duration > 0 ? Math.min(1, Math.max(0, currentTime / duration)) : 0;
+    duration && duration > 0
+      ? Math.min(1, Math.max(0, currentTime / duration))
+      : 0;
 
   const anyTrack = track as any;
   const title =
-    anyTrack?.title ?? anyTrack?.name ?? anyTrack?.fileName ?? "未选择曲目";
+    anyTrack?.title ??
+    anyTrack?.name ??
+    anyTrack?.fileName ??
+    t("player.bar.fallbackTitle");
   const artist =
-    anyTrack?.artist ?? anyTrack?.albumArtist ?? "未知艺人";
+    anyTrack?.artist ??
+    anyTrack?.albumArtist ??
+    t("player.bar.fallbackArtist");
   const album = anyTrack?.album ?? "";
+
+  const handleTogglePlay = () => {
+    if (!Array.isArray(playlist) || playlist.length === 0) return;
+
+    if (currentIndex == null || currentIndex < 0) {
+      // If no track is selected yet, start from the first track
+      playTrack(0);
+      return;
+    }
+
+    togglePlay();
+  };
 
   return (
     <div
@@ -43,7 +66,7 @@ const MiniPlayer: React.FC<MiniPlayerProps> = ({ onExitMiniMode }) => {
         gap: 12,
       }}
     >
-      {/* 顶部标题栏 */}
+      {/* Header: title and exit button */}
       <header
         style={{
           display: "flex",
@@ -53,9 +76,13 @@ const MiniPlayer: React.FC<MiniPlayerProps> = ({ onExitMiniMode }) => {
         }}
       >
         <div>
-          <div style={{ fontSize: 14, fontWeight: 600 }}>Kivo Music · Mini</div>
+          <div style={{ fontSize: 14, fontWeight: 600 }}>
+            {t("miniPlayer.header.title")}
+          </div>
           <div style={{ fontSize: 11, color: "#9ca3af" }}>
-            {track ? "当前曲目" : "暂无曲目"}
+            {track
+              ? t("miniPlayer.header.subtitle.hasTrack")
+              : t("miniPlayer.header.subtitle.noTrack")}
           </div>
         </div>
         {onExitMiniMode && (
@@ -71,13 +98,14 @@ const MiniPlayer: React.FC<MiniPlayerProps> = ({ onExitMiniMode }) => {
               cursor: "pointer",
               whiteSpace: "nowrap",
             }}
+            type="button"
           >
-            返回完整模式
+            {t("miniPlayer.button.exit")}
           </button>
         )}
       </header>
 
-      {/* 封面 + 文本信息 */}
+      {/* Artwork and basic track info */}
       <div
         style={{
           flex: 1,
@@ -103,7 +131,7 @@ const MiniPlayer: React.FC<MiniPlayerProps> = ({ onExitMiniMode }) => {
           {coverSrc ? (
             <img
               src={coverSrc}
-              alt="cover"
+              alt={t("nowPlaying.cover.alt")}
               style={{
                 width: "100%",
                 height: "100%",
@@ -112,7 +140,9 @@ const MiniPlayer: React.FC<MiniPlayerProps> = ({ onExitMiniMode }) => {
               }}
             />
           ) : (
-            <span style={{ fontSize: 12, color: "#6b7280" }}>暂无封面</span>
+            <span style={{ fontSize: 12, color: "#6b7280" }}>
+              {t("miniPlayer.cover.placeholder")}
+            </span>
           )}
         </div>
 
@@ -146,16 +176,15 @@ const MiniPlayer: React.FC<MiniPlayerProps> = ({ onExitMiniMode }) => {
         </div>
       </div>
 
-      {/* 进度条 + 控制区 + 音量 */}
+      {/* Progress, transport controls, and volume */}
       <div
         style={{
-          marginTop: "auto",
           display: "flex",
           flexDirection: "column",
           gap: 8,
         }}
       >
-        {/* 进度条（只读） */}
+        {/* Progress bar (read-only display) */}
         <div
           style={{
             width: "100%",
@@ -175,7 +204,7 @@ const MiniPlayer: React.FC<MiniPlayerProps> = ({ onExitMiniMode }) => {
           />
         </div>
 
-        {/* 播放控制按钮 */}
+        {/* Transport controls */}
         <div
           style={{
             display: "flex",
@@ -196,21 +225,35 @@ const MiniPlayer: React.FC<MiniPlayerProps> = ({ onExitMiniMode }) => {
               cursor: "pointer",
               fontSize: 14,
             }}
+            title={t("player.bar.tooltip.prev")}
+            aria-label={t("player.bar.tooltip.prev")}
+            type="button"
           >
-            ◀
+            ⏮
           </button>
           <button
-            onClick={togglePlay}
+            onClick={handleTogglePlay}
             style={{
-              width: 44,
-              height: 44,
+              width: 40,
+              height: 40,
               borderRadius: "9999px",
-              border: "none",
+              border: "1px solid #e5e7eb",
               background: "#111827",
               color: "#f9fafb",
               cursor: "pointer",
               fontSize: 16,
             }}
+            title={
+              isPlaying
+                ? t("player.bar.tooltip.pause")
+                : t("player.bar.tooltip.play")
+            }
+            aria-label={
+              isPlaying
+                ? t("player.bar.tooltip.pause")
+                : t("player.bar.tooltip.play")
+            }
+            type="button"
           >
             {isPlaying ? "⏸" : "▶"}
           </button>
@@ -225,12 +268,15 @@ const MiniPlayer: React.FC<MiniPlayerProps> = ({ onExitMiniMode }) => {
               cursor: "pointer",
               fontSize: 14,
             }}
+            title={t("player.bar.tooltip.next")}
+            aria-label={t("player.bar.tooltip.next")}
+            type="button"
           >
-            ▶
+            ⏭
           </button>
         </div>
 
-        {/* 音量条：0~1，和底部 PlayerBar 共享同一个 store */}
+        {/* Volume slider: 0–1, shared with the main PlayerBar store */}
         <div
           style={{
             display: "flex",
@@ -239,7 +285,9 @@ const MiniPlayer: React.FC<MiniPlayerProps> = ({ onExitMiniMode }) => {
             marginTop: 6,
           }}
         >
-          <span style={{ fontSize: 11, color: "#6b7280" }}>音量</span>
+          <span style={{ fontSize: 11, color: "#6b7280" }}>
+            {t("miniPlayer.volume.label")}
+          </span>
           <input
             type="range"
             min={0}

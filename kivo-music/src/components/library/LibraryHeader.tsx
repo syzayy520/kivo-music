@@ -4,6 +4,7 @@ import { PageHeader } from "../layout/PageHeader";
 import { KivoButton } from "../common/KivoButton";
 import type { SortKey } from "../../library/libraryModel";
 import { useKivoTheme } from "../../styles/ThemeContext";
+import { useI18n } from "../../i18n";
 
 export type LibraryViewMode = "tracks" | "albums" | "artists";
 
@@ -48,7 +49,21 @@ export interface LibraryHeaderProps {
   onClear?: () => void;
 }
 
-const LibraryHeader: React.FC<LibraryHeaderProps> = (props) => {
+const viewModeLabelKeyMap: Record<LibraryViewMode, string> = {
+  tracks: "library.header.viewMode.tracks",
+  albums: "library.header.viewMode.albums",
+  artists: "library.header.viewMode.artists",
+};
+
+const sortLabelKeyMap: Record<SortKey, string> = {
+  default: "library.header.sort.default",
+  title: "library.header.sort.title",
+  artist: "library.header.sort.artist",
+  album: "library.header.sort.album",
+  recent: "library.header.sort.recent",
+};
+
+export const LibraryHeader: React.FC<LibraryHeaderProps> = (props) => {
   const {
     totalCount,
     totalTracks,
@@ -73,6 +88,7 @@ const LibraryHeader: React.FC<LibraryHeaderProps> = (props) => {
 
   const { theme } = useKivoTheme();
   const { colors, radius, spacing } = theme;
+  const { t } = useI18n();
 
   // 统一曲目数量
   const resolvedTotal =
@@ -115,49 +131,32 @@ const LibraryHeader: React.FC<LibraryHeaderProps> = (props) => {
     );
   };
 
-  const viewButton = (mode: LibraryViewMode, label: string) => {
+  const viewButton = (mode: LibraryViewMode) => {
     const isActive = viewMode === mode;
+
     return (
       <button
-        key={mode}
         type="button"
         onClick={() => onViewModeChange(mode)}
         style={{
-          flex: 1,
-          paddingTop: spacing.sm,
-          paddingBottom: spacing.sm,
+          paddingLeft: spacing.md,
+          paddingRight: spacing.md,
+          height: 32,
+          borderRadius: radius.pill,
           borderWidth: 1,
           borderStyle: "solid",
           borderColor: isActive
-            ? "rgba(15, 23, 42, 0.18)"
-            : "rgba(255, 255, 255, 0.16)",
-          backgroundColor: isActive
-            ? "rgba(15, 23, 42, 0.22)"
-            : "rgba(15, 23, 42, 0.10)",
-          color: "#f9fafb",
-          fontSize: 13,
-          fontWeight: isActive ? 600 : 500,
+            ? "rgba(15, 23, 42, 0.4)"
+            : "rgba(15, 23, 42, 0.12)",
+          backgroundColor: isActive ? "rgba(15, 23, 42, 0.08)" : "transparent",
           cursor: "pointer",
-          borderRadius: radius.pill,
-          boxShadow: isActive
-            ? "0 0 0 1px rgba(15, 23, 42, 0.35)"
-            : "none",
-          transition:
-            "background-color 120ms ease-out, border-color 120ms ease-out, box-shadow 120ms ease-out",
+          fontSize: 13,
+          color: isActive ? colors.textOnLight : colors.textMutedOnLight,
         }}
       >
-        {label}
+        {t(viewModeLabelKeyMap[mode])}
       </button>
     );
-  };
-
-  // SortKey: "default" | "title" | "artist" | "album" | "recent"
-  const sortLabelMap: Record<SortKey, string> = {
-    default: "默认顺序",
-    title: "标题",
-    artist: "艺人",
-    album: "专辑",
-    recent: "最近播放",
   };
 
   const centerSlot = (
@@ -173,7 +172,7 @@ const LibraryHeader: React.FC<LibraryHeaderProps> = (props) => {
         }}
       >
         <input
-          placeholder="搜索歌曲 / 艺人 / 专辑 / 路径..."
+          placeholder={t("library.header.searchPlaceholder")}
           value={searchValue}
           onChange={(e) => handleSearchChange(e.target.value)}
           style={{
@@ -182,13 +181,10 @@ const LibraryHeader: React.FC<LibraryHeaderProps> = (props) => {
             borderRadius: radius.pill,
             borderWidth: 1,
             borderStyle: "solid",
-            borderColor: "rgba(15, 23, 42, 0.18)",
-            paddingLeft: spacing.lg,
-            paddingRight: spacing.lg,
+            borderColor: "rgba(15, 23, 42, 0.08)",
+            paddingLeft: spacing.md,
+            paddingRight: spacing.md,
             fontSize: 13,
-            outline: "none",
-            color: colors.textOnPrimary,
-            backgroundColor: "rgba(15, 23, 42, 0.16)",
           }}
         />
       </div>
@@ -196,28 +192,27 @@ const LibraryHeader: React.FC<LibraryHeaderProps> = (props) => {
       {/* 中：视图切换 */}
       <div
         style={{
-          flex: 1.6,
+          flex: 2,
           minWidth: 260,
           display: "flex",
-          alignItems: "center",
+          justifyContent: "center",
           gap: spacing.sm,
-          backgroundColor: "rgba(15, 23, 42, 0.30)",
-          borderRadius: radius.pill,
-          padding: 3,
         }}
       >
-        {viewButton("tracks", "按歌曲")}
-        {viewButton("albums", "按专辑")}
-        {viewButton("artists", "按艺人")}
+        {viewButton("tracks")}
+        {viewButton("albums")}
+        {viewButton("artists")}
       </div>
 
       {/* 右：排序选择 */}
       <div
         style={{
           flex: 1,
-          minWidth: 180,
+          minWidth: 200,
           display: "flex",
           justifyContent: "flex-end",
+          alignItems: "center",
+          gap: spacing.sm,
         }}
       >
         <select
@@ -237,9 +232,9 @@ const LibraryHeader: React.FC<LibraryHeaderProps> = (props) => {
             backgroundColor: "rgba(15, 23, 42, 0.16)",
           }}
         >
-          {(Object.keys(sortLabelMap) as SortKey[]).map((key) => (
+          {(Object.keys(sortLabelKeyMap) as SortKey[]).map((key) => (
             <option key={key} value={key}>
-              {sortLabelMap[key]}
+              {t(sortLabelKeyMap[key])}
             </option>
           ))}
         </select>
@@ -256,26 +251,23 @@ const LibraryHeader: React.FC<LibraryHeaderProps> = (props) => {
         gap: spacing.sm,
       }}
     >
-      <div style={{ display: "flex", gap: spacing.sm }}>
-        <KivoButton onClick={onPlayAll}>播放全部</KivoButton>
+      <div
+        style={{
+          display: "flex",
+          gap: spacing.sm,
+        }}
+      >
+        <KivoButton onClick={onPlayAll}>
+          {t("library.header.actions.playAll")}
+        </KivoButton>
         <KivoButton variant="secondary" onClick={onShufflePlay}>
-          随机播放
+          {t("library.header.actions.shufflePlay")}
         </KivoButton>
-      </div>
-      <div style={{ display: "flex", gap: spacing.sm }}>
-        <KivoButton
-          variant="secondary"
-          size="sm"
-          onClick={handleImportClick}
-        >
-          + 导入本地音乐
+        <KivoButton variant="ghost" onClick={handleImportClick}>
+          {t("library.header.actions.importLocalMusic")}
         </KivoButton>
-        <KivoButton
-          variant="danger"
-          size="sm"
-          onClick={handleClearClick}
-        >
-          清空资料库
+        <KivoButton variant="ghost" onClick={handleClearClick}>
+          {t("library.header.actions.clearLibrary")}
         </KivoButton>
       </div>
     </div>
@@ -283,9 +275,15 @@ const LibraryHeader: React.FC<LibraryHeaderProps> = (props) => {
 
   const subtitle = (
     <>
-      按照本地曲库整理你的音乐。
-      支持按歌曲 / 专辑 / 艺人视图切换，支持搜索、排序和播放队列。
+      {t("library.header.subtitle.line1")}
+      <br />
+      {t("library.header.subtitle.line2")}
     </>
+  );
+
+  const extraText = t("library.header.extra.totalTracks").replace(
+    "{count}",
+    String(resolvedTotal),
   );
 
   const extra = (
@@ -295,13 +293,13 @@ const LibraryHeader: React.FC<LibraryHeaderProps> = (props) => {
         color: colors.textMutedOnLight,
       }}
     >
-      共 {resolvedTotal} 首歌曲
+      {extraText}
     </span>
   );
 
   return (
     <PageHeader
-      title="本地音乐资料库"
+      title={t("library.header.title")}
       subtitle={subtitle}
       leftBottomExtra={extra}
       centerSlot={centerSlot}
@@ -310,5 +308,4 @@ const LibraryHeader: React.FC<LibraryHeaderProps> = (props) => {
   );
 };
 
-export { LibraryHeader };
 export default LibraryHeader;

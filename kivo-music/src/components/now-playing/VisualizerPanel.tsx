@@ -1,21 +1,23 @@
 // src/components/now-playing/VisualizerPanel.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { getFrequencyData } from "../../audio-backend/VisualizerBus";
+import { useI18n } from "../../i18n";
 
 const VISUALIZER_ENABLED_KEY = "kivo.feature.visualizer.enabled";
 const VISUALIZER_TOGGLE_EVENT = "kivo-visualizer-toggle";
 
 export const VisualizerPanel: React.FC = () => {
+  const { t } = useI18n();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [enabled, setEnabled] = useState(false);
 
-  // 读取“是否启用频谱可视化”的设置，并监听事件
+  // 读取“是否启用频谱可视化”的设置，并监听切换事件
   useEffect(() => {
     let initial = false;
     try {
       initial = window.localStorage.getItem(VISUALIZER_ENABLED_KEY) === "1";
     } catch {
-      // ignore
+      // ignore storage errors
     }
     setEnabled(initial);
 
@@ -35,7 +37,7 @@ export const VisualizerPanel: React.FC = () => {
     };
   }, []);
 
-  // 频谱绘制循环（当前使用“伪频谱”动画）
+  // 频谱绘制循环（当前为“伪频谱”，不影响真实音频路径）
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -44,6 +46,9 @@ export const VisualizerPanel: React.FC = () => {
     if (!ctx) return;
 
     let animationFrameId: number;
+
+    const disabledText = t("nowPlaying.visualizer.canvas.disabled");
+    const idleText = t("nowPlaying.visualizer.canvas.idle");
 
     const render = () => {
       const width = canvas.width;
@@ -59,11 +64,7 @@ export const VisualizerPanel: React.FC = () => {
         ctx.fillStyle = "rgba(148,163,184,0.85)";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(
-          "频谱可视化已关闭，可在「设置 → 开发者」开启（当前为伪频谱动画）",
-          width / 2,
-          height / 2,
-        );
+        ctx.fillText(disabledText, width / 2, height / 2);
       } else {
         const data = getFrequencyData();
         if (data && data.length > 0) {
@@ -98,11 +99,7 @@ export const VisualizerPanel: React.FC = () => {
           ctx.fillStyle = "rgba(148,163,184,0.85)";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          ctx.fillText(
-            "正在播放时会显示频谱动画（当前为伪频谱，并不反映真实音量）",
-            width / 2,
-            height / 2,
-          );
+          ctx.fillText(idleText, width / 2, height / 2);
         }
       }
 
@@ -114,7 +111,7 @@ export const VisualizerPanel: React.FC = () => {
     return () => {
       window.cancelAnimationFrame(animationFrameId);
     };
-  }, [enabled]);
+  }, [enabled, t]);
 
   return (
     <div
@@ -137,9 +134,11 @@ export const VisualizerPanel: React.FC = () => {
           color: "#e5e7eb",
         }}
       >
-        <span>频谱可视化（实验性 · 伪频谱）</span>
+        <span>{t("nowPlaying.visualizer.title")}</span>
         <span style={{ fontSize: 11, opacity: 0.7 }}>
-          {enabled ? "已开启" : "已关闭"}
+          {enabled
+            ? t("nowPlaying.visualizer.status.enabled")
+            : t("nowPlaying.visualizer.status.disabled")}
         </span>
       </div>
       <canvas

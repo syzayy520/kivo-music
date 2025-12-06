@@ -1,5 +1,6 @@
 // src/components/now-playing/NowPlayingInfoPanel.tsx
 import React from "react";
+import { useI18n } from "../../i18n";
 
 interface NowPlayingInfoPanelProps {
   track: any | null;
@@ -19,126 +20,193 @@ const boxStyle: React.CSSProperties = {
   height: "100%",
 };
 
+const titleStyle: React.CSSProperties = {
+  fontSize: 16,
+  fontWeight: 600,
+  marginBottom: 4,
+};
+
+const metaStyle: React.CSSProperties = {
+  fontSize: 13,
+  color: "#6b7280",
+};
+
+const filePathStyle: React.CSSProperties = {
+  fontSize: 11,
+  color: "#9ca3af",
+  wordBreak: "break-all",
+  marginTop: 4,
+};
+
+const progressRailStyle: React.CSSProperties = {
+  position: "relative",
+  height: 4,
+  borderRadius: 9999,
+  background: "#e5e7eb",
+  overflow: "hidden",
+};
+
+const progressThumbBaseStyle: React.CSSProperties = {
+  position: "absolute",
+  inset: 0,
+  borderRadius: 9999,
+  background:
+    "linear-gradient(90deg, rgba(59,130,246,1) 0%, rgba(96,165,250,1) 100%)",
+};
+
+const timeRowStyle: React.CSSProperties = {
+  marginTop: 4,
+  display: "flex",
+  justifyContent: "space-between",
+  fontSize: 11,
+  color: "#6b7280",
+};
+
+const statusCardStyle: React.CSSProperties = {
+  marginTop: 12,
+  padding: 10,
+  borderRadius: 12,
+  background: "#f9fafb",
+  fontSize: 11,
+  color: "#6b7280",
+  lineHeight: 1.6,
+};
+
+const footerStatusStyle: React.CSSProperties = {
+  marginTop: "auto",
+  fontSize: 11,
+  color: "#9ca3af",
+  display: "flex",
+  justifyContent: "space-between",
+};
+
+const formatTime = (sec: number): string => {
+  if (!Number.isFinite(sec) || sec <= 0) return "00:00";
+  const s = Math.floor(sec);
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  const mm = String(m).padStart(2, "0");
+  const ss = String(r).padStart(2, "0");
+  return `${mm}:${ss}`;
+};
+
 const NowPlayingInfoPanel: React.FC<NowPlayingInfoPanelProps> = ({
   track,
   isPlaying,
   currentTime,
   duration,
 }) => {
+  const { t } = useI18n();
   const anyTrack = track as any;
+
+  const rawTitle =
+    anyTrack?.title ??
+    anyTrack?.name ??
+    anyTrack?.fileName ??
+    "";
+
+  const rawArtist =
+    anyTrack?.artist ??
+    anyTrack?.albumArtist ??
+    "";
+
+  const rawAlbum = anyTrack?.album ?? "";
+
+  const normalizedArtist = (() => {
+    const trimmed =
+      typeof rawArtist === "string" ? rawArtist.trim() : "";
+    if (!trimmed) return "";
+    if (trimmed === "未知艺人") return "";
+    return trimmed;
+  })();
+
+  const normalizedAlbum = (() => {
+    const trimmed =
+      typeof rawAlbum === "string" ? rawAlbum.trim() : "";
+    if (!trimmed) return "";
+    if (trimmed === "未分专辑" || trimmed === "未知专辑") return "";
+    return trimmed;
+  })();
+
   const title =
-    anyTrack?.title ?? anyTrack?.name ?? anyTrack?.fileName ?? "未选择曲目";
+    rawTitle && String(rawTitle).trim().length > 0
+      ? String(rawTitle)
+      : t("nowPlaying.info.fallbackTitle");
+
   const artist =
-    anyTrack?.artist ?? anyTrack?.albumArtist ?? "未知艺人";
-  const album = anyTrack?.album ?? "";
+    normalizedArtist && normalizedArtist.length > 0
+      ? normalizedArtist
+      : t("nowPlaying.info.fallbackArtist");
+
+  const album =
+    normalizedAlbum && normalizedAlbum.length > 0
+      ? normalizedAlbum
+      : "";
+
   const filePath =
     anyTrack?.filePath ?? anyTrack?.path ?? anyTrack?.location ?? "";
+  const safeDuration =
+    typeof duration === "number" && Number.isFinite(duration) && duration > 0
+      ? duration
+      : 0;
+  const safeCurrent =
+    typeof currentTime === "number" &&
+    Number.isFinite(currentTime) &&
+    currentTime > 0 &&
+    safeDuration > 0
+      ? Math.min(currentTime, safeDuration)
+      : 0;
+  const progress =
+    safeDuration > 0 ? Math.min(1, safeCurrent / safeDuration) : 0;
 
-  const safeDuration = duration > 0 ? duration : 0;
-  const safeCurrent = Math.min(
-    Math.max(currentTime, 0),
-    safeDuration || Number.MAX_VALUE,
-  );
-  const progress = safeDuration > 0 ? safeCurrent / safeDuration : 0;
-
-  const formatTime = (sec: number) => {
-    if (!Number.isFinite(sec) || sec < 0) return "00:00";
-    const s = Math.floor(sec);
-    const m = Math.floor(s / 60);
-    const r = s % 60;
-    const mm = String(m).padStart(2, "0");
-    const ss = String(r).padStart(2, "0");
-    return `${mm}:${ss}`;
-  };
+  const statusText = !track
+    ? t("nowPlaying.info.status.noTrack")
+    : isPlaying
+    ? t("nowPlaying.info.status.playing")
+    : t("nowPlaying.info.status.paused");
 
   return (
     <div style={boxStyle}>
       <div>
-        <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>
-          {title}
-        </div>
-        <div style={{ fontSize: 13, color: "#6b7280" }}>
+        <div style={titleStyle}>{title}</div>
+        <div style={metaStyle}>
           {artist}
           {album ? ` · ${album}` : ""}
         </div>
       </div>
 
-      {filePath && (
-        <div
-          style={{
-            fontSize: 11,
-            color: "#9ca3af",
-            wordBreak: "break-all",
-            marginTop: 4,
-          }}
-        >
-          {filePath}
-        </div>
-      )}
+      {filePath && <div style={filePathStyle}>{filePath}</div>}
 
       {/* 进度条 */}
       <div style={{ marginTop: 12 }}>
-        <div
-          style={{
-            width: "100%",
-            height: 4,
-            borderRadius: 9999,
-            background: "#e5e7eb",
-            overflow: "hidden",
-          }}
-        >
+        <div style={progressRailStyle}>
           <div
             style={{
-              width: `${progress * 100}%`,
-              height: "100%",
-              background: "#3b82f6",
-              transition: "width 0.1s linear",
+              ...progressThumbBaseStyle,
+              transformOrigin: "left center",
+              transform: `scaleX(${progress})`,
             }}
           />
         </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginTop: 4,
-            fontSize: 11,
-            color: "#6b7280",
-          }}
-        >
+        <div style={timeRowStyle}>
           <span>{formatTime(safeCurrent)}</span>
           <span>{formatTime(safeDuration)}</span>
         </div>
       </div>
 
       {/* 底部状态说明卡片 */}
-      <div
-        style={{
-          marginTop: 12,
-          padding: 10,
-          borderRadius: 12,
-          background: "#f9fafb",
-          fontSize: 11,
-          color: "#6b7280",
-          lineHeight: 1.6,
-        }}
-      >
-        当前页面与底部播放器、Mini 模式共享同一播放器状态。
-        在「资料库 / 播放列表」中操作播放/切歌，都会实时反映到这里。
+      <div style={statusCardStyle}>
+        {t("nowPlaying.info.description.line1")}
+        <br />
+        {t("nowPlaying.info.description.line2")}
       </div>
 
-      <div
-        style={{
-          marginTop: "auto",
-          fontSize: 11,
-          color: "#9ca3af",
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
+      <div style={footerStatusStyle}>
         <span>
-          状态：{track ? (isPlaying ? "正在播放" : "已暂停") : "未选择曲目"}
+          {t("nowPlaying.info.statusLabel")}
+          {statusText}
         </span>
-        <span>Now Playing · v3 布局</span>
+        <span>{t("nowPlaying.info.footerTag")}</span>
       </div>
     </div>
   );

@@ -8,13 +8,13 @@ import {
   getTrackTitle,
   getTrackArtist,
   getTrackAlbum,
-  bumpPlayStatsForTrack,
   startPlaylistFrom,
   saveCurrentLibrary,
 } from "../library/libraryModel";
 import { LibraryHeader } from "../components/library/LibraryHeader";
 import { LibraryTracksView } from "../components/library/LibraryTracksView";
 import { LibraryGroupViews } from "../components/library/LibraryGroupViews";
+import { useI18n } from "../i18n";
 
 type ViewMode = "tracks" | "albums" | "artists";
 
@@ -23,6 +23,8 @@ const LibraryPage: React.FC = () => {
   const tracks: LibraryTrack[] = useLibrary((s: any) => s.tracks ?? []);
   const addTracks = useLibrary((s: any) => s.addTracks ?? null);
   const clearLibrary = useLibrary((s: any) => s.clearLibrary ?? null);
+
+  const { t } = useI18n();
 
   // 视图状态：歌曲 / 专辑 / 艺人
   const [viewMode, setViewMode] = useState<ViewMode>("tracks");
@@ -40,11 +42,11 @@ const LibraryPage: React.FC = () => {
       result = result.filter((t) => {
         const title = getTrackTitle(t).toLowerCase();
         const artist = getTrackArtist(t).toLowerCase();
-        const album = getTrackAlbum(t).toLowerCase();
+        const album = (getTrackAlbum(t) || "").toLowerCase();
         const pathText = (
-          t.filePath ||
-          t.path ||
-          t.location ||
+          (t as any).filePath ||
+          (t as any).path ||
+          (t as any).location ||
           ""
         )
           .toString()
@@ -78,14 +80,22 @@ const LibraryPage: React.FC = () => {
         );
         break;
       case "album":
-        result.sort((a, b) =>
-          getTrackAlbum(a).localeCompare(getTrackAlbum(b), "zh-CN"),
-        );
+        result.sort((a, b) => {
+          const albumA = getTrackAlbum(a) || "";
+          const albumB = getTrackAlbum(b) || "";
+          return albumA.localeCompare(albumB, "zh-CN");
+        });
         break;
       case "recent":
         result.sort((a, b) => {
-          const aTime = a.lastPlayedAt ? Date.parse(a.lastPlayedAt) : 0;
-          const bTime = b.lastPlayedAt ? Date.parse(b.lastPlayedAt) : 0;
+          const aTime =
+            (a as any).lastPlayedAt != null
+              ? Date.parse((a as any).lastPlayedAt)
+              : 0;
+          const bTime =
+            (b as any).lastPlayedAt != null
+              ? Date.parse((b as any).lastPlayedAt)
+              : 0;
           return bTime - aTime;
         });
         break;
@@ -102,7 +112,7 @@ const LibraryPage: React.FC = () => {
   const handlePlayAll = () => {
     if (!tracksForView.length) return;
     startPlaylistFrom(tracksForView, 0);
-    bumpPlayStatsForTrack(tracksForView[0]);
+    // 播放统计统一交给 libraryModel.startPlaylistFrom / bumpPlayStatsForTrack 处理
   };
 
   // 操作：随机播放
@@ -114,7 +124,7 @@ const LibraryPage: React.FC = () => {
       [cloned[i], cloned[j]] = [cloned[j], cloned[i]];
     }
     startPlaylistFrom(cloned, 0);
-    bumpPlayStatsForTrack(cloned[0]);
+    // 同上，不在页面层重复统计
   };
 
   // 操作：导入本地音乐
@@ -136,11 +146,11 @@ const LibraryPage: React.FC = () => {
             "mp3",
             "flac",
             "wav",
-            "m4a",
             "ogg",
-            "opus",
+            "m4a",
             "aac",
-            "wv",
+            "opus",
+            "alac",
           ],
         },
       ],
@@ -150,6 +160,15 @@ const LibraryPage: React.FC = () => {
 
     const now = new Date().toISOString();
     const files = Array.isArray(selected) ? selected : [selected];
+
+    const defaultArtist = t(
+      "library.import.defaultArtist",
+      "未知艺人",
+    );
+    const defaultAlbum = t(
+      "library.import.defaultAlbum",
+      "未分专辑",
+    );
 
     const newTracks: LibraryTrack[] = files.map((file) => {
       const fullPath = String(file);
@@ -161,13 +180,14 @@ const LibraryPage: React.FC = () => {
         id: fullPath,
         filePath: fullPath,
         title: baseTitle,
-        artist: "未知艺人",
-        album: "未分专辑",
+        artist: defaultArtist,
+        album: defaultAlbum,
         addedAt: now,
       };
     });
 
-    addTracks(newTracks);
+    // store 里实际类型是 MusicTrack，这里结构兼容，直接塞进去
+    addTracks(newTracks as any);
     saveCurrentLibrary();
   };
 
@@ -177,9 +197,11 @@ const LibraryPage: React.FC = () => {
       console.warn("[LibraryPage] clearLibrary 不存在，无法清空曲库。");
       return;
     }
-    const ok = window.confirm(
+    const confirmText = t(
+      "library.clear.confirmMessage",
       "确定要清空资料库吗？这不会删除你的音频文件，但会清空索引。",
     );
+    const ok = window.confirm(confirmText);
     if (!ok) return;
     clearLibrary();
     saveCurrentLibrary();
@@ -188,11 +210,11 @@ const LibraryPage: React.FC = () => {
   return (
     <div
       style={{
-        height: "100%",
+        flex: 1,
+        minHeight: 0,
         display: "flex",
         flexDirection: "column",
-        padding: "16px 24px",
-        boxSizing: "border-box",
+        padding: 16,
         gap: 16,
       }}
     >
@@ -220,19 +242,18 @@ const LibraryPage: React.FC = () => {
         {viewMode === "tracks" ? (
           <LibraryTracksView
             tracks={tracksForView}
-            onPlayTrack={(track: LibraryTrack, index: number) => {
+            onPlayTrack={(_track: LibraryTrack, index: number) => {
+              // 统一通过 startPlaylistFrom 启动播放，内部会负责播放状态和统计
               startPlaylistFrom(tracksForView, index);
-              bumpPlayStatsForTrack(track);
             }}
           />
         ) : (
           <LibraryGroupViews
-            mode={viewMode}
+            mode={viewMode === "albums" ? "albums" : "artists"}
             tracks={tracksForView}
             onPlayGroup={(groupTracks: LibraryTrack[]) => {
               if (!groupTracks.length) return;
               startPlaylistFrom(groupTracks, 0);
-              bumpPlayStatsForTrack(groupTracks[0]);
             }}
           />
         )}
