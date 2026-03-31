@@ -1,0 +1,49 @@
+.play-btn {
+  width: 41px;
+  height: 41px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(125, 94, 68, 0.24);
+  border-radius: 14px;
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(180deg, #977254, #7d5e44);
+  box-shadow: 0 11px 20px rgba(125, 94, 68, 0.19);
+  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+.dock-icon { width: 16px; height: 16px; }
+.play-icon { width: 16px; height: 16px; }
+.dock-more { width: 18px; height: 18px; }
+.dock-btn-icon { flex-shrink: 0; }
+.controls .dock-btn {
+  color: var(--text-3);
+  background: rgba(255, 255, 255, 0.68);
+  border-color: rgba(110, 89, 68, 0.06);
+}
+.dock-shuffle { transform: translateX(0.2px); }
+.dock-skip { transform: translateX(0.3px); }
+.dock-repeat { transform: translateY(0.2px); }
+.dock-list { transform: translateY(0.2px); }
+.dock-speaker { transform: translateX(0.2px); }
+
+.timeline {
+  width: 262px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 30px;
+  gap: 4px;
+  align-items: center;
+  color: var(--text-2);
+  font-size: 11.2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dock-side { min-width: 0; display: flex; justify-content: flex-end; align-items: center; gap: 5px; justify-self: end; opacity: 0.96; }
+.dock-side .dock-btn {
+  color: var(--text-3);
+  background: rgba(255, 255, 255, 0.56);
+  border-color: rgba(110, 89, 68, 0.045);
+}
+.volume { width: 52px; display: flex; align-items: center; gap: 5px; }
+.volume .bar-input { flex: 1; }

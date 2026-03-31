@@ -1,0 +1,1 @@
+Place FFmpeg license texts here (e.g. LICENSE.txt, COPYING.txt, etc.)

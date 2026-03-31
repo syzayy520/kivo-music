@@ -1,0 +1,65 @@
+.queue-card {
+  min-height: 0;
+  padding: 16px 20px 16px;
+  border: 1px solid rgba(110, 89, 68, 0.06);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 88% 12%, rgba(255, 255, 255, 0.3), transparent 18%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(250, 244, 238, 0.84));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.queue-card .card-head {
+  margin-bottom: 12px;
+}
+.queue-list { display: grid; gap: 10px; }
+
+.queue-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: center;
+  padding: 10px 13px;
+  border: 1px solid rgba(110, 89, 68, 0.055);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.queue-row.current {
+  background: rgba(142, 107, 78, 0.09);
+  border-color: rgba(142, 107, 78, 0.125);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 5px 12px rgba(118, 92, 68, 0.04);
+}
+
+.queue-row.current .title-ellipsis {
+  color: var(--text);
+}
+
+.queue-row.current .sub-ellipsis,
+.queue-row.current .queue-time {
+  color: var(--text-2);
+}
+
+.queue-index {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text-2);
+  font-size: 10px;
+}
+
+.queue-row.current .queue-index {
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+.queue-play-icon { width: 12px; height: 12px; }
+.queue-row .title-ellipsis { font-size: 13px; line-height: 1.16; }
+.queue-row .sub-ellipsis { font-size: 10.8px; color: var(--text-3); line-height: 1.22; }
+.queue-time { color: var(--text-3); font-size: 10.2px; flex-shrink: 0; font-variant-numeric: tabular-nums; justify-self: end; }

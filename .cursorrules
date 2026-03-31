@@ -1,0 +1,56 @@
+## 🎯 KIVO 音乐播放器 铁律规则（**必须严格遵守**）
+
+### 📏 **文件规模**
+- **组件 < 120 行**，超了拆子组件
+- **hook < 80 行**
+- **CSS < 100 行**，超了拆模块
+- **总文件树**：
+```
+src/
+├── components/     # PlayerCard.tsx, QueueItem.tsx (单一职责)
+├── hooks/          # usePlayer.ts, useWindow.ts
+├── layout/         # AppShell.tsx, Titlebar.tsx
+├── styles/         # globals.css, player.css
+└── App.tsx         # < 100 行纯布局
+```
+
+### 🪟 **Tauri 窗口（Windows 优先）**
+```
+tauri.conf.json **必须**：
+{
+  "windows": [{
+    "decorations": false,
+    "resizable": true,
+    "width": 1400, "height": 900
+  }]
+}
+```
+- **拖拽**：只用 `<div data-tauri-drag-region>`，不嵌按钮
+- **控制**：左上角 traffic lights（− □ ×），`@tauri-apps/api/window`
+- **命令**：`pnpm tauri dev` 验证（不是 pnpm dev）
+
+### 🎨 **UI 复刻**
+- **基准**：[file:234] HTML，DevTools 吸参数
+- **Tailwind 精确**：bg-[#f8f9fa] shadow-[0_20px_40px_rgba(...)]
+- **字体**：Inter / SF Pro，`font-[Inter]`，lh: 1.01-1.3
+- **无外框**：`outline-none border-none shadow-inside-only`
+
+### 🔧 **代码规范（Google/Airbnb）**
+```
+✅ PascalCase.tsx
+✅ interface 先定义，prop < 6 个
+✅ useCallback/memo 防重绘
+✅ TypeScript strict，无 any
+✅ ESLint/Prettier 自动格式
+✅ pnpm run typecheck 每步通过
+```
+
+### 🚫 **禁止**
+- 文件 > 150 行 → 立即拆分
+- `console.log` → 删
+- `any` 类型 → `unknown`
+- 嵌套 > 3 层 → 提组件
+- 音频前上线 UI → 先完美再接
+
+**违规立即停止，报告问题**。
+```

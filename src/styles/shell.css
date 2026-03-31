@@ -1,0 +1,91 @@
+.app-shell {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: stretch;
+  overflow: hidden;
+  border-radius: 0;
+  background: var(--window);
+  box-shadow: var(--shadow-xl);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.window {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  overflow: hidden;
+  position: relative;
+  isolation: isolate;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.window::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 18%);
+}
+
+.window::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.32);
+}
+
+.window-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.sidebar, .main-pane, .dock { position: relative; z-index: 1; }
+
+.sidebar,
+.main-pane {
+  min-height: 0;
+  height: 100%;
+}
+
+.main-pane {
+  min-width: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  padding: 14px 16px calc(var(--dock-h) + 60px);
+}
+
+.workspace-shell {
+  position: relative;
+  min-height: 0;
+  height: 100%;
+}
+
+.workspace {
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding-right: 12px;
+  padding-bottom: calc(var(--dock-h) + 60px);
+}
+.split { display: grid; grid-template-columns: minmax(0, 1fr) 258px; gap: 12px; align-items: start; }
+.column { min-width: 0; display: grid; gap: 8px; }

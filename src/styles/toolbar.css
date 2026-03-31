@@ -1,0 +1,45 @@
+.toolbar {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 0 8px;
+}
+
+.toolbar-drag {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+}
+.toolbar-actions { position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+
+.search, .toolbar-btn, .dock-btn {
+  border: 1px solid rgba(110, 89, 68, 0.08);
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: var(--shadow-md);
+}
+
+.search {
+  position: relative;
+  min-width: 224px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 13px;
+  border-radius: 16px;
+  color: var(--text-3);
+  font-size: 13.5px;
+}
+
+.search input { width: 100%; color: var(--text); font-size: 13.5px; font-family: inherit; }
+.search input::placeholder { color: var(--text-4); }
+.search-icon { width: 13px; height: 13px; flex: 0 0 auto; }
+.toolbar-btn, .dock-btn { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 13px; color: var(--text-2); cursor: pointer; }
+.toolbar-cmd { color: #8c7e72; }
+.toolbar-cmd-glyph {
+  font-family: "SF Pro Display", "Segoe UI Symbol", "Segoe UI", sans-serif;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 400;
+  transform: translateY(-0.5px);
+}

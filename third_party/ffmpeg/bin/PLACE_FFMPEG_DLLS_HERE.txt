@@ -1,0 +1,1 @@
+Place FFmpeg DLLs here (e.g. avcodec-*.dll, avformat-*.dll, avutil-*.dll, swresample-*.dll)

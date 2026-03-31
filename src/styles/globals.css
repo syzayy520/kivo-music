@@ -1,0 +1,62 @@
+:root {
+  --window-w: min(1180px, calc(100vw - 24px));
+  --window-h: min(760px, calc(100vh - 24px));
+  --sidebar-w: 212px;
+  --dock-h: 70px;
+  --window: rgba(255, 255, 255, 0.66);
+  --panel: rgba(255, 255, 255, 0.84);
+  --line: rgba(110, 89, 68, 0.08);
+  --line-strong: rgba(110, 89, 68, 0.11);
+  --text: #2f271f;
+  --text-2: #615447;
+  --text-3: #87796c;
+  --text-4: #9c8e81;
+  --title-strong: #2f241d;
+  --shadow-xl: 0 28px 60px rgba(98, 78, 56, 0.12);
+  --shadow-lg: 0 16px 34px rgba(98, 78, 56, 0.08);
+  --shadow-md: 0 8px 20px rgba(98, 78, 56, 0.06);
+  color: var(--text);
+  font-family: "SF Pro Display", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* { box-sizing: border-box; }
+html, body, #root {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 28%),
+    linear-gradient(180deg, #faf6f0 0%, #f2ece5 100%);
+}
+
+#root {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+button, input { font: inherit; }
+button { border: none; background: transparent; padding: 0; }
+input { border: none; outline: none; background: transparent; }
+
+.search, .toolbar-btn, .nav-item, .card, .album, .mix, .queue-row, .dock-btn, .play-btn, .primary-btn, .hero-link, .subtle-link {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.title-ellipsis, .sub-ellipsis {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
