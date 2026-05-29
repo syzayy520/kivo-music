@@ -1,3 +1,4 @@
+import { AlbumDetail } from '../features/album-detail/AlbumDetail'
 import { ListenNow } from '../features/listen-now/ListenNow'
 import { Sidebar } from '../features/sidebar/Sidebar'
 import { TopBar } from '../features/top-bar/TopBar'
@@ -10,6 +11,7 @@ export function App() {
       <section className="km-stage">
         <TopBar />
         <ListenNow />
+        <AlbumDetail />
       </section>
     </main>
   )
