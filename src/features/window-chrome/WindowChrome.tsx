@@ -30,10 +30,6 @@ export function WindowChrome() {
       onDoubleClick={() => void appWindow.toggleMaximize()}
       onMouseDown={startWindowDrag}
     >
-      <div className="km-window-brand" data-tauri-drag-region>
-        <span>K</span>
-        <strong>Kivo Music</strong>
-      </div>
       <div className="km-window-drag" data-tauri-drag-region />
       <div className="km-window-controls">
         <button
