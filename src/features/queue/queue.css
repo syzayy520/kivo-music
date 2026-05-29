@@ -1,0 +1,42 @@
+.km-queue {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid var(--km-border);
+  border-radius: 24px;
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.km-queue-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.km-queue-head p {
+  margin: 0;
+  color: var(--km-pink);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.km-queue-head button {
+  border: 1px solid var(--km-border);
+  border-radius: 999px;
+  color: var(--km-text);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 9px 13px;
+}
+
+.km-queue article {
+  display: grid;
+  gap: 4px;
+  padding: 10px 0;
+  border-top: 1px solid var(--km-border);
+}
+
+.km-queue span {
+  color: var(--km-muted);
+}
