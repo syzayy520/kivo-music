@@ -1,0 +1,4 @@
+.km-now-playing { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 0 34px 132px; padding: 22px; border: 1px solid var(--km-border); border-radius: 30px; background: rgba(255,255,255,.04); }
+.km-now-playing > div:first-child { grid-column: 1 / -1; }
+.km-now-playing p { margin: 0 0 6px; color: var(--km-pink); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; }
+.km-now-playing h2 { margin: 0; font-size: 28px; letter-spacing: -.04em; }
