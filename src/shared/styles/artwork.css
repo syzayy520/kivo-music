@@ -1,0 +1,11 @@
+.artwork-pink {
+  background: linear-gradient(135deg, #2b0f33, var(--km-pink) 52%, #ffd1e8);
+}
+
+.artwork-violet {
+  background: linear-gradient(135deg, #110b1f, var(--km-purple) 48%, var(--km-blue));
+}
+
+.artwork-green {
+  background: linear-gradient(135deg, #091314, var(--km-green) 45%, #f4d35e);
+}
