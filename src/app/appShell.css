@@ -4,6 +4,7 @@
   min-height: 720px;
   display: grid;
   grid-template-columns: var(--km-sidebar) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) var(--km-player);
   overflow: hidden;
   background: var(--km-bg);
   color: var(--km-text);
@@ -11,10 +12,12 @@
 
 .km-stage {
   min-width: 0;
-  height: 100vh;
+  min-height: 0;
+  grid-column: 2;
+  grid-row: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-bottom: calc(var(--km-player) + 40px);
+  padding-bottom: 24px;
   scroll-behavior: smooth;
 }
 
