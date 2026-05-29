@@ -1,0 +1,84 @@
+.km-player {
+  position: fixed;
+  left: calc(var(--km-sidebar) + 18px);
+  right: 18px;
+  bottom: 18px;
+  height: var(--km-player);
+  display: grid;
+  grid-template-columns: 280px 1fr 290px;
+  gap: 22px;
+  align-items: center;
+  padding: 14px 18px;
+  border: 1px solid var(--km-border);
+  border-radius: 28px;
+  background: rgba(15, 15, 22, 0.9);
+}
+
+.km-player-track {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.km-player-art {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #2b0f33, var(--km-pink) 52%, #ffd1e8);
+}
+
+.km-player-track strong,
+.km-player-track span {
+  display: block;
+}
+
+.km-player-track span,
+.km-player-meta {
+  color: var(--km-muted);
+}
+
+.km-player-core {
+  display: grid;
+  gap: 10px;
+}
+
+.km-player-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.km-player button {
+  border: 1px solid var(--km-border);
+  border-radius: 999px;
+  color: var(--km-text);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 10px 16px;
+}
+
+.km-player .play {
+  color: #101015;
+  background: var(--km-text);
+}
+
+.km-player-progress {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.km-player-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--km-red), var(--km-pink));
+}
+
+.km-player-meta {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+}
