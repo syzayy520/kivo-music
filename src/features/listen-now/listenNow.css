@@ -1,69 +1,69 @@
 .km-listen-hero,
 .km-album-shelf {
-  margin: 0 34px 28px;
+  margin: 0 32px 26px;
 }
 
 .km-listen-hero {
-  min-height: 336px;
+  min-height: 312px;
   display: grid;
-  grid-template-columns: 270px 1fr;
-  gap: 28px;
-  padding: 28px;
-  border: 1px solid var(--km-border);
-  border-radius: 34px;
-  background: rgba(255, 255, 255, 0.04);
+  grid-template-columns: 248px 1fr;
+  gap: 26px;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .km-listen-hero-art {
-  border-radius: 28px;
+  border-radius: 22px;
 }
 
 .km-listen-hero-copy {
   align-self: end;
-  max-width: 720px;
+  max-width: 680px;
 }
 
 .km-listen-hero-copy p,
 .km-shelf-head p {
   margin: 0;
-  color: var(--km-pink);
-  font-size: 12px;
-  font-weight: 850;
-  letter-spacing: 0.1em;
+  color: var(--km-muted);
+  font-size: 11px;
+  font-weight: 780;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .km-listen-hero-copy h2 {
   margin: 0;
-  font-size: clamp(44px, 6vw, 86px);
-  line-height: 0.9;
-  letter-spacing: -0.075em;
+  font-size: clamp(42px, 5.4vw, 74px);
+  line-height: 0.92;
+  letter-spacing: -0.07em;
 }
 
 .km-listen-hero-copy span,
 .km-listen-hero-copy strong {
   display: block;
-  margin-top: 14px;
+  margin-top: 12px;
 }
 
 .km-listen-actions,
 .km-shelf-head {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .km-listen-actions {
-  margin-top: 22px;
+  margin-top: 20px;
 }
 
 .km-listen-actions button,
 .km-shelf-head button {
-  border: 1px solid var(--km-border);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
   color: var(--km-text);
-  background: rgba(255, 255, 255, 0.08);
-  padding: 11px 18px;
+  background: rgba(255, 255, 255, 0.07);
+  padding: 10px 16px;
 }
 
 .km-listen-actions button:first-child {
@@ -73,38 +73,42 @@
 
 .km-shelf-head {
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .km-shelf-head h3 {
-  margin: 5px 0 0;
-  font-size: 24px;
+  margin: 4px 0 0;
+  font-size: 22px;
   letter-spacing: -0.04em;
 }
 
 .km-album-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  grid-auto-columns: minmax(150px, 180px);
+  grid-auto-flow: column;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 4px;
 }
 
 .km-album-card {
-  padding: 14px;
-  border: 1px solid var(--km-border);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.045);
+  min-width: 0;
 }
 
 .km-album-card-art {
   aspect-ratio: 1;
-  border-radius: 18px;
-  margin-bottom: 12px;
+  border-radius: 14px;
+  margin-bottom: 10px;
 }
 
 .km-album-card strong,
 .km-album-card span,
 .km-album-card em {
   display: block;
+}
+
+.km-album-card strong {
+  font-size: 13px;
 }
 
 .km-album-card span,
@@ -114,7 +118,8 @@
 }
 
 .km-album-card em {
-  margin-top: 6px;
-  font-size: 13px;
+  margin-top: 4px;
+  font-size: 12px;
   font-style: normal;
+  line-height: 1.35;
 }
