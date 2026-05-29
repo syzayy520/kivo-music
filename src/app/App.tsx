@@ -1,4 +1,5 @@
 import { AlbumDetail } from '../features/album-detail/AlbumDetail'
+import { LibraryOverview } from '../features/library/LibraryOverview'
 import { ListenNow } from '../features/listen-now/ListenNow'
 import { NowPlaying } from '../features/now-playing/NowPlaying'
 import { PlayerBar } from '../features/player/PlayerBar'
@@ -14,6 +15,7 @@ export function App() {
         <TopBar />
         <ListenNow />
         <AlbumDetail />
+        <LibraryOverview />
         <NowPlaying />
       </section>
       <PlayerBar />
