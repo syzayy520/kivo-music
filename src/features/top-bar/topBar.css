@@ -1,10 +1,14 @@
 .km-topbar {
-  min-height: 82px;
+  min-height: 72px;
   display: grid;
-  grid-template-columns: 1fr minmax(240px, 360px) auto;
+  grid-template-columns: minmax(300px, 1fr) minmax(240px, 360px) auto;
   align-items: center;
   gap: 16px;
-  padding: 24px 32px 14px;
+  padding: 20px clamp(20px, 3vw, 32px) 12px;
+}
+
+.km-topbar-title {
+  min-width: 0;
 }
 
 .km-topbar-title p {
@@ -18,15 +22,17 @@
 
 .km-topbar-title h1 {
   margin: 3px 0 0;
-  font-size: clamp(30px, 3.2vw, 46px);
-  line-height: 1;
-  letter-spacing: -0.055em;
+  max-width: 12ch;
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1.02;
+  letter-spacing: -0.05em;
 }
 
 .km-search {
   display: flex;
   align-items: center;
   gap: 9px;
+  min-width: 0;
   padding: 9px 13px;
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 999px;
@@ -43,6 +49,7 @@
 
 .km-search input {
   width: 100%;
+  min-width: 0;
   border: 0;
   outline: 0;
   color: var(--km-text);
@@ -66,4 +73,14 @@
   margin-top: 2px;
   font-size: 12px;
   font-weight: 740;
+}
+
+@media (max-width: 1120px) {
+  .km-topbar {
+    grid-template-columns: minmax(220px, 1fr) minmax(220px, 300px);
+  }
+
+  .km-library-status {
+    display: none;
+  }
 }
