@@ -18,6 +18,10 @@ function startWindowDrag(event: MouseEvent<HTMLElement>) {
   void appWindow.startDragging()
 }
 
+function stopWindowControlPropagation(event: MouseEvent<HTMLButtonElement>) {
+  event.stopPropagation()
+}
+
 export function WindowChrome() {
   return (
     <header
@@ -32,13 +36,32 @@ export function WindowChrome() {
       </div>
       <div className="km-window-drag" data-tauri-drag-region />
       <div className="km-window-controls">
-        <button type="button" aria-label="Minimize" onClick={() => void appWindow.minimize()}>
+        <button
+          type="button"
+          aria-label="Minimize"
+          onDoubleClick={stopWindowControlPropagation}
+          onMouseDown={stopWindowControlPropagation}
+          onClick={() => void appWindow.minimize()}
+        >
           −
         </button>
-        <button type="button" aria-label="Maximize" onClick={() => void appWindow.toggleMaximize()}>
+        <button
+          type="button"
+          aria-label="Maximize"
+          onDoubleClick={stopWindowControlPropagation}
+          onMouseDown={stopWindowControlPropagation}
+          onClick={() => void appWindow.toggleMaximize()}
+        >
           □
         </button>
-        <button type="button" aria-label="Close" className="danger" onClick={() => void appWindow.close()}>
+        <button
+          type="button"
+          aria-label="Close"
+          className="danger"
+          onDoubleClick={stopWindowControlPropagation}
+          onMouseDown={stopWindowControlPropagation}
+          onClick={() => void appWindow.close()}
+        >
           ×
         </button>
       </div>
