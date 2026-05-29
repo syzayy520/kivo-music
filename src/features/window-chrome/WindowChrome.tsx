@@ -1,11 +1,31 @@
 import { getCurrentWindow } from '@tauri-apps/api/window'
+import type { MouseEvent } from 'react'
 import './windowChrome.css'
 
 const appWindow = getCurrentWindow()
 
+function startWindowDrag(event: MouseEvent<HTMLElement>) {
+  if (event.button !== 0) {
+    return
+  }
+
+  const target = event.target
+
+  if (target instanceof HTMLElement && target.closest('button')) {
+    return
+  }
+
+  void appWindow.startDragging()
+}
+
 export function WindowChrome() {
   return (
-    <header className="km-window-chrome" data-tauri-drag-region>
+    <header
+      className="km-window-chrome"
+      data-tauri-drag-region
+      onDoubleClick={() => void appWindow.toggleMaximize()}
+      onMouseDown={startWindowDrag}
+    >
       <div className="km-window-brand" data-tauri-drag-region>
         <span>K</span>
         <strong>Kivo Music</strong>
