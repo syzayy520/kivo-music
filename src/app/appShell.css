@@ -1,0 +1,10 @@
+.km-app {
+  min-height: 100vh;
+  display: grid;
+  background: var(--km-bg);
+  color: var(--km-text);
+}
+
+.km-stage {
+  min-width: 0;
+}
