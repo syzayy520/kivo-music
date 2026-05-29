@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 
 use super::errors::{PlaybackError, PlaybackResult};
 
-const SUPPORTED_AUDIO_EXTENSIONS: &[&str] = &["mp3", "flac", "wav", "m4a", "aac", "alac", "ogg", "opus"];
+pub const SUPPORTED_AUDIO_EXTENSIONS: &[&str] = &["mp3", "flac", "wav", "m4a", "aac", "alac", "ogg", "opus"];
 
 pub fn validate_local_audio_path(raw_path: &str) -> PlaybackResult<PathBuf> {
     if raw_path.trim().is_empty() {
