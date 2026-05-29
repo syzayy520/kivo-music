@@ -1,0 +1,11 @@
+.km-sidebar { position: sticky; top: 0; height: 100vh; padding: 24px 18px; border-right: 1px solid var(--km-border); background: rgba(8, 8, 13, 0.72); backdrop-filter: blur(22px); }
+.km-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+.km-brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 14px; background: linear-gradient(135deg, var(--km-red), var(--km-purple)); font-weight: 800; }
+.km-brand strong { display: block; letter-spacing: -0.02em; }
+.km-brand small { color: var(--km-muted); font-size: 12px; }
+.km-sidebar-nav { display: grid; gap: 22px; }
+.km-sidebar-group p { margin: 0 0 8px; color: var(--km-subtle); font-size: 11px; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; }
+.km-sidebar-group button { width: 100%; display: flex; justify-content: space-between; border: 0; border-radius: 12px; padding: 10px 12px; color: var(--km-muted); background: transparent; text-align: left; cursor: pointer; transition: background var(--km-fast), color var(--km-fast); }
+.km-sidebar-group button:hover { background: rgba(255, 255, 255, 0.06); color: var(--km-text); }
+.km-sidebar-group button.active { color: white; background: linear-gradient(135deg, rgba(255, 59, 92, 0.24), rgba(142, 101, 255, 0.18)); }
+.km-sidebar-group em { color: var(--km-gold); font-style: normal; }
