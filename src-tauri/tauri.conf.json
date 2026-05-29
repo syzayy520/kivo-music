@@ -12,6 +12,7 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Kivo Music",
         "width": 1280,
         "height": 820,
