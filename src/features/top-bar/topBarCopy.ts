@@ -1,6 +1,6 @@
 export const topBarCopy = {
-  eyebrow: 'Listen Now',
-  title: 'Your local library, beautifully alive.',
+  eyebrow: 'Home',
+  title: 'Home',
   searchLabel: 'Search',
   searchPlaceholder: 'Albums, artists, lyrics, quality',
   statusLabel: 'Local Library',
