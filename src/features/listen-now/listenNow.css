@@ -1,0 +1,120 @@
+.km-listen-hero,
+.km-album-shelf {
+  margin: 0 34px 28px;
+}
+
+.km-listen-hero {
+  min-height: 336px;
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  gap: 28px;
+  padding: 28px;
+  border: 1px solid var(--km-border);
+  border-radius: 34px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.km-listen-hero-art {
+  border-radius: 28px;
+}
+
+.km-listen-hero-copy {
+  align-self: end;
+  max-width: 720px;
+}
+
+.km-listen-hero-copy p,
+.km-shelf-head p {
+  margin: 0;
+  color: var(--km-pink);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.km-listen-hero-copy h2 {
+  margin: 0;
+  font-size: clamp(44px, 6vw, 86px);
+  line-height: 0.9;
+  letter-spacing: -0.075em;
+}
+
+.km-listen-hero-copy span,
+.km-listen-hero-copy strong {
+  display: block;
+  margin-top: 14px;
+}
+
+.km-listen-actions,
+.km-shelf-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.km-listen-actions {
+  margin-top: 22px;
+}
+
+.km-listen-actions button,
+.km-shelf-head button {
+  border: 1px solid var(--km-border);
+  border-radius: 999px;
+  color: var(--km-text);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 11px 18px;
+}
+
+.km-listen-actions button:first-child {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--km-red), var(--km-pink));
+}
+
+.km-shelf-head {
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.km-shelf-head h3 {
+  margin: 5px 0 0;
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.km-album-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.km-album-card {
+  padding: 14px;
+  border: 1px solid var(--km-border);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.km-album-card-art {
+  aspect-ratio: 1;
+  border-radius: 18px;
+  margin-bottom: 12px;
+}
+
+.km-album-card strong,
+.km-album-card span,
+.km-album-card em {
+  display: block;
+}
+
+.km-album-card span,
+.km-album-card em,
+.km-listen-hero-copy span {
+  color: var(--km-muted);
+}
+
+.km-album-card em {
+  margin-top: 6px;
+  font-size: 13px;
+  font-style: normal;
+}
