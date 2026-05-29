@@ -1,0 +1,15 @@
+:root {
+  color-scheme: dark;
+  --km-bg: #060609;
+  --km-panel: rgba(22, 22, 30, 0.78);
+  --km-border: rgba(255, 255, 255, 0.08);
+  --km-text: #f7f2f5;
+  --km-muted: #aaa3ad;
+  --km-red: #ff3b5c;
+  --km-pink: #ff4fa3;
+  --km-purple: #8e65ff;
+  --km-blue: #4cc9f0;
+  --km-green: #16a085;
+  --km-sidebar: 250px;
+  --km-player: 92px;
+}
