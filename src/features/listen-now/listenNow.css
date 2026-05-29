@@ -1,14 +1,14 @@
 .km-listen-hero,
 .km-album-shelf {
-  margin: 0 32px 26px;
+  margin: 0 clamp(20px, 3vw, 32px) 24px;
 }
 
 .km-listen-hero {
-  min-height: 312px;
+  min-height: clamp(236px, 34vh, 312px);
   display: grid;
-  grid-template-columns: 248px 1fr;
-  gap: 26px;
-  padding: 24px;
+  grid-template-columns: clamp(176px, 20vw, 248px) minmax(0, 1fr);
+  gap: clamp(18px, 2.4vw, 26px);
+  padding: clamp(18px, 2.4vw, 24px);
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 28px;
   background: rgba(255, 255, 255, 0.035);
@@ -21,6 +21,7 @@
 .km-listen-hero-copy {
   align-self: end;
   max-width: 680px;
+  min-width: 0;
 }
 
 .km-listen-hero-copy p,
@@ -35,15 +36,20 @@
 
 .km-listen-hero-copy h2 {
   margin: 0;
-  font-size: clamp(42px, 5.4vw, 74px);
-  line-height: 0.92;
-  letter-spacing: -0.07em;
+  max-width: 9ch;
+  font-size: clamp(34px, 4.7vw, 64px);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
 }
 
 .km-listen-hero-copy span,
 .km-listen-hero-copy strong {
   display: block;
   margin-top: 12px;
+}
+
+.km-listen-hero-copy strong {
+  max-width: 58ch;
 }
 
 .km-listen-actions,
@@ -54,7 +60,8 @@
 }
 
 .km-listen-actions {
-  margin-top: 20px;
+  margin-top: 18px;
+  flex-wrap: wrap;
 }
 
 .km-listen-actions button,
@@ -84,11 +91,12 @@
 
 .km-album-grid {
   display: grid;
-  grid-auto-columns: minmax(150px, 180px);
+  grid-auto-columns: clamp(132px, 16vw, 176px);
   grid-auto-flow: column;
   gap: 14px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  overscroll-behavior-x: contain;
+  padding-bottom: 8px;
 }
 
 .km-album-card {
@@ -122,4 +130,14 @@
   font-size: 12px;
   font-style: normal;
   line-height: 1.35;
+}
+
+@media (max-width: 1120px) {
+  .km-listen-hero {
+    grid-template-columns: 168px minmax(0, 1fr);
+  }
+
+  .km-shelf-head button {
+    display: none;
+  }
 }
