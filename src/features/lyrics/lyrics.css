@@ -1,0 +1,4 @@
+.km-lyrics { display: grid; gap: 10px; padding: 18px; border: 1px solid var(--km-border); border-radius: 24px; background: rgba(0,0,0,.24); }
+.km-lyrics p { margin: 0 0 6px; color: var(--km-muted); font-size: 12px; text-transform: uppercase; letter-spacing: .1em; font-weight: 800; }
+.km-lyrics div { color: var(--km-muted); font-size: 20px; line-height: 1.35; }
+.km-lyrics div.active { color: var(--km-text); font-size: 26px; font-weight: 800; }
