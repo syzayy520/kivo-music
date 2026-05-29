@@ -1,11 +1,10 @@
 .km-window-chrome {
-  grid-column: 1 / -1;
+  grid-column: 2;
   grid-row: 1;
   height: 28px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  background: rgba(8, 8, 12, 0.58);
   color: var(--km-text);
   user-select: none;
 }
@@ -23,7 +22,7 @@
 .km-window-controls button {
   width: 42px;
   border: 0;
-  color: rgba(255, 255, 255, 0.58);
+  color: rgba(255, 255, 255, 0.48);
   background: transparent;
   font-size: 13px;
 }
