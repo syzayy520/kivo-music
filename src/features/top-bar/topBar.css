@@ -1,0 +1,67 @@
+.km-topbar {
+  min-height: 88px;
+  display: grid;
+  grid-template-columns: 1fr minmax(280px, 420px) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 26px 34px 16px;
+}
+
+.km-topbar-title p {
+  margin: 0;
+  color: var(--km-pink);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.km-topbar-title h1 {
+  margin: 4px 0 0;
+  font-size: clamp(28px, 3.4vw, 48px);
+  line-height: 0.96;
+  letter-spacing: -0.06em;
+}
+
+.km-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--km-border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.km-search span {
+  color: var(--km-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.km-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: var(--km-text);
+  background: transparent;
+}
+
+.km-library-status {
+  padding: 10px 14px;
+  border: 1px solid var(--km-border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.km-library-status small {
+  color: var(--km-muted);
+}
+
+.km-library-status strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+}
