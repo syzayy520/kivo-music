@@ -1,0 +1,18 @@
+:root {
+  color-scheme: dark;
+  --km-bg: #060609;
+  --km-bg-soft: #0d0d13;
+  --km-panel: rgba(22, 22, 30, 0.78);
+  --km-panel-strong: rgba(31, 31, 42, 0.92);
+  --km-border: rgba(255, 255, 255, 0.08);
+  --km-text: #f7f2f5;
+  --km-muted: #aaa3ad;
+  --km-red: #ff3b5c;
+  --km-pink: #ff4fa3;
+  --km-purple: #8e65ff;
+  --km-gold: #ffd166;
+  --km-sidebar-width: 248px;
+  --km-player-height: 92px;
+  --km-topbar-height: 70px;
+  --km-fast: 160ms ease;
+}
