@@ -1,0 +1,50 @@
+:root {
+  color-scheme: dark;
+  --km-bg: #060609;
+  --km-bg-soft: #0d0d13;
+  --km-panel: rgba(22, 22, 30, 0.78);
+  --km-panel-strong: rgba(31, 31, 42, 0.92);
+  --km-border: rgba(255, 255, 255, 0.08);
+  --km-border-strong: rgba(255, 255, 255, 0.14);
+  --km-text: #f7f2f5;
+  --km-muted: #aaa3ad;
+  --km-subtle: #746e79;
+  --km-red: #ff3b5c;
+  --km-pink: #ff4fa3;
+  --km-purple: #8e65ff;
+  --km-blue: #4cc9f0;
+  --km-green: #16a085;
+  --km-gold: #ffd166;
+  --km-sidebar: 250px;
+  --km-player: 92px;
+  --km-topbar: 76px;
+  --km-fast: 160ms ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--km-bg);
+  color: var(--km-text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--km-pink);
+  outline-offset: 3px;
+}
