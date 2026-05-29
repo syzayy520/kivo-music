@@ -1,24 +1,25 @@
 .km-sidebar {
   min-height: 100vh;
-  padding: 24px 18px;
-  border-right: 1px solid var(--km-border);
-  background: rgba(8, 8, 13, 0.74);
+  padding: 22px 14px;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(246, 246, 248, 0.055);
+  backdrop-filter: blur(22px);
 }
 
 .km-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 30px;
+  gap: 10px;
+  margin-bottom: 26px;
 }
 
 .km-brand > span {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 13px;
-  background: linear-gradient(135deg, var(--km-red), var(--km-purple));
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--km-red), var(--km-pink));
   font-weight: 900;
 }
 
@@ -28,33 +29,42 @@
   display: block;
 }
 
+.km-brand strong {
+  font-size: 13px;
+}
+
 .km-brand small,
 .km-nav p,
 .km-nav a {
   color: var(--km-muted);
 }
 
+.km-brand small {
+  font-size: 11px;
+}
+
 .km-nav {
   display: grid;
-  gap: 22px;
+  gap: 18px;
 }
 
 .km-nav p {
-  margin: 0 0 8px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
+  margin: 0 0 7px;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 .km-nav a {
-  margin: 2px 0;
-  padding: 10px 12px;
-  border-radius: 13px;
+  margin: 1px 0;
+  padding: 8px 10px;
+  border-radius: 9px;
+  font-size: 13px;
   text-decoration: none;
 }
 
 .km-nav a.active {
   color: var(--km-text);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
 }
