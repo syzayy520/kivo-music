@@ -1,0 +1,88 @@
+.km-album-hero,
+.km-track-list {
+  margin: 0 34px 28px;
+}
+
+.km-album-hero {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 24px;
+  align-items: end;
+  padding: 26px;
+  border: 1px solid var(--km-border);
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.km-album-hero-art {
+  aspect-ratio: 1;
+  border-radius: 26px;
+}
+
+.km-album-hero-copy p,
+.km-track-list p {
+  margin: 0;
+  color: var(--km-pink);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.km-album-hero-copy h2 {
+  margin: 0;
+  font-size: clamp(44px, 6vw, 78px);
+  line-height: 0.92;
+  letter-spacing: -0.07em;
+}
+
+.km-album-hero-copy span,
+.km-track-list em {
+  color: var(--km-muted);
+}
+
+.km-album-badges,
+.km-album-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.km-album-badges em {
+  border: 1px solid var(--km-border);
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: rgba(0, 0, 0, 0.22);
+  font-size: 12px;
+  font-style: normal;
+}
+
+.km-album-actions button {
+  border: 1px solid var(--km-border);
+  border-radius: 999px;
+  color: var(--km-text);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 11px 18px;
+}
+
+.km-album-actions button:first-child {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--km-red), var(--km-pink));
+}
+
+.km-track-list {
+  display: grid;
+  gap: 8px;
+}
+
+.km-track-list article {
+  display: grid;
+  grid-template-columns: 36px 1fr 140px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--km-border);
+  border-radius: 15px;
+  background: rgba(0, 0, 0, 0.22);
+}
