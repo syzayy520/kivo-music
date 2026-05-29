@@ -4,7 +4,7 @@
   min-height: 720px;
   display: grid;
   grid-template-columns: var(--km-sidebar) minmax(0, 1fr);
-  grid-template-rows: 34px minmax(0, 1fr) var(--km-player);
+  grid-template-rows: 28px minmax(0, 1fr) var(--km-player);
   overflow: hidden;
   background: var(--km-bg);
   color: var(--km-text);
