@@ -1,4 +1,4 @@
-mod playback;
+pub mod playback;
 
 pub fn run() {
     tauri::Builder::default()
