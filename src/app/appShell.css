@@ -1,10 +1,36 @@
 .km-app {
-  min-height: 100vh;
+  height: 100vh;
+  min-width: 1040px;
+  min-height: 720px;
   display: grid;
+  grid-template-columns: var(--km-sidebar) minmax(0, 1fr);
+  overflow: hidden;
   background: var(--km-bg);
   color: var(--km-text);
 }
 
 .km-stage {
   min-width: 0;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: calc(var(--km-player) + 40px);
+  scroll-behavior: smooth;
+}
+
+.km-stage::-webkit-scrollbar {
+  width: 10px;
+}
+
+.km-stage::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  background-clip: content-box;
+}
+
+@media (max-width: 1120px) {
+  .km-app {
+    grid-template-columns: 224px minmax(0, 1fr);
+  }
 }
