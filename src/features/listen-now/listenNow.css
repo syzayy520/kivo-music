@@ -24,17 +24,17 @@
 
 .km-top-pick-card {
   position: relative;
-  min-height: clamp(142px, 20vh, 178px);
+  min-height: clamp(136px, 18.5vh, 168px);
   overflow: hidden;
   display: flex;
   align-items: flex-end;
-  border-radius: 15px;
+  border-radius: 16px;
   background: var(--km-surface);
   box-shadow: var(--km-shadow-card);
 }
 
 .km-top-pick-card[data-featured='true'] {
-  min-height: clamp(154px, 21vh, 190px);
+  min-height: clamp(146px, 19.5vh, 178px);
 }
 
 .km-top-pick-art {
@@ -54,15 +54,16 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 40%),
-    linear-gradient(0deg, rgba(0, 0, 0, 0.34), transparent 56%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 42%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.24), transparent 68%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.4), transparent 60%);
 }
 
 .km-top-pick-copy {
   position: relative;
   z-index: 1;
-  max-width: 72%;
-  padding: 14px;
+  max-width: 76%;
+  padding: 16px 18px 20px;
   color: #fff;
 }
 
@@ -77,37 +78,38 @@
 }
 
 .km-top-pick-copy p {
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .km-top-pick-copy h2 {
-  margin: 3px 0 0;
-  font-size: clamp(20px, 2.1vw, 30px);
-  line-height: 0.98;
-  letter-spacing: -0.045em;
+  margin: 4px 0 0;
+  font-size: clamp(20px, 2vw, 28px);
+  line-height: 1;
+  letter-spacing: -0.04em;
 }
 
 .km-top-pick-copy span {
   display: block;
-  margin-top: 6px;
-  color: rgba(255, 255, 255, 0.84);
-  font-size: 12px;
+  margin-top: 7px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 11px;
+  line-height: 1.25;
 }
 
 .km-top-pick-play {
   position: absolute;
   right: 16px;
-  bottom: 20px;
+  bottom: 18px;
   z-index: 2;
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
   border: 0;
   border-radius: 999px;
-  color: #151216;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 10px 24px rgba(39, 30, 43, 0.16);
+  color: rgba(21, 18, 22, 0.9);
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 8px 18px rgba(39, 30, 43, 0.14);
 }
 
 .km-shelf-head {
@@ -152,22 +154,18 @@
   min-width: 0;
   cursor: grab;
   border-radius: 13px;
-  outline: 1px solid transparent;
   transition:
     opacity 160ms ease,
-    outline-color 160ms ease,
     transform 160ms ease;
 }
 
 .km-album-card:hover {
-  outline-color: rgba(38, 31, 39, 0.08);
   transform: translateY(-2px);
 }
 
 .km-album-card:active {
   cursor: grabbing;
-  opacity: 0.68;
-  outline-color: rgba(255, 79, 143, 0.36);
+  opacity: 0.72;
   transform: translateY(-1px) scale(0.985);
 }
 
@@ -213,9 +211,5 @@
 @media (prefers-color-scheme: dark) {
   .km-shelf-head button {
     background: rgba(255, 255, 255, 0.07);
-  }
-
-  .km-album-card:hover {
-    outline-color: rgba(255, 255, 255, 0.06);
   }
 }
