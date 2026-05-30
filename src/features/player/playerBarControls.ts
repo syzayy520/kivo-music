@@ -1,9 +1,11 @@
+import type { PlayerIconName } from './playerIcons'
+
 export type PlayerControlVariant = 'subtle' | 'transport' | 'primary'
 
 export type PlayerControlButton = {
   key: string
   label: string
-  symbol: string
+  icon: PlayerIconName
   variant: PlayerControlVariant
 }
 
@@ -11,31 +13,31 @@ export const playerControlButtons: PlayerControlButton[] = [
   {
     key: 'shuffle',
     label: 'Shuffle',
-    symbol: '↝',
+    icon: 'shuffle',
     variant: 'subtle',
   },
   {
     key: 'previous',
     label: 'Previous track',
-    symbol: '⏮',
+    icon: 'previous',
     variant: 'transport',
   },
   {
     key: 'play-pause',
     label: 'Pause',
-    symbol: 'Ⅱ',
+    icon: 'pause',
     variant: 'primary',
   },
   {
     key: 'next',
     label: 'Next track',
-    symbol: '⏭',
+    icon: 'next',
     variant: 'transport',
   },
   {
     key: 'repeat',
     label: 'Repeat',
-    symbol: '↻',
+    icon: 'repeat',
     variant: 'subtle',
   },
 ]
