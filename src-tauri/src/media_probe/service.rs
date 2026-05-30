@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use super::backends::ffprobe::FfprobeBackend;
+use super::backends::ffprobe_status::ffprobe_status;
+use super::status::MediaProbeBackendStatus;
 use super::types::MediaProbeResult;
 
 #[derive(Clone, Debug, Deserialize, Error, Serialize)]
@@ -39,6 +41,10 @@ impl MediaProbeService {
         self.backend.name()
     }
 
+    pub fn backend_status(&self) -> MediaProbeBackendStatus {
+        ffprobe_status()
+    }
+
     pub fn probe(&self, path: &str) -> MediaProbeResultValue<MediaProbeResult> {
         self.backend.probe(path)
     }
@@ -57,6 +63,15 @@ impl MediaProbeServiceState {
             .unwrap_or_else(|poisoned| poisoned.into_inner());
 
         service.backend_name()
+    }
+
+    pub fn backend_status(&self) -> MediaProbeBackendStatus {
+        let service = self
+            .service
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+
+        service.backend_status()
     }
 
     pub fn probe(&self, path: &str) -> MediaProbeResultValue<MediaProbeResult> {
