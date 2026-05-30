@@ -6,7 +6,7 @@
   grid-template-columns: var(--km-sidebar) minmax(0, 1fr);
   grid-template-rows: 28px minmax(0, 1fr) var(--km-player);
   overflow: hidden;
-  background: var(--km-bg);
+  background: var(--km-window);
   color: var(--km-text);
 }
 
@@ -14,17 +14,17 @@
   min-width: 0;
   min-height: 0;
   grid-column: 2;
-  grid-row: 2;
+  grid-row: 2 / 4;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-bottom: 24px;
+  padding-bottom: 104px;
   scroll-behavior: smooth;
-  scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+  scrollbar-color: rgba(28, 24, 30, 0.06) transparent;
   scrollbar-width: thin;
 }
 
 .km-stage:hover {
-  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+  scrollbar-color: rgba(28, 24, 30, 0.18) transparent;
 }
 
 .km-stage::-webkit-scrollbar {
@@ -38,13 +38,37 @@
 .km-stage::-webkit-scrollbar-thumb {
   border: 3px solid transparent;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(28, 24, 30, 0.06);
   background-clip: content-box;
 }
 
 .km-stage:hover::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(28, 24, 30, 0.18);
   background-clip: content-box;
+}
+
+@media (prefers-color-scheme: dark) {
+  .km-app {
+    background: var(--km-window);
+  }
+
+  .km-stage {
+    scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+  }
+
+  .km-stage:hover {
+    scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+  }
+
+  .km-stage::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.05);
+    background-clip: content-box;
+  }
+
+  .km-stage:hover::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    background-clip: content-box;
+  }
 }
 
 @media (max-width: 1120px) {
