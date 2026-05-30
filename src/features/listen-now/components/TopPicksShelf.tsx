@@ -1,0 +1,32 @@
+import type { Album } from '../../../shared/types/music'
+import { listenNowCopy } from '../listenNowCopy'
+import { listenNowData } from '../listenNowData'
+
+function artistName(album: Album) {
+  return listenNowData.artists.find((artist) => artist.id === album.artistId)?.name ?? 'Unknown Artist'
+}
+
+export function TopPicksShelf() {
+  return (
+    <section className="km-top-picks" id="listen-now">
+      <div className="km-shelf-head km-top-picks-head">
+        <div>
+          <p>{listenNowCopy.heroEyebrow}</p>
+          <h3>{listenNowCopy.topPicksTitle}</h3>
+        </div>
+      </div>
+      <div className="km-top-picks-grid" aria-label={listenNowCopy.topPicksTitle}>
+        {listenNowData.topPicks.map((album, index) => (
+          <article className="km-top-pick-card" data-featured={index === 0} key={`top-pick-${album.id}`}>
+            <div className={`km-top-pick-art artwork-${album.artworkKey}`} />
+            <div className="km-top-pick-copy">
+              <p>{index === 0 ? listenNowCopy.heroEyebrow : listenNowCopy.topPicksEyebrow}</p>
+              <h2>{album.title}</h2>
+              <span>{artistName(album)}</span>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
