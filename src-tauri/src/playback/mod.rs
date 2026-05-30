@@ -12,6 +12,7 @@ pub mod output;
 pub mod output_policy;
 pub mod path;
 pub mod queue;
+pub mod queue_policy;
 pub mod state;
 pub mod timeline;
 pub mod types;
