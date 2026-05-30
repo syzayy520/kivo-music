@@ -14,7 +14,7 @@ function displayAlbum(album: Album, suffix: string, title: string, artworkKey: s
 }
 
 const topPickAlbums: Album[] = [
-  heroAlbum,
+  displayAlbum(heroAlbum, 'top-pick', 'Midnight Archive', 'pink'),
   displayAlbum(albums[1], 'made-for-you', 'UltraBlur Nights', 'violet'),
   displayAlbum(albums[2], 'new-release', 'Static Gardens', 'green'),
 ]
