@@ -11,11 +11,13 @@ const currentAlbumIndex = Math.max(
   albums.findIndex((album) => album.id === currentTrack.albumId),
 )
 const currentArtworkSource = currentAlbum ?? {}
+const qualityShortLabel = playerState.qualityLabel.split(' · ')[0] ?? playerState.qualityLabel
 
 export const playerData = {
   track: currentTrack,
   artist: artists.find((artist) => artist.id === currentTrack.artistId),
   album: currentAlbum,
   artworkStyle: resolveArtworkStyle(currentArtworkSource, currentAlbumIndex),
+  qualityShortLabel,
   state: playerState,
 }
