@@ -1,3 +1,4 @@
+import './homeStart.css'
 import { listenNowCopy } from '../listenNowCopy'
 
 export function StartListeningPanel() {
