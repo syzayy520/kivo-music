@@ -1,22 +1,26 @@
 .artwork-pink {
   background:
-    radial-gradient(circle at 78% 28%, rgba(255, 247, 220, 0.72), transparent 16%),
-    radial-gradient(circle at 46% 74%, rgba(202, 55, 146, 0.42), transparent 30%),
-    linear-gradient(145deg, #b1459a 0%, #f0679b 48%, #f9c5d5 100%);
+    radial-gradient(ellipse at 84% 18%, rgba(255, 244, 219, 0.78) 0 7%, transparent 18%),
+    radial-gradient(ellipse at 30% 76%, rgba(176, 45, 133, 0.52), transparent 36%),
+    linear-gradient(158deg, transparent 0 52%, rgba(255, 255, 255, 0.26) 53%, transparent 74%),
+    linear-gradient(135deg, #9c4db7 0%, #f25c9d 52%, #ffd1df 100%);
 }
 
 .artwork-violet {
   background:
-    radial-gradient(circle at 70% 22%, rgba(157, 230, 255, 0.5), transparent 17%),
-    radial-gradient(circle at 22% 70%, rgba(74, 47, 157, 0.72), transparent 34%),
-    linear-gradient(145deg, #47338f 0%, #7666ff 52%, #79c8f2 100%);
+    radial-gradient(circle at 72% 24%, rgba(158, 242, 255, 0.68) 0 5%, transparent 18%),
+    radial-gradient(ellipse at 34% 72%, rgba(54, 37, 139, 0.72), transparent 38%),
+    linear-gradient(158deg, transparent 0 50%, rgba(255, 255, 255, 0.24) 51%, transparent 74%),
+    linear-gradient(135deg, #4d3795 0%, #7768ff 52%, #7bd1f4 100%);
 }
 
 .artwork-green {
   background:
-    radial-gradient(circle at 74% 26%, rgba(255, 239, 166, 0.62), transparent 18%),
-    radial-gradient(circle at 22% 76%, rgba(13, 92, 79, 0.72), transparent 34%),
-    linear-gradient(145deg, #0f6358 0%, #48a884 52%, #d4d661 100%);
+    radial-gradient(ellipse at 78% 18%, rgba(255, 245, 183, 0.78) 0 8%, transparent 22%),
+    radial-gradient(ellipse at 62% 48%, rgba(12, 82, 73, 0.38), transparent 31%),
+    radial-gradient(ellipse at 24% 82%, rgba(8, 72, 65, 0.68), transparent 36%),
+    linear-gradient(158deg, transparent 0 48%, rgba(255, 255, 255, 0.2) 49%, transparent 72%),
+    linear-gradient(135deg, #0b5f59 0%, #42a983 52%, #e2d46a 100%);
 }
 
 .artwork-pink,
@@ -33,8 +37,21 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(155deg, transparent 45%, rgba(255, 255, 255, 0.24) 46%, transparent 72%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.16));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 40%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.2), transparent 46%);
+  pointer-events: none;
+}
+
+.artwork-green::after {
+  content: '';
+  position: absolute;
+  right: -8%;
+  bottom: 18%;
+  width: 72%;
+  height: 38%;
+  border-radius: 50%;
+  background: rgba(11, 85, 73, 0.24);
+  transform: rotate(-8deg);
   pointer-events: none;
 }
 
@@ -43,7 +60,7 @@
   .artwork-violet::before,
   .artwork-green::before {
     background:
-      linear-gradient(155deg, transparent 45%, rgba(255, 255, 255, 0.14) 46%, transparent 72%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.26));
+      linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 40%),
+      linear-gradient(0deg, rgba(0, 0, 0, 0.3), transparent 48%);
   }
 }
