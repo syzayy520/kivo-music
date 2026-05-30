@@ -5,7 +5,6 @@ export function TopBar() {
   return (
     <header className="km-topbar">
       <div className="km-topbar-title">
-        <p>{topBarCopy.eyebrow}</p>
         <h1>{topBarCopy.title}</h1>
       </div>
       <label className="km-search">
