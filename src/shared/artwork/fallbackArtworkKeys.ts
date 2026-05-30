@@ -12,3 +12,20 @@ export const fallbackArtworkKeys = {
   paperPlane: 'paper-plane',
   frequencyBlue: 'frequency-blue',
 } as const
+
+export type FallbackArtworkKey = (typeof fallbackArtworkKeys)[keyof typeof fallbackArtworkKeys]
+
+export const fallbackArtworkSequence: FallbackArtworkKey[] = [
+  fallbackArtworkKeys.pinkHill,
+  fallbackArtworkKeys.purpleCloud,
+  fallbackArtworkKeys.greenHills,
+  fallbackArtworkKeys.summerLake,
+  fallbackArtworkKeys.moonPink,
+  fallbackArtworkKeys.beamSky,
+  fallbackArtworkKeys.springBloom,
+  fallbackArtworkKeys.autumnSunset,
+  fallbackArtworkKeys.winterMist,
+  fallbackArtworkKeys.oceanWave,
+  fallbackArtworkKeys.paperPlane,
+  fallbackArtworkKeys.frequencyBlue,
+]

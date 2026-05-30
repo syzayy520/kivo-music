@@ -52,7 +52,9 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 42%, rgba(0, 0, 0, 0.46));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 38%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.34), transparent 56%);
 }
 
 .km-top-pick-copy {
@@ -170,9 +172,17 @@
 
 .km-album-card-art {
   aspect-ratio: 1;
+  background-size: cover;
+  background-position: center;
   border-radius: 11px;
   margin-bottom: 8px;
   box-shadow: var(--km-shadow-card);
+}
+
+.km-top-pick-art-image,
+.km-album-card-image {
+  background-size: cover;
+  background-position: center;
 }
 
 .km-album-card strong,

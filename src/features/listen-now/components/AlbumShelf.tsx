@@ -1,4 +1,5 @@
 import type { Album } from '../../../shared/types/music'
+import { hasRealArtwork, resolveArtworkClass } from '../../../shared/artwork/resolveArtworkClass'
 import { listenNowCopy } from '../listenNowCopy'
 import { listenNowData } from '../listenNowData'
 
@@ -10,6 +11,33 @@ type AlbumShelfProps = {
 
 function artistName(album: Album) {
   return listenNowData.artists.find((artist) => artist.id === album.artistId)?.name ?? 'Unknown Artist'
+}
+
+function renderAlbumArtwork(album: Album, index: number) {
+  const artworkSource = album as Album & {
+    artworkUrl?: string
+    coverUrl?: string
+    coverPath?: string
+    imageUrl?: string
+    cover?: string
+  }
+  const realArtwork =
+    artworkSource.artworkUrl ??
+    artworkSource.coverUrl ??
+    artworkSource.coverPath ??
+    artworkSource.imageUrl ??
+    artworkSource.cover
+
+  if (hasRealArtwork(artworkSource) && realArtwork) {
+    return (
+      <div
+        className="km-album-card-art km-album-card-image"
+        style={{ backgroundImage: `url(${realArtwork})` }}
+      />
+    )
+  }
+
+  return <div className={`km-album-card-art ${resolveArtworkClass(artworkSource, index)}`} />
 }
 
 export function AlbumShelf({ shelfKey }: AlbumShelfProps) {
@@ -26,14 +54,14 @@ export function AlbumShelf({ shelfKey }: AlbumShelfProps) {
         <button type="button">{listenNowCopy.showAll}</button>
       </div>
       <div className="km-album-grid" aria-label={shelfCopy.title}>
-        {shelfAlbums.map((album) => (
+        {shelfAlbums.map((album, index) => (
           <article
             aria-label={`${album.title} by ${artistName(album)}`}
             className="km-album-card"
             draggable
             key={`${shelfKey}-${album.id}`}
           >
-            <div className={`km-album-card-art artwork-${album.artworkKey}`} />
+            {renderAlbumArtwork(album, index)}
             <strong>{album.title}</strong>
             <span>{artistName(album)}</span>
             <em>{album.qualityLabel}</em>

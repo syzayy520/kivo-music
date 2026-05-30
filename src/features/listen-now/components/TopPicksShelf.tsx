@@ -1,4 +1,5 @@
 import type { Album } from '../../../shared/types/music'
+import { hasRealArtwork, resolveArtworkClass } from '../../../shared/artwork/resolveArtworkClass'
 import { listenNowCopy } from '../listenNowCopy'
 import { listenNowData } from '../listenNowData'
 
@@ -8,6 +9,33 @@ function artistName(album: Album) {
 
 function topPickEyebrow(index: number) {
   return listenNowCopy.topPickEyebrows[index] ?? listenNowCopy.topPickEyebrows[0]
+}
+
+function renderTopPickArtwork(album: Album, index: number) {
+  const artworkSource = album as Album & {
+    artworkUrl?: string
+    coverUrl?: string
+    coverPath?: string
+    imageUrl?: string
+    cover?: string
+  }
+  const realArtwork =
+    artworkSource.artworkUrl ??
+    artworkSource.coverUrl ??
+    artworkSource.coverPath ??
+    artworkSource.imageUrl ??
+    artworkSource.cover
+
+  if (hasRealArtwork(artworkSource) && realArtwork) {
+    return (
+      <div
+        className="km-top-pick-art km-top-pick-art-image"
+        style={{ backgroundImage: `url(${realArtwork})` }}
+      />
+    )
+  }
+
+  return <div className={`km-top-pick-art ${resolveArtworkClass(artworkSource, index)}`} />
 }
 
 export function TopPicksShelf() {
@@ -22,7 +50,7 @@ export function TopPicksShelf() {
       <div className="km-top-picks-grid" aria-label={listenNowCopy.topPicksTitle}>
         {listenNowData.topPicks.map((album, index) => (
           <article className="km-top-pick-card" data-featured={index === 0} key={`top-pick-${album.id}`}>
-            <div className={`km-top-pick-art artwork-${album.artworkKey}`} />
+            {renderTopPickArtwork(album, index)}
             <div className="km-top-pick-copy">
               <p>{topPickEyebrow(index)}</p>
               <h2>{album.title}</h2>
