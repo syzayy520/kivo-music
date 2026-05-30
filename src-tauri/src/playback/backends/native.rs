@@ -1,30 +1,10 @@
 use super::backend_types::{PlaybackBackendDescriptor, PlaybackBackendKind};
+use super::native_playback::KivoNativePlayback;
 use super::super::capabilities::PlaybackCapabilities;
 use super::super::engine::PlaybackEngine;
 use super::super::errors::{PlaybackError, PlaybackResult};
 use super::super::state::PlaybackState;
 use super::super::types::PlaybackTrack;
-
-#[derive(Clone, Debug)]
-enum KivoRuntimePhase {
-    Idle,
-    Prepared,
-    Active,
-    Paused,
-    Stopped,
-}
-
-impl Default for KivoRuntimePhase {
-    fn default() -> Self {
-        Self::Idle
-    }
-}
-
-#[derive(Clone, Debug, Default)]
-struct KivoRuntimeState {
-    phase: KivoRuntimePhase,
-    loaded_path: Option<String>,
-}
 
 pub fn descriptor() -> PlaybackBackendDescriptor {
     PlaybackBackendDescriptor {
@@ -38,16 +18,16 @@ pub fn descriptor() -> PlaybackBackendDescriptor {
 #[derive(Clone, Debug)]
 pub struct KivoNativeEngine {
     descriptor: PlaybackBackendDescriptor,
+    playback: KivoNativePlayback,
     state: PlaybackState,
-    runtime: KivoRuntimeState,
 }
 
 impl KivoNativeEngine {
     pub fn new() -> Self {
         Self {
             descriptor: descriptor(),
+            playback: KivoNativePlayback::new(),
             state: PlaybackState::default(),
-            runtime: KivoRuntimeState::default(),
         }
     }
 
@@ -55,6 +35,11 @@ impl KivoNativeEngine {
         let message = format!("kivo core audio {operation} is not implemented yet");
         self.state.error = Some(message.clone());
         Err(PlaybackError::UnsupportedOperation(message))
+    }
+
+    fn record_error(&mut self, error: PlaybackError) -> PlaybackResult<PlaybackState> {
+        self.state.error = Some(error.to_string());
+        Err(error)
     }
 }
 
@@ -70,41 +55,69 @@ impl PlaybackEngine for KivoNativeEngine {
     }
 
     fn load(&mut self, track: PlaybackTrack) -> PlaybackResult<PlaybackState> {
-        self.runtime.phase = KivoRuntimePhase::Prepared;
-        self.runtime.loaded_path = Some(track.source_path.clone());
-        self.state.current_track = Some(track);
+        self.playback.load_track(track);
+        self.state.current_track = self.playback.current_track();
+        self.state.status = self.playback.current_status();
         self.unsupported("load")
     }
 
     fn play(&mut self) -> PlaybackResult<PlaybackState> {
-        self.runtime.phase = KivoRuntimePhase::Active;
-        self.unsupported("play")
+        match self.playback.play() {
+            Ok(status) => {
+                self.state.status = status;
+                Ok(self.state.clone())
+            }
+            Err(error) => self.record_error(error),
+        }
     }
 
     fn pause(&mut self) -> PlaybackResult<PlaybackState> {
-        self.runtime.phase = KivoRuntimePhase::Paused;
-        self.unsupported("pause")
+        match self.playback.pause() {
+            Ok(status) => {
+                self.state.status = status;
+                Ok(self.state.clone())
+            }
+            Err(error) => self.record_error(error),
+        }
     }
 
     fn resume(&mut self) -> PlaybackResult<PlaybackState> {
-        self.runtime.phase = KivoRuntimePhase::Active;
-        self.unsupported("resume")
+        match self.playback.resume() {
+            Ok(status) => {
+                self.state.status = status;
+                Ok(self.state.clone())
+            }
+            Err(error) => self.record_error(error),
+        }
     }
 
     fn stop(&mut self) -> PlaybackResult<PlaybackState> {
-        self.runtime.phase = KivoRuntimePhase::Stopped;
-        self.unsupported("stop")
+        match self.playback.stop() {
+            Ok(status) => {
+                self.state.status = status;
+                Ok(self.state.clone())
+            }
+            Err(error) => self.record_error(error),
+        }
     }
 
-    fn seek(&mut self, _position_ms: u64) -> PlaybackResult<PlaybackState> {
-        self.unsupported("seek")
+    fn seek(&mut self, position_ms: u64) -> PlaybackResult<PlaybackState> {
+        match self.playback.seek(position_ms) {
+            Ok(status) => {
+                self.state.status = status;
+                Ok(self.state.clone())
+            }
+            Err(error) => self.record_error(error),
+        }
     }
 
-    fn set_volume(&mut self, _level: f32) -> PlaybackResult<PlaybackState> {
+    fn set_volume(&mut self, level: f32) -> PlaybackResult<PlaybackState> {
+        self.state.volume.level = level.clamp(0.0, 1.0);
         self.unsupported("set volume")
     }
 
-    fn set_muted(&mut self, _muted: bool) -> PlaybackResult<PlaybackState> {
+    fn set_muted(&mut self, muted: bool) -> PlaybackResult<PlaybackState> {
+        self.state.volume.muted = muted;
         self.unsupported("set muted")
     }
 
@@ -113,7 +126,7 @@ impl PlaybackEngine for KivoNativeEngine {
     }
 
     fn shutdown(&mut self) -> PlaybackResult<()> {
-        self.runtime.phase = KivoRuntimePhase::Stopped;
+        let _ = self.playback.stop();
         Ok(())
     }
 }
