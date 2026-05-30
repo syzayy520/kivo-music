@@ -9,6 +9,7 @@ pub fn run() {
             playback::commands::playback_get_state,
             playback::commands::playback_get_primary_backend,
             playback::commands::playback_get_compatibility_backends,
+            playback::commands::playback_get_backend_status,
             playback::commands::playback_load,
             playback::commands::playback_play,
             playback::commands::playback_pause,
