@@ -23,6 +23,7 @@ pub fn run() {
             playback::commands::playback_set_volume,
             playback::commands::playback_set_muted,
             media_probe::commands::media_probe_get_backend_name,
+            media_probe::commands::media_probe_get_backend_status,
             media_probe::commands::media_probe_file,
         ])
         .run(tauri::generate_context!())
