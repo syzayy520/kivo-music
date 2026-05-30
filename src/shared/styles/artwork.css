@@ -1,71 +1,407 @@
-.artwork-pink {
-  background: radial-gradient(ellipse at 84% 18%, rgba(255,244,219,.78) 0 7%, transparent 18%), linear-gradient(158deg, transparent 0 52%, rgba(255,255,255,.26) 53%, transparent 74%), linear-gradient(135deg, #9c4db7 0%, #f25c9d 52%, #ffd1df 100%);
-}
+/*
+ * Kivo Music — fallback artwork
+ * Rules:
+ *   - No `position` on the class itself — parent controls positioning.
+ *   - Pseudo-elements paint landscape details (hills, sun, moon, waves…).
+ *   - background-size / background-position set on the element so it fills any aspect ratio.
+ */
 
-.artwork-violet {
-  background: radial-gradient(circle at 72% 24%, rgba(158,242,255,.68) 0 5%, transparent 18%), linear-gradient(158deg, transparent 0 50%, rgba(255,255,255,.24) 51%, transparent 74%), linear-gradient(135deg, #4d3795 0%, #7768ff 52%, #7bd1f4 100%);
-}
-
-.artwork-green {
-  background: radial-gradient(ellipse at 78% 18%, rgba(255,245,183,.78) 0 8%, transparent 22%), radial-gradient(ellipse at 62% 48%, rgba(12,82,73,.38), transparent 31%), linear-gradient(135deg, #0b5f59 0%, #42a983 52%, #e2d46a 100%);
-}
-
-.artwork-cloud {
-  background: radial-gradient(circle at 58% 35%, rgba(255,180,229,.5), transparent 18%), radial-gradient(circle at 72% 20%, rgba(116,201,255,.48), transparent 22%), linear-gradient(135deg, #5839a8 0%, #a560d6 48%, #80d6f8 100%);
-}
-
-.artwork-lake {
-  background: radial-gradient(circle at 62% 36%, rgba(255,244,203,.9) 0 9%, transparent 10%), radial-gradient(ellipse at 50% 72%, rgba(12,86,94,.4), transparent 36%), linear-gradient(180deg, #a8e1d5 0%, #70b5b7 52%, #165b63 100%);
-}
-
-.artwork-moon {
-  background: radial-gradient(circle at 58% 34%, rgba(255,241,205,.9) 0 7%, transparent 8%), linear-gradient(180deg, #e1609c 0%, #f49bbc 54%, #b98aa9 100%);
-}
-
-.artwork-beam {
-  background: linear-gradient(90deg, transparent 48%, rgba(255,246,190,.82) 50%, transparent 54%), radial-gradient(circle at 52% 40%, rgba(255,122,196,.52), transparent 24%), linear-gradient(180deg, #26205f 0%, #a84d9f 50%, #f2a2b0 100%);
-}
-
-.artwork-flowers {
-  background: radial-gradient(circle at 70% 28%, rgba(255,244,199,.62), transparent 15%), radial-gradient(circle at 36% 64%, rgba(255,255,255,.42) 0 2%, transparent 3%), radial-gradient(circle at 72% 70%, rgba(255,255,255,.36) 0 2%, transparent 3%), linear-gradient(135deg, #7ac6bd 0%, #a6d4cc 52%, #f2d8b7 100%);
-}
-
-.artwork-sunset {
-  background: radial-gradient(circle at 52% 50%, rgba(255,246,198,.92) 0 5%, transparent 6%), linear-gradient(180deg, #ff8b7a 0%, #f5b06d 50%, #8f4d58 100%);
-}
-
-.artwork-hills {
-  background: linear-gradient(160deg, transparent 42%, rgba(148,181,231,.35) 43%, transparent 66%), linear-gradient(135deg, #e4d7f2 0%, #b6c8ef 50%, #f6cbd4 100%);
-}
-
-.artwork-ocean {
-  background: radial-gradient(ellipse at 58% 45%, rgba(255,255,255,.18), transparent 18%), linear-gradient(135deg, #98dbe4 0%, #2b8ba4 48%, #0c637b 100%);
-}
-
-.artwork-paper {
-  background: linear-gradient(155deg, transparent 45%, rgba(255,255,255,.38) 46%, transparent 70%), linear-gradient(135deg, #a8dfcf 0%, #d3eee1 100%);
-}
-
-.artwork-afterglow {
-  background: radial-gradient(circle at 52% 48%, rgba(255,239,190,.86) 0 10%, transparent 11%), linear-gradient(180deg, #f7798d 0%, #f6a1b0 48%, #5d3a85 100%);
-}
-
-.artwork-frequency {
-  background: linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px), linear-gradient(135deg, #1a4b8f 0%, #143462 100%);
-  background-size: 10px 100%, auto;
-}
-
-[class^='artwork-'],
-[class*=' artwork-'] {
-  position: relative;
+/* ─── 1. pink-hill  粉色山坡 / 暖光 ─────────────────────────────────── */
+.artwork-pink-hill {
+  background:
+    radial-gradient(ellipse at 72% 22%, rgba(255, 230, 180, 0.9) 0 8%, transparent 22%),
+    radial-gradient(ellipse at 28% 78%, rgba(200, 60, 120, 0.38), transparent 40%),
+    linear-gradient(170deg, #f9a8d4 0%, #f472b6 38%, #db2777 68%, #9d174d 100%);
   overflow: hidden;
 }
-
-[class^='artwork-']::before,
-[class*=' artwork-']::before {
+.artwork-pink-hill::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(255,255,255,.1), transparent 40%), linear-gradient(0deg, rgba(0,0,0,.2), transparent 46%);
+  background:
+    radial-gradient(ellipse 120% 38% at 50% 108%, #be185d 0%, transparent 60%),
+    radial-gradient(ellipse 80% 28% at 20% 112%, #9d174d 0%, transparent 55%);
   pointer-events: none;
+}
+.artwork-pink-hill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.12) 0%, transparent 38%),
+              linear-gradient(0deg, rgba(0,0,0,.18) 0%, transparent 44%);
+  pointer-events: none;
+}
+
+/* ─── 2. purple-cloud  紫色云层 / 梦幻光 ────────────────────────────── */
+.artwork-purple-cloud {
+  background:
+    radial-gradient(ellipse at 60% 28%, rgba(220, 200, 255, 0.82) 0 14%, transparent 32%),
+    radial-gradient(ellipse at 22% 60%, rgba(100, 60, 200, 0.44), transparent 38%),
+    linear-gradient(145deg, #6d28d9 0%, #8b5cf6 42%, #c4b5fd 72%, #ede9fe 100%);
+  overflow: hidden;
+}
+.artwork-purple-cloud::before {
+  content: '';
+  position: absolute;
+  left: -10%; right: -10%;
+  top: 30%; height: 28%;
+  background:
+    radial-gradient(ellipse 60% 100% at 30% 50%, rgba(255,255,255,.52) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 100% at 72% 50%, rgba(255,255,255,.38) 0%, transparent 65%);
+  pointer-events: none;
+}
+.artwork-purple-cloud::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.1) 0%, transparent 36%),
+              linear-gradient(0deg, rgba(80,20,140,.22) 0%, transparent 48%);
+  pointer-events: none;
+}
+
+/* ─── 3. green-hills  绿色山景 / 日光 ───────────────────────────────── */
+.artwork-green-hills {
+  background:
+    radial-gradient(circle at 74% 20%, rgba(255, 248, 180, 0.88) 0 7%, rgba(255,220,80,.2) 8% 16%, transparent 26%),
+    linear-gradient(170deg, #bbf7d0 0%, #4ade80 36%, #16a34a 62%, #14532d 100%);
+  overflow: hidden;
+}
+.artwork-green-hills::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 130% 42% at 50% 112%, #15803d 0%, transparent 58%),
+    radial-gradient(ellipse 90% 32% at -10% 118%, #166534 0%, transparent 52%);
+  pointer-events: none;
+}
+.artwork-green-hills::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.1) 0%, transparent 36%),
+              linear-gradient(0deg, rgba(0,0,0,.16) 0%, transparent 42%);
+  pointer-events: none;
+}
+
+/* ─── 4. summer-lake  夏天湖面 / 青绿 ───────────────────────────────── */
+.artwork-summer-lake {
+  background:
+    radial-gradient(circle at 50% 30%, rgba(255, 248, 200, 0.92) 0 6%, rgba(255,220,80,.22) 7% 14%, transparent 24%),
+    linear-gradient(180deg, #7dd3fc 0%, #38bdf8 30%, #0ea5e9 54%, #0369a1 78%, #164e63 100%);
+  overflow: hidden;
+}
+.artwork-summer-lake::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 0; height: 42%;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      rgba(255,255,255,.06) 0px, rgba(255,255,255,.06) 2px,
+      transparent 2px, transparent 8px
+    ),
+    linear-gradient(180deg, rgba(14,165,233,.0) 0%, rgba(2,132,199,.6) 100%);
+  pointer-events: none;
+}
+.artwork-summer-lake::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.12) 0%, transparent 32%),
+              linear-gradient(0deg, rgba(0,0,0,.14) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+/* ─── 5. moon-pink  粉色月亮 / 夜色 ─────────────────────────────────── */
+.artwork-moon-pink {
+  background:
+    radial-gradient(circle at 64% 26%, rgba(255, 240, 200, 0.96) 0 6%, rgba(255,200,160,.28) 7% 16%, transparent 26%),
+    radial-gradient(ellipse at 30% 72%, rgba(120, 20, 80, 0.52), transparent 42%),
+    linear-gradient(150deg, #4c0519 0%, #9f1239 36%, #e11d48 60%, #fb7185 82%, #fda4af 100%);
+  overflow: hidden;
+}
+.artwork-moon-pink::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 110% 36% at 50% 110%, #881337 0%, transparent 56%);
+  pointer-events: none;
+}
+.artwork-moon-pink::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, transparent 34%),
+              linear-gradient(0deg, rgba(0,0,0,.22) 0%, transparent 46%);
+  pointer-events: none;
+}
+
+/* ─── 6. beam-sky  天空光束 / 紫粉云 ────────────────────────────────── */
+.artwork-beam-sky {
+  background:
+    radial-gradient(ellipse at 68% 18%, rgba(255, 230, 120, 0.72) 0 8%, transparent 22%),
+    radial-gradient(ellipse at 28% 64%, rgba(80, 20, 160, 0.44), transparent 40%),
+    linear-gradient(145deg, #1e1b4b 0%, #4338ca 38%, #818cf8 62%, #c4b5fd 82%, #f5f3ff 100%);
+  overflow: hidden;
+}
+.artwork-beam-sky::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* light beam */
+  background:
+    linear-gradient(
+      162deg,
+      transparent 0% 42%,
+      rgba(255,255,255,.44) 43%,
+      rgba(255,255,255,.18) 46%,
+      transparent 52%
+    );
+  pointer-events: none;
+}
+.artwork-beam-sky::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.1) 0%, transparent 36%),
+              linear-gradient(0deg, rgba(0,0,0,.18) 0%, transparent 44%);
+  pointer-events: none;
+}
+
+/* ─── 7. spring-bloom  春天花丛 / 柔绿 ──────────────────────────────── */
+.artwork-spring-bloom {
+  background:
+    radial-gradient(circle at 76% 22%, rgba(255, 240, 200, 0.82) 0 8%, transparent 20%),
+    radial-gradient(ellipse at 24% 74%, rgba(60, 140, 60, 0.38), transparent 38%),
+    linear-gradient(155deg, #d1fae5 0%, #6ee7b7 36%, #34d399 58%, #059669 82%, #064e3b 100%);
+  overflow: hidden;
+}
+.artwork-spring-bloom::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* scattered blossom dots */
+  background:
+    radial-gradient(circle at 18% 38%, rgba(255,255,255,.62) 0 2%, transparent 3%),
+    radial-gradient(circle at 34% 22%, rgba(255,200,220,.72) 0 2.5%, transparent 3.5%),
+    radial-gradient(circle at 58% 44%, rgba(255,255,255,.52) 0 1.8%, transparent 2.8%),
+    radial-gradient(circle at 72% 58%, rgba(255,180,200,.62) 0 2%, transparent 3%),
+    radial-gradient(circle at 44% 68%, rgba(255,255,255,.48) 0 1.5%, transparent 2.5%),
+    radial-gradient(circle at 82% 32%, rgba(255,220,230,.58) 0 2%, transparent 3%),
+    radial-gradient(ellipse 120% 38% at 50% 112%, #047857 0%, transparent 58%);
+  pointer-events: none;
+}
+.artwork-spring-bloom::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.12) 0%, transparent 36%),
+              linear-gradient(0deg, rgba(0,0,0,.14) 0%, transparent 42%);
+  pointer-events: none;
+}
+
+/* ─── 8. autumn-sunset  秋天日落 / 橙粉 ─────────────────────────────── */
+.artwork-autumn-sunset {
+  background:
+    radial-gradient(circle at 50% 36%, rgba(255, 240, 120, 0.96) 0 7%, rgba(255,180,60,.32) 8% 18%, transparent 28%),
+    radial-gradient(ellipse at 20% 78%, rgba(140, 30, 20, 0.44), transparent 40%),
+    linear-gradient(170deg, #fef3c7 0%, #fbbf24 24%, #f97316 48%, #dc2626 70%, #7f1d1d 100%);
+  overflow: hidden;
+}
+.artwork-autumn-sunset::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 120% 40% at 50% 112%, #92400e 0%, transparent 58%),
+    radial-gradient(ellipse 80% 28% at 80% 116%, #78350f 0%, transparent 52%);
+  pointer-events: none;
+}
+.artwork-autumn-sunset::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.14) 0%, transparent 32%),
+              linear-gradient(0deg, rgba(0,0,0,.2) 0%, transparent 44%);
+  pointer-events: none;
+}
+
+/* ─── 9. winter-mist  冬天雾山 / 冷蓝灰 ─────────────────────────────── */
+.artwork-winter-mist {
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(220, 235, 255, 0.88) 0 14%, transparent 32%),
+    radial-gradient(ellipse at 72% 68%, rgba(80, 100, 160, 0.32), transparent 42%),
+    linear-gradient(170deg, #f0f9ff 0%, #bae6fd 28%, #7dd3fc 52%, #0ea5e9 74%, #0c4a6e 100%);
+  overflow: hidden;
+}
+.artwork-winter-mist::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* misty mountain silhouettes */
+  background:
+    radial-gradient(ellipse 100% 44% at 50% 108%, rgba(186,230,253,.7) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 32% at 20% 114%, rgba(147,197,253,.5) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 28% at 80% 116%, rgba(186,230,253,.4) 0%, transparent 48%);
+  pointer-events: none;
+}
+.artwork-winter-mist::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.18) 0%, transparent 38%),
+              linear-gradient(0deg, rgba(12,74,110,.18) 0%, transparent 44%);
+  pointer-events: none;
+}
+
+/* ─── 10. ocean-wave  海浪纹理 / 蓝绿 ───────────────────────────────── */
+.artwork-ocean-wave {
+  background:
+    radial-gradient(ellipse at 50% 16%, rgba(186, 230, 255, 0.72) 0 10%, transparent 26%),
+    linear-gradient(170deg, #ecfeff 0%, #67e8f9 24%, #06b6d4 48%, #0e7490 70%, #164e63 100%);
+  overflow: hidden;
+}
+.artwork-ocean-wave::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 0; height: 56%;
+  /* wave stripes */
+  background:
+    repeating-linear-gradient(
+      -4deg,
+      transparent 0px, transparent 6px,
+      rgba(255,255,255,.1) 6px, rgba(255,255,255,.1) 8px
+    ),
+    linear-gradient(180deg, transparent 0%, rgba(14,116,144,.5) 100%);
+  pointer-events: none;
+}
+.artwork-ocean-wave::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.14) 0%, transparent 34%),
+              linear-gradient(0deg, rgba(0,0,0,.16) 0%, transparent 42%);
+  pointer-events: none;
+}
+
+/* ─── 11. paper-plane  浅绿天空 / 纸飞机 ────────────────────────────── */
+.artwork-paper-plane {
+  background:
+    radial-gradient(ellipse at 72% 24%, rgba(200, 255, 240, 0.72) 0 10%, transparent 26%),
+    linear-gradient(155deg, #f0fdf4 0%, #bbf7d0 28%, #4ade80 52%, #16a34a 74%, #14532d 100%);
+  overflow: hidden;
+}
+.artwork-paper-plane::before {
+  content: '';
+  position: absolute;
+  /* paper plane shape via clip-path */
+  top: 28%; left: 52%;
+  width: 32%; height: 22%;
+  background: rgba(255,255,255,.82);
+  clip-path: polygon(0% 50%, 100% 0%, 72% 50%, 100% 100%);
+  pointer-events: none;
+}
+.artwork-paper-plane::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.14) 0%, transparent 36%),
+              linear-gradient(0deg, rgba(0,0,0,.14) 0%, transparent 42%);
+  pointer-events: none;
+}
+
+/* ─── 12. frequency-blue  蓝色频谱 / 声波 ───────────────────────────── */
+.artwork-frequency-blue {
+  background:
+    radial-gradient(circle at 30% 32%, rgba(120, 200, 255, 0.62) 0 10%, transparent 28%),
+    radial-gradient(circle at 72% 68%, rgba(60, 40, 180, 0.52), transparent 36%),
+    linear-gradient(135deg, #1e1b4b 0%, #3730a3 36%, #6366f1 60%, #a5b4fc 82%, #e0e7ff 100%);
+  overflow: hidden;
+}
+.artwork-frequency-blue::before {
+  content: '';
+  position: absolute;
+  left: 8%; right: 8%;
+  top: 20%; bottom: 20%;
+  /* frequency bars */
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,.0)  0px,  rgba(255,255,255,.0)  3px,
+      rgba(165,180,252,.52) 3px,  rgba(165,180,252,.52) 5px,
+      rgba(255,255,255,.0)  5px,  rgba(255,255,255,.0)  9px,
+      rgba(165,180,252,.38) 9px,  rgba(165,180,252,.38) 11px,
+      rgba(255,255,255,.0)  11px, rgba(255,255,255,.0)  15px,
+      rgba(165,180,252,.62) 15px, rgba(165,180,252,.62) 17px,
+      rgba(255,255,255,.0)  17px, rgba(255,255,255,.0)  21px,
+      rgba(165,180,252,.44) 21px, rgba(165,180,252,.44) 23px
+    );
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0,0,0,.8) 20%,
+    rgba(0,0,0,1) 50%,
+    rgba(0,0,0,.8) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+.artwork-frequency-blue::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.1) 0%, transparent 36%),
+              linear-gradient(0deg, rgba(0,0,0,.2) 0%, transparent 44%);
+  pointer-events: none;
+}
+
+/* ─── shared: pseudo-elements need absolute context ─────────────────── */
+.artwork-pink-hill,
+.artwork-purple-cloud,
+.artwork-green-hills,
+.artwork-summer-lake,
+.artwork-moon-pink,
+.artwork-beam-sky,
+.artwork-spring-bloom,
+.artwork-autumn-sunset,
+.artwork-winter-mist,
+.artwork-ocean-wave,
+.artwork-paper-plane,
+.artwork-frequency-blue {
+  /* NOTE: do NOT set position here — parent component controls positioning.
+     We only need overflow:hidden (already set per-class above) and
+     background-size so the gradient fills any container. */
+  background-size: cover;
+  background-position: center;
+}
+
+/* pseudo-elements are absolute relative to the element itself,
+   so the element must establish a stacking context.
+   We use isolation instead of position to avoid overriding
+   the parent's absolute/relative layout. */
+.artwork-pink-hill,
+.artwork-purple-cloud,
+.artwork-green-hills,
+.artwork-summer-lake,
+.artwork-moon-pink,
+.artwork-beam-sky,
+.artwork-spring-bloom,
+.artwork-autumn-sunset,
+.artwork-winter-mist,
+.artwork-ocean-wave,
+.artwork-paper-plane,
+.artwork-frequency-blue {
+  isolation: isolate;
+}
+
+/* For ::before/::after to be positioned correctly the element needs
+   position:relative when it is NOT already positioned by the parent.
+   .km-top-pick-art overrides this with position:absolute !important,
+   so the rule below only affects square album cards (position:static). */
+.km-album-card-art[class*='artwork-'] {
+  position: relative;
 }
