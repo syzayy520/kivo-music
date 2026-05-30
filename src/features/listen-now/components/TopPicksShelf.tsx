@@ -3,12 +3,12 @@ import { resolveArtworkStyle } from '../../../shared/artwork/resolveArtworkClass
 import { listenNowCopy } from '../listenNowCopy'
 import { listenNowData } from '../listenNowData'
 
-function artistName(album: Album) {
-  return listenNowData.artists.find((artist) => artist.id === album.artistId)?.name ?? 'Unknown Artist'
-}
-
 function topPickEyebrow(index: number) {
   return listenNowCopy.topPickEyebrows[index] ?? listenNowCopy.topPickEyebrows[0]
+}
+
+function topPickDescription(index: number) {
+  return listenNowCopy.topPickDescriptions[index] ?? listenNowCopy.topPickDescriptions[0]
 }
 
 function renderTopPickArtwork(album: Album, index: number) {
@@ -37,7 +37,7 @@ export function TopPicksShelf() {
             <div className="km-top-pick-copy">
               <p>{topPickEyebrow(index)}</p>
               <h2>{album.title}</h2>
-              <span>{artistName(album)}</span>
+              <span>{topPickDescription(index)}</span>
             </div>
             <button className="km-top-pick-play" type="button" aria-label={`Play ${album.title}`}>
               ▶
