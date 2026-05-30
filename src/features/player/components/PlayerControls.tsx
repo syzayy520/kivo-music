@@ -1,3 +1,5 @@
+import './playerControls.css'
+import { PlayerIcon } from '../playerIcons'
 import { playerControlButtons } from '../playerBarControls'
 import { playerData } from '../playerData'
 import { formatPlayerTime } from '../playerTime'
@@ -15,7 +17,7 @@ export function PlayerControls() {
             aria-label={control.label}
             className={`km-player-control km-player-control-${control.variant}`}
           >
-            {control.symbol}
+            <PlayerIcon name={control.icon} />
           </button>
         ))}
       </div>
