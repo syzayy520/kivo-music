@@ -1,3 +1,4 @@
+pub mod activity_log;
 pub mod backend_status;
 pub mod backends;
 pub mod capabilities;
