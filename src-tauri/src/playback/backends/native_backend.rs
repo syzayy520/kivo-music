@@ -1,12 +1,13 @@
-﻿use super::super::errors::{PlaybackError, PlaybackResult};
-use super::super::output::OutputRuntimeStatus;
+use super::native_output::KivoNativeOutputSink;
+use super::super::errors::{PlaybackError, PlaybackResult};
+use super::super::output::{OutputRuntimeStatus, OutputSink};
 use super::super::types::{PlaybackStatus, PlaybackTrack};
 
 #[derive(Clone, Debug)]
 pub struct KivoNativeBackend {
     current_track: Option<PlaybackTrack>,
     status: PlaybackStatus,
-    output_status: OutputRuntimeStatus,
+    output: KivoNativeOutputSink,
 }
 
 impl KivoNativeBackend {
@@ -29,7 +30,7 @@ impl KivoNativeBackend {
     }
 
     pub fn output_status(&self) -> OutputRuntimeStatus {
-        self.output_status.clone()
+        self.output.status()
     }
 
     pub fn play(&self) -> PlaybackResult<PlaybackStatus> {
@@ -64,7 +65,7 @@ impl Default for KivoNativeBackend {
         Self {
             current_track: None,
             status: PlaybackStatus::Idle,
-            output_status: OutputRuntimeStatus::default(),
+            output: KivoNativeOutputSink::new(),
         }
     }
 }
