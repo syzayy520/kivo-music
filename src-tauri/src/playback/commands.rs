@@ -1,6 +1,7 @@
 use tauri::State;
 
 use super::activity_log::PlaybackActivityLogState;
+use super::activity_recorder::{record_state_result, record_track_result};
 use super::backend_status::BackendStatus;
 use super::backends::backend_types::PlaybackBackendDescriptor;
 use super::core_profile::KivoCoreAudioProfile;
@@ -9,10 +10,6 @@ use super::events::PlaybackEvent;
 use super::manager::PlaybackManagerState;
 use super::state::PlaybackState;
 use super::types::PlaybackTrack;
-
-fn record_event(activity: &PlaybackActivityLogState, event: PlaybackEvent) {
-    activity.append(event);
-}
 
 #[tauri::command]
 pub fn playback_get_state(manager: State<'_, PlaybackManagerState>) -> PlaybackState {
@@ -68,12 +65,7 @@ pub fn playback_load(
     track: PlaybackTrack,
 ) -> Result<PlaybackState, PlaybackError> {
     let result = manager.load(track);
-
-    match &result {
-        Ok(state) => record_event(&activity, PlaybackEvent::TrackChanged(state.clone())),
-        Err(error) => record_event(&activity, PlaybackEvent::Error(error.clone())),
-    }
-
+    record_track_result(&activity, &result);
     result
 }
 
@@ -83,12 +75,7 @@ pub fn playback_play(
     activity: State<'_, PlaybackActivityLogState>,
 ) -> Result<PlaybackState, PlaybackError> {
     let result = manager.play();
-
-    match &result {
-        Ok(state) => record_event(&activity, PlaybackEvent::StateChanged(state.clone())),
-        Err(error) => record_event(&activity, PlaybackEvent::Error(error.clone())),
-    }
-
+    record_state_result(&activity, &result);
     result
 }
 
@@ -98,12 +85,7 @@ pub fn playback_pause(
     activity: State<'_, PlaybackActivityLogState>,
 ) -> Result<PlaybackState, PlaybackError> {
     let result = manager.pause();
-
-    match &result {
-        Ok(state) => record_event(&activity, PlaybackEvent::StateChanged(state.clone())),
-        Err(error) => record_event(&activity, PlaybackEvent::Error(error.clone())),
-    }
-
+    record_state_result(&activity, &result);
     result
 }
 
@@ -113,12 +95,7 @@ pub fn playback_resume(
     activity: State<'_, PlaybackActivityLogState>,
 ) -> Result<PlaybackState, PlaybackError> {
     let result = manager.resume();
-
-    match &result {
-        Ok(state) => record_event(&activity, PlaybackEvent::StateChanged(state.clone())),
-        Err(error) => record_event(&activity, PlaybackEvent::Error(error.clone())),
-    }
-
+    record_state_result(&activity, &result);
     result
 }
 
@@ -128,12 +105,7 @@ pub fn playback_stop(
     activity: State<'_, PlaybackActivityLogState>,
 ) -> Result<PlaybackState, PlaybackError> {
     let result = manager.stop();
-
-    match &result {
-        Ok(state) => record_event(&activity, PlaybackEvent::StateChanged(state.clone())),
-        Err(error) => record_event(&activity, PlaybackEvent::Error(error.clone())),
-    }
-
+    record_state_result(&activity, &result);
     result
 }
 
@@ -144,12 +116,7 @@ pub fn playback_seek(
     position_ms: u64,
 ) -> Result<PlaybackState, PlaybackError> {
     let result = manager.seek(position_ms);
-
-    match &result {
-        Ok(state) => record_event(&activity, PlaybackEvent::StateChanged(state.clone())),
-        Err(error) => record_event(&activity, PlaybackEvent::Error(error.clone())),
-    }
-
+    record_state_result(&activity, &result);
     result
 }
 
@@ -160,12 +127,7 @@ pub fn playback_set_volume(
     level: f32,
 ) -> Result<PlaybackState, PlaybackError> {
     let result = manager.set_volume(level);
-
-    match &result {
-        Ok(state) => record_event(&activity, PlaybackEvent::StateChanged(state.clone())),
-        Err(error) => record_event(&activity, PlaybackEvent::Error(error.clone())),
-    }
-
+    record_state_result(&activity, &result);
     result
 }
 
@@ -176,11 +138,6 @@ pub fn playback_set_muted(
     muted: bool,
 ) -> Result<PlaybackState, PlaybackError> {
     let result = manager.set_muted(muted);
-
-    match &result {
-        Ok(state) => record_event(&activity, PlaybackEvent::StateChanged(state.clone())),
-        Err(error) => record_event(&activity, PlaybackEvent::Error(error.clone())),
-    }
-
+    record_state_result(&activity, &result);
     result
 }
