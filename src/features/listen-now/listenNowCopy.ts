@@ -1,12 +1,12 @@
 export const listenNowCopy = {
   heroEyebrow: 'Top Pick for You',
   heroTitle: 'Midnight Archive',
-  heroDescription: 'A focused local-library highlight with album-first context.',
+  heroDescription: 'Album-first listening from your local library.',
   showAll: 'Show All',
   shelves: {
     recentlyPlayed: {
       eyebrow: 'Recently Played',
-      title: 'Pick up where you left off.',
+      title: 'Continue listening.',
     },
     recentlyAdded: {
       eyebrow: 'Recently Added',
