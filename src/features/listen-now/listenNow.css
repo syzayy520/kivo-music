@@ -1,92 +1,90 @@
-.km-listen-hero,
+.km-top-picks,
 .km-album-shelf {
-  margin: 0 clamp(20px, 3vw, 32px) 14px;
+  margin: 0 clamp(20px, 3vw, 32px) 16px;
 }
 
-.km-listen-hero {
-  min-height: clamp(138px, 19vh, 174px);
+.km-top-picks-head {
+  margin-bottom: 10px;
+}
+
+.km-top-picks-grid {
   display: grid;
-  grid-template-columns: clamp(112px, 12vw, 148px) minmax(0, 1fr);
-  gap: clamp(14px, 1.8vw, 20px);
-  padding: clamp(12px, 1.5vw, 16px);
-  border: 1px solid rgba(255, 255, 255, 0.065);
-  border-radius: 21px;
-  background:
-    radial-gradient(circle at 18% 18%, rgba(255, 79, 163, 0.08), transparent 32%),
-    rgba(255, 255, 255, 0.028);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  grid-template-columns: minmax(260px, 1.25fr) repeat(2, minmax(200px, 1fr));
+  gap: 14px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 2px 2px 8px;
+  scrollbar-width: none;
 }
 
-.km-listen-hero-art {
-  border-radius: 15px;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+.km-top-picks-grid::-webkit-scrollbar {
+  display: none;
 }
 
-.km-listen-hero-copy {
-  align-self: center;
-  max-width: 620px;
-  min-width: 0;
+.km-top-pick-card {
+  position: relative;
+  min-height: clamp(142px, 20vh, 178px);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
 }
 
-.km-listen-hero-copy p,
+.km-top-pick-card[data-featured='true'] {
+  min-height: clamp(156px, 22vh, 196px);
+}
+
+.km-top-pick-art {
+  position: absolute;
+  inset: 0;
+  transform: scale(1.01);
+}
+
+.km-top-pick-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 36%, rgba(0, 0, 0, 0.68));
+}
+
+.km-top-pick-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 92%;
+  padding: 14px;
+}
+
+.km-top-pick-copy p,
 .km-shelf-head p {
   margin: 0;
-  color: var(--km-muted);
+  color: rgba(255, 255, 255, 0.72);
   font-size: 10px;
   font-weight: 780;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.km-listen-hero-copy h2 {
-  margin: 1px 0 0;
-  max-width: 12ch;
-  font-size: clamp(28px, 3.5vw, 44px);
-  line-height: 0.96;
-  letter-spacing: -0.055em;
+.km-top-pick-copy h2 {
+  margin: 3px 0 0;
+  font-size: clamp(20px, 2.1vw, 30px);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
 }
 
-.km-listen-hero-copy span,
-.km-listen-hero-copy strong {
+.km-top-pick-copy span {
   display: block;
-  margin-top: 7px;
-}
-
-.km-listen-hero-copy strong {
-  max-width: 48ch;
-  color: rgba(255, 255, 255, 0.84);
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.76);
   font-size: 12px;
-  line-height: 1.35;
 }
 
-.km-listen-actions,
 .km-shelf-head {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.km-listen-actions {
-  margin-top: 11px;
-  flex-wrap: wrap;
-}
-
-.km-listen-actions button,
-.km-shelf-head button {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
-  color: var(--km-text);
-  background: rgba(255, 255, 255, 0.07);
-  padding: 8px 14px;
-}
-
-.km-listen-actions button:first-child {
-  border-color: transparent;
-  background: linear-gradient(135deg, var(--km-red), var(--km-pink));
-}
-
-.km-shelf-head {
   justify-content: space-between;
+  gap: 10px;
   margin-bottom: 9px;
 }
 
@@ -94,6 +92,14 @@
   margin: 3px 0 0;
   font-size: 18px;
   letter-spacing: -0.035em;
+}
+
+.km-shelf-head button {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  color: var(--km-text);
+  background: rgba(255, 255, 255, 0.07);
+  padding: 8px 14px;
 }
 
 .km-album-shelf:last-child {
@@ -166,21 +172,19 @@
   font-size: 12px;
 }
 
-.km-album-card em,
-.km-listen-hero-copy span {
-  color: var(--km-muted);
-}
-
 .km-album-card em {
   margin-top: 3px;
+  color: var(--km-muted);
   font-size: 11px;
   font-style: normal;
   line-height: 1.3;
 }
 
 @media (max-width: 1120px) {
-  .km-listen-hero {
-    grid-template-columns: 118px minmax(0, 1fr);
+  .km-top-picks-grid {
+    grid-auto-columns: minmax(210px, 1fr);
+    grid-auto-flow: column;
+    grid-template-columns: none;
   }
 
   .km-shelf-head button {
