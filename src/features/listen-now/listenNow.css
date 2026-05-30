@@ -1,25 +1,25 @@
 .km-listen-hero,
 .km-album-shelf {
-  margin: 0 clamp(20px, 3vw, 32px) 18px;
+  margin: 0 clamp(20px, 3vw, 32px) 14px;
 }
 
 .km-listen-hero {
-  min-height: clamp(158px, 22vh, 198px);
+  min-height: clamp(138px, 19vh, 174px);
   display: grid;
-  grid-template-columns: clamp(124px, 13vw, 162px) minmax(0, 1fr);
-  gap: clamp(16px, 2vw, 22px);
-  padding: clamp(14px, 1.7vw, 18px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 22px;
+  grid-template-columns: clamp(112px, 12vw, 148px) minmax(0, 1fr);
+  gap: clamp(14px, 1.8vw, 20px);
+  padding: clamp(12px, 1.5vw, 16px);
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 21px;
   background:
-    radial-gradient(circle at 18% 18%, rgba(255, 79, 163, 0.1), transparent 34%),
-    rgba(255, 255, 255, 0.032);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+    radial-gradient(circle at 18% 18%, rgba(255, 79, 163, 0.08), transparent 32%),
+    rgba(255, 255, 255, 0.028);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .km-listen-hero-art {
-  border-radius: 16px;
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
 }
 
 .km-listen-hero-copy {
@@ -39,9 +39,9 @@
 }
 
 .km-listen-hero-copy h2 {
-  margin: 2px 0 0;
+  margin: 1px 0 0;
   max-width: 12ch;
-  font-size: clamp(30px, 3.8vw, 48px);
+  font-size: clamp(28px, 3.5vw, 44px);
   line-height: 0.96;
   letter-spacing: -0.055em;
 }
@@ -49,13 +49,13 @@
 .km-listen-hero-copy span,
 .km-listen-hero-copy strong {
   display: block;
-  margin-top: 8px;
+  margin-top: 7px;
 }
 
 .km-listen-hero-copy strong {
   max-width: 48ch;
-  color: rgba(255, 255, 255, 0.86);
-  font-size: 13px;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 12px;
   line-height: 1.35;
 }
 
@@ -67,7 +67,7 @@
 }
 
 .km-listen-actions {
-  margin-top: 13px;
+  margin-top: 11px;
   flex-wrap: wrap;
 }
 
@@ -87,7 +87,7 @@
 
 .km-shelf-head {
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 9px;
 }
 
 .km-shelf-head h3 {
@@ -96,9 +96,13 @@
   letter-spacing: -0.035em;
 }
 
+.km-album-shelf:last-child {
+  margin-bottom: 90px;
+}
+
 .km-album-grid {
   display: grid;
-  grid-auto-columns: clamp(112px, 12vw, 142px);
+  grid-auto-columns: clamp(108px, 11.6vw, 136px);
   grid-auto-flow: column;
   gap: 13px;
   overflow-x: auto;
@@ -123,22 +127,22 @@
 }
 
 .km-album-card:hover {
-  outline-color: rgba(255, 255, 255, 0.08);
+  outline-color: rgba(255, 255, 255, 0.06);
   transform: translateY(-2px);
 }
 
 .km-album-card:active {
   cursor: grabbing;
   opacity: 0.68;
-  outline-color: rgba(255, 79, 163, 0.42);
+  outline-color: rgba(255, 79, 163, 0.36);
   transform: translateY(-1px) scale(0.985);
 }
 
 .km-album-card-art {
   aspect-ratio: 1;
   border-radius: 11px;
-  margin-bottom: 8px;
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.18);
+  margin-bottom: 7px;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.16);
 }
 
 .km-album-card strong,
@@ -176,7 +180,7 @@
 
 @media (max-width: 1120px) {
   .km-listen-hero {
-    grid-template-columns: 128px minmax(0, 1fr);
+    grid-template-columns: 118px minmax(0, 1fr);
   }
 
   .km-shelf-head button {
