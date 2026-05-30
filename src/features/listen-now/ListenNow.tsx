@@ -7,7 +7,8 @@ export function ListenNow() {
   return (
     <>
       <ListenNowHero />
-      <AlbumShelf />
+      <AlbumShelf shelfKey="recentlyPlayed" />
+      <AlbumShelf shelfKey="recentlyAdded" />
     </>
   )
 }
