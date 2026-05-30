@@ -1,6 +1,6 @@
 use std::sync::Mutex;
 
-use super::backends::{backend_types::PlaybackBackendDescriptor, mpv, native::NativeEngine};
+use super::backends::{backend_types::PlaybackBackendDescriptor, mpv, native::KivoNativeEngine};
 use super::engine::PlaybackEngine;
 use super::errors::PlaybackResult;
 use super::state::PlaybackState;
@@ -8,14 +8,14 @@ use super::types::PlaybackTrack;
 
 #[derive(Debug)]
 pub struct PlaybackManager {
-    primary_engine: NativeEngine,
+    primary_engine: KivoNativeEngine,
     compatibility_backends: Vec<PlaybackBackendDescriptor>,
 }
 
 impl PlaybackManager {
     pub fn new() -> Self {
         Self {
-            primary_engine: NativeEngine::new(),
+            primary_engine: KivoNativeEngine::new(),
             compatibility_backends: vec![mpv::descriptor()],
         }
     }
