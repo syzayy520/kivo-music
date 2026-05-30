@@ -1,5 +1,8 @@
 use serde::{Deserialize, Serialize};
 
+use super::decoder::AudioStreamInfo;
+use super::errors::PlaybackResult;
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct OutputDevice {
     pub id: String,
@@ -11,6 +14,13 @@ pub struct OutputSettings {
     pub selected_device_id: Option<String>,
     pub exclusive_mode: bool,
     pub bit_perfect_mode: bool,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct AudioOutputFrame {
+    pub stream: AudioStreamInfo,
+    pub position_ms: u64,
+    pub samples: Vec<f32>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -28,4 +38,15 @@ pub struct OutputRuntimeStatus {
     pub latency: OutputLatency,
     pub gap_count: u64,
     pub last_error: Option<String>,
+}
+
+pub trait OutputSink {
+    fn open(&mut self, settings: &OutputSettings) -> PlaybackResult<OutputRuntimeStatus>;
+    fn submit_frame(&mut self, frame: AudioOutputFrame) -> PlaybackResult<OutputRuntimeStatus>;
+    fn pause(&mut self) -> PlaybackResult<OutputRuntimeStatus>;
+    fn resume(&mut self) -> PlaybackResult<OutputRuntimeStatus>;
+    fn flush(&mut self) -> PlaybackResult<OutputRuntimeStatus>;
+    fn stop(&mut self) -> PlaybackResult<OutputRuntimeStatus>;
+    fn status(&self) -> OutputRuntimeStatus;
+    fn close(&mut self) -> PlaybackResult<()>;
 }
