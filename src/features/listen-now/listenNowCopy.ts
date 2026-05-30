@@ -3,12 +3,12 @@ export const listenNowCopy = {
   heroTitle: 'Midnight Archive',
   heroDescription: 'Album-first listening from your local library.',
   showAll: 'Show All',
-  topPicksTitle: 'Featured listening scenes.',
+  topPicksTitle: 'Made for your library.',
   topPickEyebrows: ['Late Night', 'Focus', 'Unwind'],
   topPickDescriptions: [
-    'Quiet local picks for late-night listening.',
-    'Steady background music for work and focus.',
-    'Calm favorites for rest, reading, and weekends.',
+    'Late-night local picks',
+    'Work and focus flow',
+    'Calm weekend listening',
   ],
   shelves: {
     recentlyPlayed: {
