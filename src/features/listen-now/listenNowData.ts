@@ -13,6 +13,12 @@ function displayAlbum(album: Album, suffix: string, title: string, artworkKey: s
   }
 }
 
+const topPickAlbums: Album[] = [
+  heroAlbum,
+  displayAlbum(albums[1], 'made-for-you', 'UltraBlur Nights', 'violet'),
+  displayAlbum(albums[2], 'new-release', 'Static Gardens', 'green'),
+]
+
 const recentlyPlayedAlbums: Album[] = [
   albums[0],
   albums[1],
@@ -34,6 +40,7 @@ const recentlyAddedAlbums: Album[] = [
 export const listenNowData = {
   heroAlbum,
   heroArtist: artists.find((artist) => artist.id === heroAlbum.artistId),
+  topPicks: topPickAlbums,
   shelves: {
     recentlyPlayed: recentlyPlayedAlbums,
     recentlyAdded: recentlyAddedAlbums,
