@@ -13,6 +13,8 @@ pub enum PlaybackError {
     Output(String),
     #[error("unsupported format: {0}")]
     UnsupportedFormat(String),
+    #[error("unsupported operation: {0}")]
+    UnsupportedOperation(String),
     #[error("playback failed: {0}")]
     Playback(String),
 }
