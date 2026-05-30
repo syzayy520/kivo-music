@@ -1,5 +1,6 @@
 use std::process::Command;
 
+use super::ffprobe_error::{command_error_message, spawn_error_message};
 use super::super::status::MediaProbeBackendStatus;
 
 pub fn ffprobe_status() -> MediaProbeBackendStatus {
@@ -12,12 +13,15 @@ pub fn ffprobe_status() -> MediaProbeBackendStatus {
         Ok(output) => MediaProbeBackendStatus {
             backend_name: "ffprobe".to_string(),
             available: false,
-            note: Some(String::from_utf8_lossy(&output.stderr).trim().to_string()),
+            note: Some(command_error_message(
+                &output.stderr,
+                "ffprobe version check failed without stderr output",
+            )),
         },
         Err(error) => MediaProbeBackendStatus {
             backend_name: "ffprobe".to_string(),
             available: false,
-            note: Some(error.to_string()),
+            note: Some(spawn_error_message(error)),
         },
     }
 }
