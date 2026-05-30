@@ -1,66 +1,71 @@
 .artwork-pink {
-  background:
-    radial-gradient(ellipse at 84% 18%, rgba(255, 244, 219, 0.78) 0 7%, transparent 18%),
-    radial-gradient(ellipse at 30% 76%, rgba(176, 45, 133, 0.52), transparent 36%),
-    linear-gradient(158deg, transparent 0 52%, rgba(255, 255, 255, 0.26) 53%, transparent 74%),
-    linear-gradient(135deg, #9c4db7 0%, #f25c9d 52%, #ffd1df 100%);
+  background: radial-gradient(ellipse at 84% 18%, rgba(255,244,219,.78) 0 7%, transparent 18%), linear-gradient(158deg, transparent 0 52%, rgba(255,255,255,.26) 53%, transparent 74%), linear-gradient(135deg, #9c4db7 0%, #f25c9d 52%, #ffd1df 100%);
 }
 
 .artwork-violet {
-  background:
-    radial-gradient(circle at 72% 24%, rgba(158, 242, 255, 0.68) 0 5%, transparent 18%),
-    radial-gradient(ellipse at 34% 72%, rgba(54, 37, 139, 0.72), transparent 38%),
-    linear-gradient(158deg, transparent 0 50%, rgba(255, 255, 255, 0.24) 51%, transparent 74%),
-    linear-gradient(135deg, #4d3795 0%, #7768ff 52%, #7bd1f4 100%);
+  background: radial-gradient(circle at 72% 24%, rgba(158,242,255,.68) 0 5%, transparent 18%), linear-gradient(158deg, transparent 0 50%, rgba(255,255,255,.24) 51%, transparent 74%), linear-gradient(135deg, #4d3795 0%, #7768ff 52%, #7bd1f4 100%);
 }
 
 .artwork-green {
-  background:
-    radial-gradient(ellipse at 78% 18%, rgba(255, 245, 183, 0.78) 0 8%, transparent 22%),
-    radial-gradient(ellipse at 62% 48%, rgba(12, 82, 73, 0.38), transparent 31%),
-    radial-gradient(ellipse at 24% 82%, rgba(8, 72, 65, 0.68), transparent 36%),
-    linear-gradient(158deg, transparent 0 48%, rgba(255, 255, 255, 0.2) 49%, transparent 72%),
-    linear-gradient(135deg, #0b5f59 0%, #42a983 52%, #e2d46a 100%);
+  background: radial-gradient(ellipse at 78% 18%, rgba(255,245,183,.78) 0 8%, transparent 22%), radial-gradient(ellipse at 62% 48%, rgba(12,82,73,.38), transparent 31%), linear-gradient(135deg, #0b5f59 0%, #42a983 52%, #e2d46a 100%);
 }
 
-.artwork-pink,
-.artwork-violet,
-.artwork-green {
+.artwork-cloud {
+  background: radial-gradient(circle at 58% 35%, rgba(255,180,229,.5), transparent 18%), radial-gradient(circle at 72% 20%, rgba(116,201,255,.48), transparent 22%), linear-gradient(135deg, #5839a8 0%, #a560d6 48%, #80d6f8 100%);
+}
+
+.artwork-lake {
+  background: radial-gradient(circle at 62% 36%, rgba(255,244,203,.9) 0 9%, transparent 10%), radial-gradient(ellipse at 50% 72%, rgba(12,86,94,.4), transparent 36%), linear-gradient(180deg, #a8e1d5 0%, #70b5b7 52%, #165b63 100%);
+}
+
+.artwork-moon {
+  background: radial-gradient(circle at 58% 34%, rgba(255,241,205,.9) 0 7%, transparent 8%), linear-gradient(180deg, #e1609c 0%, #f49bbc 54%, #b98aa9 100%);
+}
+
+.artwork-beam {
+  background: linear-gradient(90deg, transparent 48%, rgba(255,246,190,.82) 50%, transparent 54%), radial-gradient(circle at 52% 40%, rgba(255,122,196,.52), transparent 24%), linear-gradient(180deg, #26205f 0%, #a84d9f 50%, #f2a2b0 100%);
+}
+
+.artwork-flowers {
+  background: radial-gradient(circle at 70% 28%, rgba(255,244,199,.62), transparent 15%), radial-gradient(circle at 36% 64%, rgba(255,255,255,.42) 0 2%, transparent 3%), radial-gradient(circle at 72% 70%, rgba(255,255,255,.36) 0 2%, transparent 3%), linear-gradient(135deg, #7ac6bd 0%, #a6d4cc 52%, #f2d8b7 100%);
+}
+
+.artwork-sunset {
+  background: radial-gradient(circle at 52% 50%, rgba(255,246,198,.92) 0 5%, transparent 6%), linear-gradient(180deg, #ff8b7a 0%, #f5b06d 50%, #8f4d58 100%);
+}
+
+.artwork-hills {
+  background: linear-gradient(160deg, transparent 42%, rgba(148,181,231,.35) 43%, transparent 66%), linear-gradient(135deg, #e4d7f2 0%, #b6c8ef 50%, #f6cbd4 100%);
+}
+
+.artwork-ocean {
+  background: radial-gradient(ellipse at 58% 45%, rgba(255,255,255,.18), transparent 18%), linear-gradient(135deg, #98dbe4 0%, #2b8ba4 48%, #0c637b 100%);
+}
+
+.artwork-paper {
+  background: linear-gradient(155deg, transparent 45%, rgba(255,255,255,.38) 46%, transparent 70%), linear-gradient(135deg, #a8dfcf 0%, #d3eee1 100%);
+}
+
+.artwork-afterglow {
+  background: radial-gradient(circle at 52% 48%, rgba(255,239,190,.86) 0 10%, transparent 11%), linear-gradient(180deg, #f7798d 0%, #f6a1b0 48%, #5d3a85 100%);
+}
+
+.artwork-frequency {
+  background: linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px), linear-gradient(135deg, #1a4b8f 0%, #143462 100%);
+  background-size: 10px 100%, auto;
+}
+
+[class^='artwork-'],
+[class*=' artwork-'] {
   position: relative;
   overflow: hidden;
 }
 
-.artwork-pink::before,
-.artwork-violet::before,
-.artwork-green::before {
+[class^='artwork-']::before,
+[class*=' artwork-']::before {
   content: '';
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 40%),
-    linear-gradient(0deg, rgba(0, 0, 0, 0.2), transparent 46%);
+  background: linear-gradient(180deg, rgba(255,255,255,.1), transparent 40%), linear-gradient(0deg, rgba(0,0,0,.2), transparent 46%);
   pointer-events: none;
-}
-
-.artwork-green::after {
-  content: '';
-  position: absolute;
-  right: -8%;
-  bottom: 18%;
-  width: 72%;
-  height: 38%;
-  border-radius: 50%;
-  background: rgba(11, 85, 73, 0.24);
-  transform: rotate(-8deg);
-  pointer-events: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  .artwork-pink::before,
-  .artwork-violet::before,
-  .artwork-green::before {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 40%),
-      linear-gradient(0deg, rgba(0, 0, 0, 0.3), transparent 48%);
-  }
 }
