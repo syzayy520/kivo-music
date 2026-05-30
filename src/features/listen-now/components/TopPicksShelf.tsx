@@ -1,5 +1,5 @@
 import type { Album } from '../../../shared/types/music'
-import { hasRealArtwork, resolveArtworkClass } from '../../../shared/artwork/resolveArtworkClass'
+import { resolveArtworkStyle } from '../../../shared/artwork/resolveArtworkClass'
 import { listenNowCopy } from '../listenNowCopy'
 import { listenNowData } from '../listenNowData'
 
@@ -17,25 +17,8 @@ function renderTopPickArtwork(album: Album, index: number) {
     coverUrl?: string
     coverPath?: string
     imageUrl?: string
-    cover?: string
   }
-  const realArtwork =
-    artworkSource.artworkUrl ??
-    artworkSource.coverUrl ??
-    artworkSource.coverPath ??
-    artworkSource.imageUrl ??
-    artworkSource.cover
-
-  if (hasRealArtwork(artworkSource) && realArtwork) {
-    return (
-      <div
-        className="km-top-pick-art km-top-pick-art-image"
-        style={{ backgroundImage: `url(${realArtwork})` }}
-      />
-    )
-  }
-
-  return <div className={`km-top-pick-art ${resolveArtworkClass(artworkSource, index)}`} />
+  return <div className="km-top-pick-art" style={resolveArtworkStyle(artworkSource, index)} />
 }
 
 export function TopPicksShelf() {

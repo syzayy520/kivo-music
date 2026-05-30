@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8e6adf"/><stop offset="0.52" stop-color="#f6a4cb"/><stop offset="1" stop-color="#48216f"/></linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9bc5" stop-opacity="0.6"/><stop offset="1" stop-color="#563191" stop-opacity="0.9"/></linearGradient>
+  </defs>
+  <rect width="400" height="240" fill="url(#bg)"/>
+  <circle cx="290" cy="58" r="28" fill="#ffe9bc" fill-opacity="0.9"/>
+  <path d="M0 154C35 128 62 136 104 120C136 108 174 98 212 112C244 124 272 142 316 130C352 120 370 132 400 148V240H0V154Z" fill="#5f3f9f" fill-opacity="0.55"/>
+  <path d="M0 176C44 160 84 154 124 142C168 128 230 130 278 146C320 160 366 176 400 188V240H0V176Z" fill="#3a2b78" fill-opacity="0.72"/>
+  <rect x="0" y="166" width="400" height="74" fill="url(#water)"/>
+  <path d="M18 188C62 182 120 184 168 190C226 198 288 196 380 188" stroke="#ffd6ea" stroke-opacity="0.5" stroke-width="3"/>
+</svg>
