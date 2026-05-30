@@ -1,0 +1,22 @@
+:root {
+  color-scheme: light;
+  --km-bg: #f8f5f6;
+  --km-window: rgba(255, 255, 255, 0.82);
+  --km-sidebar-bg: rgba(248, 247, 248, 0.72);
+  --km-surface: rgba(255, 255, 255, 0.76);
+  --km-surface-strong: rgba(255, 255, 255, 0.92);
+  --km-panel: rgba(255, 255, 255, 0.68);
+  --km-border: rgba(35, 29, 36, 0.09);
+  --km-text: #171519;
+  --km-muted: #716b74;
+  --km-faint: #aaa4ad;
+  --km-red: #ff3b5c;
+  --km-pink: #ff4f8f;
+  --km-purple: #7563ff;
+  --km-blue: #4aa9f0;
+  --km-green: #36a889;
+  --km-shadow-soft: 0 18px 55px rgba(64, 50, 68, 0.14);
+  --km-shadow-card: 0 12px 30px rgba(64, 50, 68, 0.12);
+  --km-sidebar: 250px;
+  --km-player: 92px;
+}
