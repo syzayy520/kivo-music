@@ -6,6 +6,9 @@ const heroAlbum = albums[0]
 export const listenNowData = {
   heroAlbum,
   heroArtist: artists.find((artist) => artist.id === heroAlbum.artistId),
-  shelfAlbums: albums,
+  shelves: {
+    recentlyPlayed: albums,
+    recentlyAdded: [...albums].reverse(),
+  },
   artists,
 }
