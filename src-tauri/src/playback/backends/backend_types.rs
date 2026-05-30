@@ -4,6 +4,7 @@ use super::super::capabilities::PlaybackCapabilities;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum PlaybackBackendKind {
+    Native,
     Mpv,
 }
 
@@ -12,4 +13,5 @@ pub struct PlaybackBackendDescriptor {
     pub kind: PlaybackBackendKind,
     pub name: String,
     pub capabilities: PlaybackCapabilities,
+    pub is_primary: bool,
 }
