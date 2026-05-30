@@ -1,0 +1,17 @@
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --km-bg: #07070a;
+    --km-window: rgba(10, 10, 14, 0.96);
+    --km-sidebar-bg: rgba(18, 18, 24, 0.82);
+    --km-surface: rgba(20, 20, 27, 0.82);
+    --km-surface-strong: rgba(24, 24, 31, 0.94);
+    --km-panel: rgba(22, 22, 30, 0.78);
+    --km-border: rgba(255, 255, 255, 0.08);
+    --km-text: #f7f2f5;
+    --km-muted: #aaa3ad;
+    --km-faint: #6f6873;
+    --km-shadow-soft: 0 18px 55px rgba(0, 0, 0, 0.24);
+    --km-shadow-card: 0 12px 30px rgba(0, 0, 0, 0.18);
+  }
+}
