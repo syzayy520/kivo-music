@@ -59,10 +59,10 @@
 
 .km-library-status {
   padding: 9px 12px;
-  border: 1px solid var(--km-border);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 14px;
-  background: var(--km-surface-strong);
-  box-shadow: 0 8px 22px rgba(63, 54, 67, 0.06);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 2px 12px rgba(63, 54, 67, 0.10);
 }
 
 .km-library-status small {
@@ -71,10 +71,22 @@
 }
 
 .km-library-status strong {
-  display: block;
+  display: flex;
+  align-items: center;
   margin-top: 2px;
   font-size: 12px;
   font-weight: 740;
+}
+
+.km-library-status strong::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 7px;
+  border-radius: 999px;
+  background: #30c790;
+  flex-shrink: 0;
 }
 
 @media (prefers-color-scheme: dark) {
