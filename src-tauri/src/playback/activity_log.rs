@@ -1,6 +1,10 @@
+use std::sync::Mutex;
+
 use super::events::PlaybackEvent;
 
-#[derive(Clone, Debug, Default)]
+const DEFAULT_ACTIVITY_LOG_LIMIT: usize = 256;
+
+#[derive(Clone, Debug)]
 pub struct PlaybackActivityLog {
     items: Vec<PlaybackEvent>,
     limit: usize,
@@ -26,7 +30,43 @@ impl PlaybackActivityLog {
         self.items.push(item);
     }
 
+    pub fn clear(&mut self) {
+        self.items.clear();
+    }
+
     pub fn snapshot(&self) -> Vec<PlaybackEvent> {
         self.items.clone()
+    }
+}
+
+impl Default for PlaybackActivityLog {
+    fn default() -> Self {
+        Self::new(DEFAULT_ACTIVITY_LOG_LIMIT)
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct PlaybackActivityLogState {
+    log: Mutex<PlaybackActivityLog>,
+}
+
+impl PlaybackActivityLogState {
+    pub fn append(&self, item: PlaybackEvent) {
+        if let Ok(mut log) = self.log.lock() {
+            log.append(item);
+        }
+    }
+
+    pub fn clear(&self) {
+        if let Ok(mut log) = self.log.lock() {
+            log.clear();
+        }
+    }
+
+    pub fn snapshot(&self) -> Vec<PlaybackEvent> {
+        match self.log.lock() {
+            Ok(log) => log.snapshot(),
+            Err(_) => Vec::new(),
+        }
     }
 }
