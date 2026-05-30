@@ -6,6 +6,7 @@ pub mod errors;
 pub mod events;
 pub mod lifecycle;
 pub mod lyrics_clock;
+pub mod manager;
 pub mod metadata;
 pub mod output;
 pub mod path;
