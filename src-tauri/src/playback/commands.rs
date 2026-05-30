@@ -1,5 +1,6 @@
 use tauri::State;
 
+use super::backend_status::BackendStatus;
 use super::backends::backend_types::PlaybackBackendDescriptor;
 use super::errors::PlaybackError;
 use super::manager::PlaybackManagerState;
@@ -23,6 +24,17 @@ pub fn playback_get_compatibility_backends(
     manager: State<'_, PlaybackManagerState>,
 ) -> Vec<PlaybackBackendDescriptor> {
     manager.compatibility_backends()
+}
+
+#[tauri::command]
+pub fn playback_get_backend_status(manager: State<'_, PlaybackManagerState>) -> BackendStatus {
+    let backend = manager.primary_backend();
+
+    BackendStatus {
+        backend_name: backend.name,
+        available: false,
+        note: Some("Kivo Core Audio is scaffolded; real output is not wired yet".to_string()),
+    }
 }
 
 #[tauri::command]
