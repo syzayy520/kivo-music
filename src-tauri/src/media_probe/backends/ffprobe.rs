@@ -2,6 +2,7 @@ use std::process::Command;
 
 use serde_json::Value;
 
+use super::ffprobe_error::{command_error_message, spawn_error_message};
 use super::ffprobe_json::parse_probe_result;
 use super::super::service::{MediaProbeError, MediaProbeResultValue, ProbeBackend};
 use super::super::types::MediaProbeResult;
@@ -26,11 +27,13 @@ impl ProbeBackend for FfprobeBackend {
             ])
             .arg(path)
             .output()
-            .map_err(|error| MediaProbeError::BackendUnavailable(error.to_string()))?;
+            .map_err(|error| MediaProbeError::BackendUnavailable(spawn_error_message(error)))?;
 
         if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
-            return Err(MediaProbeError::ProbeFailed(stderr));
+            return Err(MediaProbeError::ProbeFailed(command_error_message(
+                &output.stderr,
+                "ffprobe command failed without stderr output",
+            )));
         }
 
         let root: Value = serde_json::from_slice(&output.stdout)
