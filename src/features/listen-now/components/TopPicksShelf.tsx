@@ -28,6 +28,9 @@ export function TopPicksShelf() {
               <h2>{album.title}</h2>
               <span>{artistName(album)}</span>
             </div>
+            <button className="km-top-pick-play" type="button" aria-label={`Play ${album.title}`}>
+              ▶
+            </button>
           </article>
         ))}
       </div>
