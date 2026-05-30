@@ -1,19 +1,27 @@
 # Kivo Audio Core Implementation Checklist
 
-This document is the source of truth for Kivo's playback-core implementation order and module boundaries.
+This document is the source of truth for Kivo's final audio-core implementation order and module boundaries.
+
+## Final target
+
+Kivo's long-term main playback core is **Kivo Native Engine**.
+
+The architecture must be designed for a self-owned native engine from the start. mpv/libmpv is a compatibility backend, FFmpeg/ffprobe is a media probe layer, and WASAPI is the Windows output layer.
 
 ## Non-negotiable principles
 
-1. Kivo owns the playback system.
-2. mpv/libmpv is only a playback backend.
-3. FFmpeg/ffprobe is only for media probing and auxiliary analysis.
-4. WASAPI is the Windows output capability layer, not the playback brain.
-5. Tauri commands must call Kivo manager/service layers, never mpv or ffmpeg directly.
-6. PlaybackManager must not do media probing.
-7. MediaProbeService must not control playback.
-8. Do not create two competing playback cores.
-9. Do not add fake playback state to make the UI look active.
-10. Keep modules small, single-purpose, and final-architecture aligned.
+1. Kivo Native Engine is the primary long-term playback target.
+2. Kivo owns playback orchestration, state, queue, events, and recovery.
+3. mpv/libmpv is only a compatibility PlaybackEngine backend.
+4. FFmpeg/ffprobe is only for media probing and auxiliary analysis.
+5. WASAPI is the Windows output layer, not the playback brain.
+6. Tauri commands must call Kivo manager/service layers, not backend implementations directly.
+7. PlaybackManager must not do media probing.
+8. MediaProbeService must not control playback.
+9. Output/WASAPI modules must not own queue, metadata, or UI state.
+10. Do not fake playback state.
+11. Multiple playback backends must share the same PlaybackEngine boundary.
+12. Keep modules small, single-purpose, and final-architecture aligned.
 
 ## Responsibility map
 
@@ -30,20 +38,20 @@ Owns:
 - StateChanged / TrackChanged / Progress / Error event boundaries
 - Error recovery policy
 - Output settings coordination
+- Backend selection between Kivo Native Engine and compatibility backends
 
 Does not own:
 
-- Low-level decoding
-- Media probing
-- Cover extraction
-- Direct mpv process/control details
-- Direct FFmpeg/ffprobe calls
+- Decoder internals
+- Media probing internals
+- Cover extraction internals
+- Direct mpv control details
+- Direct ffprobe calls
+- Direct WASAPI device API calls
 
 ### PlaybackEngine trait
 
-Represents a playback backend boundary.
-
-Required baseline commands:
+All playback backends implement the same trait:
 
 - descriptor
 - load
@@ -57,21 +65,53 @@ Required baseline commands:
 - current_state
 - shutdown
 
-Later extensions:
+Backend facts must include:
 
-- output device selection
-- exclusive output mode
-- gapless
-- replaygain
-- backend health checks
+- backend kind
+- capabilities
+- health state
+- timing facts
+- typed error facts
+
+### KivoNativeEngine
+
+The main final backend.
+
+Owns:
+
+- Kivo-owned playback state machine
+- Kivo-owned timeline model
+- Native decode scheduling boundary
+- Native buffer model
+- Native output pipeline boundary
+- Gapless-ready architecture
+- Bit-perfect-ready architecture
+- WASAPI-ready output boundary
+- Precise seek model
+- Error recovery hooks
+
+Early native implementation must be honest:
+
+- It may start as final architecture scaffolding.
+- It must not claim capabilities it has not implemented.
+- It must return typed unsupported errors until real decode/output pieces exist.
+
+Must not own:
+
+- Library database
+- Home recommendations
+- Cover cache policy
+- Recently played business logic
+- UI state
 
 ### MpvBackend
 
-Owns only real playback backend work:
+Compatibility backend only.
 
-- Load local media path
-- Decode/play through mpv/libmpv
-- Pause/resume/stop
+Owns:
+
+- Load local media path through mpv/libmpv
+- Play/pause/resume/stop
 - Seek
 - Current position/duration reporting
 - Backend-level playback errors
@@ -85,22 +125,21 @@ Must not own:
 - Home recommendations
 - Cover cache
 - Business state
+- Kivo Native Engine decisions
 
 ### MediaProbeService
 
 Owns media analysis and probing:
 
-- File duration
+- Duration
 - Codec/container
 - Sample rate
 - Bit depth
 - Channels/channel layout
 - Bitrate
 - Lossless detection
-- Embedded cover metadata
-- Audio stream list
-- Subtitle/video stream fields reserved for future Kivo video capability
-- Dolby/Atmos/HDR/Dolby Vision fields reserved for future video/audio expansion
+- Embedded cover metadata boundary
+- Stream list boundaries
 - Probe error model
 - Probe cache boundary
 
@@ -112,14 +151,14 @@ Must not own:
 
 ### FFprobeBackend / FFmpegProbeBackend
 
-Owns only probe/analysis implementation details:
+Owns only probe implementation details:
 
-- ffprobe invocation or library adapter
-- Parsing probe JSON/result
+- ffprobe adapter
+- Probe result parsing
 - Mapping to Kivo probe result types
-- Handling missing binaries or probe failures
+- Missing tool / probe failure handling
 
-Must not become a second playback backend unless a future ticket explicitly creates a separate PlaybackEngine implementation.
+Must not become a second playback system unless a future ticket explicitly creates another PlaybackEngine implementation.
 
 ### Output / WASAPI layer
 
@@ -133,35 +172,38 @@ Owns output capability model:
 - Bit-perfect intent
 - Device fallback policy
 - Device disconnect handling
-- Future WASAPI backend coordination
+- WASAPI coordination boundary
 
 Must not own:
 
 - Queue
 - Metadata probing
 - UI state
+- Library state
 
 ## P0 implementation order
 
-### KIVO-AUDIO-CORE-ARCH-P0-001
+### KIVO-AUDIO-NATIVE-ARCH-P0-001
 
-Goal: establish the final playback-core architecture without fake playback.
+Goal: establish the final native-first playback architecture.
 
 Scope:
 
 - PlaybackManager skeleton
 - PlaybackEngine trait expansion
-- PlaybackCommand boundary if needed
+- KivoNativeEngine backend boundary
+- Backend descriptor/capability model for Native and mpv compatibility backend
 - PlaybackEvent boundary refinement
 - PlaybackState/error/timeline/volume/output type hardening
 - commands.rs routed through manager/service layer
-- MpvBackend boundary only, not real mpv playback yet
 
 Done when:
 
-- No Tauri command calls mpv directly
+- Native engine is represented as the primary target
+- Tauri commands do not call backend implementations directly
 - No fake playing state is introduced
-- The manager is the only playback orchestration entry point
+- PlaybackManager is the only playback orchestration entry point
+- mpv is modeled only as compatibility backend
 - cargo check passes
 - frontend remains unchanged
 
@@ -175,8 +217,7 @@ Scope:
 - ProbeBackend trait
 - FFprobeBackend boundary
 - AudioProbeResult
-- VideoProbeResult reserved fields
-- Dolby/HDR/Atmos metadata fields reserved
+- VideoProbeResult reserved boundary
 - Probe error model
 - Probe cache boundary
 
@@ -184,6 +225,7 @@ Done when:
 
 - PlaybackManager does not probe media directly
 - FFmpeg/ffprobe code is isolated behind probe service/backend
+- Probe results are separate from playback state
 - cargo check passes
 - frontend remains unchanged
 
@@ -198,16 +240,90 @@ Scope:
 - OutputMode enum
 - Shared/exclusive/bit-perfect intent
 - fallback policy types
+- native output pipeline boundary
 
 Done when:
 
 - Output model is ready for WASAPI tickets
-- No actual risky device switching is added yet
+- KivoNativeEngine can depend on output abstractions later
+- No risky device switching is added yet
 - cargo check passes
 
-### KIVO-AUDIO-MPV-BACKEND-P0-002
+### KIVO-AUDIO-NATIVE-SCAFFOLD-P0-002
 
-Goal: implement real mpv-backed playback minimum loop.
+Goal: implement honest Kivo Native Engine scaffold.
+
+Scope:
+
+- KivoNativeEngine struct
+- Native engine internal state machine
+- typed unsupported errors for decode/output actions not yet implemented
+- no fake successful playback
+
+Done when:
+
+- Native backend is primary in manager configuration
+- State remains honest when playback is not implemented
+- cargo check passes
+
+### KIVO-AUDIO-NATIVE-DECODE-P0-003
+
+Goal: establish native decode boundary.
+
+Scope:
+
+- Decoder trait
+- AudioFrame model
+- sample format model
+- stream open boundary
+- decode error model
+- selected implementation strategy documented before dependency introduction
+
+Done when:
+
+- decode boundary is independent from queue and UI
+- no output code mixed into decoder
+- cargo check passes
+
+### KIVO-AUDIO-NATIVE-OUTPUT-P0-004
+
+Goal: establish native output boundary.
+
+Scope:
+
+- OutputSink trait
+- WASAPI-ready sink model
+- buffer write boundary
+- underrun/error model
+- latency fields
+
+Done when:
+
+- output boundary is independent from decoder and queue
+- no media probing mixed into output
+- cargo check passes
+
+### KIVO-AUDIO-NATIVE-MINIMUM-PLAYBACK-P0-005
+
+Goal: implement first real Kivo Native Engine playback loop.
+
+Scope:
+
+- load local file through selected decoder
+- feed frames into output sink
+- play/pause/stop
+- honest state updates
+- typed errors
+
+Done when:
+
+- playback state is backed by real native behavior
+- no fake state
+- cargo check passes
+
+### KIVO-AUDIO-MPV-COMPAT-P0-006
+
+Goal: implement mpv-backed compatibility playback.
 
 Scope:
 
@@ -221,11 +337,11 @@ Scope:
 
 Done when:
 
-- playback state is backed by real backend behavior
-- no fake state
+- mpv is selectable as compatibility backend only
+- mpv does not own queue or business state
 - cargo check passes
 
-### KIVO-MEDIA-FFPROBE-P0-003
+### KIVO-MEDIA-FFPROBE-P0-007
 
 Goal: implement real media probing minimum loop.
 
@@ -246,7 +362,7 @@ Done when:
 - probe errors are typed
 - cargo check passes
 
-### KIVO-AUDIO-EVENTS-P0-004
+### KIVO-AUDIO-EVENTS-P0-008
 
 Goal: connect state/progress/event flow.
 
@@ -264,7 +380,7 @@ Done when:
 - backend only reports backend facts
 - cargo check passes
 
-### KIVO-AUDIO-QUEUE-P0-005
+### KIVO-AUDIO-QUEUE-P0-009
 
 Goal: implement queue behavior.
 
@@ -286,7 +402,7 @@ Done when:
 - backend does not own queue
 - cargo check passes
 
-### KIVO-AUDIO-WASAPI-P0-006
+### KIVO-AUDIO-WASAPI-P0-010
 
 Goal: implement Windows output capability incrementally.
 
@@ -303,17 +419,21 @@ Done when:
 
 - output failures are recoverable
 - settings are explicit
+- Kivo Native Engine can use WASAPI path
 - cargo check passes
 
-## Release and licensing gate
+## Release and dependency gate
 
-Before bundling mpv, FFmpeg, ffprobe, or related binaries:
+Before adding mpv, FFmpeg, ffprobe, decoder, or output dependencies:
 
 - audit license compatibility
 - audit distribution method
-- audit binary source and integrity
+- audit source and integrity
 - document user-facing dependency notices if required
-- avoid undocumented binary drops
+- avoid undocumented dependency drops
+- audit Windows build reliability
+- audit binary size
+- audit long-term maintenance risk
 
 ## Current baseline finding
 
@@ -322,7 +442,8 @@ Current playback code is a useful module skeleton but not yet a real playback co
 - playback_get_state returns default state
 - mpv module is descriptor-only
 - PlaybackEngine trait is incomplete
-- Cargo.toml has no real audio/mpv/ffmpeg dependency yet
+- Cargo.toml has no real audio/mpv/ffmpeg/native decode dependency yet
 - FFmpeg/ffprobe layer is not present yet
+- Kivo Native Engine layer is not present yet
 
 Implementation must proceed by the P0 order above.
