@@ -1,3 +1,4 @@
+import './playerTrackInfo.css'
 import { playerData } from '../playerData'
 
 export function PlayerTrackInfo() {
