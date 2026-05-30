@@ -13,5 +13,6 @@ pub fn descriptor() -> PlaybackBackendDescriptor {
             can_gapless: false,
             can_replaygain: false,
         },
+        is_primary: false,
     }
 }
