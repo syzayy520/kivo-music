@@ -5,11 +5,14 @@ use thiserror::Error;
 
 use super::backends::ffprobe::FfprobeBackend;
 use super::backends::ffprobe_status::ffprobe_status;
+use super::path::validate_probe_path;
 use super::status::MediaProbeBackendStatus;
 use super::types::MediaProbeResult;
 
 #[derive(Clone, Debug, Deserialize, Error, Serialize)]
 pub enum MediaProbeError {
+    #[error("invalid probe path: {0}")]
+    InvalidPath(String),
     #[error("probe backend unavailable: {0}")]
     BackendUnavailable(String),
     #[error("probe failed: {0}")]
@@ -46,6 +49,7 @@ impl MediaProbeService {
     }
 
     pub fn probe(&self, path: &str) -> MediaProbeResultValue<MediaProbeResult> {
+        let path = validate_probe_path(path)?;
         self.backend.probe(path)
     }
 }
