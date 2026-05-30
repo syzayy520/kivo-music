@@ -25,9 +25,14 @@ export function AlbumShelf({ shelfKey }: AlbumShelfProps) {
         </div>
         <button type="button">{listenNowCopy.showAll}</button>
       </div>
-      <div className="km-album-grid">
+      <div className="km-album-grid" aria-label={shelfCopy.title}>
         {shelfAlbums.map((album) => (
-          <article className="km-album-card" key={`${shelfKey}-${album.id}`}>
+          <article
+            aria-label={`${album.title} by ${artistName(album)}`}
+            className="km-album-card"
+            draggable
+            key={`${shelfKey}-${album.id}`}
+          >
             <div className={`km-album-card-art artwork-${album.artworkKey}`} />
             <strong>{album.title}</strong>
             <span>{artistName(album)}</span>
