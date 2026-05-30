@@ -1,5 +1,5 @@
-use super::native_output::KivoNativeOutputSink;
 use super::super::errors::{PlaybackError, PlaybackResult};
+use super::super::native_output::KivoNativeOutputSink;
 use super::super::output::{OutputRuntimeStatus, OutputSink};
 use super::super::types::{PlaybackStatus, PlaybackTrack};
 
