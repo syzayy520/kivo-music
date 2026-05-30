@@ -6,6 +6,10 @@ function artistName(album: Album) {
   return listenNowData.artists.find((artist) => artist.id === album.artistId)?.name ?? 'Unknown Artist'
 }
 
+function topPickEyebrow(index: number) {
+  return listenNowCopy.topPickEyebrows[index] ?? listenNowCopy.topPickEyebrows[0]
+}
+
 export function TopPicksShelf() {
   return (
     <section className="km-top-picks" id="listen-now">
@@ -20,7 +24,7 @@ export function TopPicksShelf() {
           <article className="km-top-pick-card" data-featured={index === 0} key={`top-pick-${album.id}`}>
             <div className={`km-top-pick-art artwork-${album.artworkKey}`} />
             <div className="km-top-pick-copy">
-              <p>{index === 0 ? listenNowCopy.heroEyebrow : listenNowCopy.topPicksEyebrow}</p>
+              <p>{topPickEyebrow(index)}</p>
               <h2>{album.title}</h2>
               <span>{artistName(album)}</span>
             </div>
