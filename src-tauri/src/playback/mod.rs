@@ -9,6 +9,7 @@ pub mod lyrics_clock;
 pub mod manager;
 pub mod metadata;
 pub mod output;
+pub mod output_policy;
 pub mod path;
 pub mod queue;
 pub mod state;
