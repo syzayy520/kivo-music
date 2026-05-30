@@ -11,7 +11,7 @@ export type SidebarGroup = {
 export const sidebarGroups: SidebarGroup[] = [
   {
     title: 'For You',
-    items: [{ id: 'listen-now', label: 'Listen Now' }],
+    items: [{ id: 'listen-now', label: 'Home' }],
   },
   {
     title: 'Library',
