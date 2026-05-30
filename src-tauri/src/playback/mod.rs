@@ -1,6 +1,8 @@
 pub mod backends;
+pub mod backend_status;
 pub mod capabilities;
 pub mod commands;
+pub mod decoder;
 pub mod engine;
 pub mod errors;
 pub mod events;
@@ -17,3 +19,4 @@ pub mod state;
 pub mod timeline;
 pub mod types;
 pub mod volume;
+pub mod windows_audio;
