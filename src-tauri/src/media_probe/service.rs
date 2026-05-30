@@ -1,3 +1,5 @@
+use std::sync::Mutex;
+
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -39,5 +41,30 @@ impl MediaProbeService {
 
     pub fn probe(&self, path: &str) -> MediaProbeResultValue<MediaProbeResult> {
         self.backend.probe(path)
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct MediaProbeServiceState {
+    service: Mutex<MediaProbeService>,
+}
+
+impl MediaProbeServiceState {
+    pub fn backend_name(&self) -> &'static str {
+        let service = self
+            .service
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+
+        service.backend_name()
+    }
+
+    pub fn probe(&self, path: &str) -> MediaProbeResultValue<MediaProbeResult> {
+        let service = self
+            .service
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+
+        service.probe(path)
     }
 }
