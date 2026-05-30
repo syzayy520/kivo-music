@@ -10,11 +10,12 @@ const currentAlbumIndex = Math.max(
   0,
   albums.findIndex((album) => album.id === currentTrack.albumId),
 )
+const currentArtworkSource = currentAlbum ?? {}
 
 export const playerData = {
   track: currentTrack,
   artist: artists.find((artist) => artist.id === currentTrack.artistId),
   album: currentAlbum,
-  artworkStyle: resolveArtworkStyle(currentAlbum ?? currentTrack, currentAlbumIndex),
+  artworkStyle: resolveArtworkStyle(currentArtworkSource, currentAlbumIndex),
   state: playerState,
 }
