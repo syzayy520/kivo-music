@@ -1,20 +1,2 @@
-:root {
-  color-scheme: light;
-  --km-bg: #f8f4f5;
-  --km-surface: rgba(255, 255, 255, 0.76);
-  --km-surface-strong: rgba(255, 255, 255, 0.9);
-  --km-panel: rgba(255, 255, 255, 0.66);
-  --km-border: rgba(42, 36, 42, 0.08);
-  --km-text: #171519;
-  --km-muted: #766f78;
-  --km-faint: #a49ca6;
-  --km-red: #ff3b5c;
-  --km-pink: #ff4f8f;
-  --km-purple: #7563ff;
-  --km-blue: #4aa9f0;
-  --km-green: #36a889;
-  --km-shadow-soft: 0 18px 55px rgba(64, 50, 68, 0.14);
-  --km-shadow-card: 0 12px 30px rgba(64, 50, 68, 0.12);
-  --km-sidebar: 250px;
-  --km-player: 92px;
-}
+@import './themes/light.css';
+@import './themes/dark.css';
