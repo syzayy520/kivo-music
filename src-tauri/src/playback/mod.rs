@@ -21,3 +21,4 @@ pub mod timeline;
 pub mod types;
 pub mod volume;
 pub mod windows_audio;
+pub mod native_output;
