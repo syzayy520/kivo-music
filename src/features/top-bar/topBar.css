@@ -34,9 +34,10 @@
   gap: 9px;
   min-width: 0;
   padding: 9px 13px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--km-border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.055);
+  background: var(--km-surface-strong);
+  box-shadow: 0 8px 22px rgba(63, 54, 67, 0.06);
 }
 
 .km-search span {
@@ -58,9 +59,10 @@
 
 .km-library-status {
   padding: 9px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--km-border);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--km-surface-strong);
+  box-shadow: 0 8px 22px rgba(63, 54, 67, 0.06);
 }
 
 .km-library-status small {
@@ -73,6 +75,13 @@
   margin-top: 2px;
   font-size: 12px;
   font-weight: 740;
+}
+
+@media (prefers-color-scheme: dark) {
+  .km-search,
+  .km-library-status {
+    box-shadow: none;
+  }
 }
 
 @media (max-width: 1120px) {
