@@ -1,3 +1,5 @@
+import './playerMeta.css'
+import { PlayerIcon } from '../playerIcons'
 import { playerData } from '../playerData'
 
 export function PlayerMeta() {
@@ -5,7 +7,7 @@ export function PlayerMeta() {
     <div className="km-player-meta" aria-label="Player status">
       <span className="km-player-quality">{playerData.state.qualityLabel}</span>
       <div className="km-player-volume" aria-label="Volume">
-        <span>VOL</span>
+        <PlayerIcon name="volume" />
         <div>
           <span style={{ width: `${playerData.state.volume}%` }} />
         </div>
