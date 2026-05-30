@@ -17,14 +17,14 @@
   grid-row: 2 / 4;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-bottom: 156px;
+  padding-bottom: 182px;
   scroll-behavior: smooth;
-  scrollbar-color: rgba(28, 24, 30, 0.035) transparent;
+  scrollbar-color: rgba(28, 24, 30, 0.03) transparent;
   scrollbar-width: thin;
 }
 
 .km-stage:hover {
-  scrollbar-color: rgba(28, 24, 30, 0.14) transparent;
+  scrollbar-color: rgba(28, 24, 30, 0.11) transparent;
 }
 
 .km-stage::-webkit-scrollbar {
@@ -38,12 +38,12 @@
 .km-stage::-webkit-scrollbar-thumb {
   border: 3px solid transparent;
   border-radius: 999px;
-  background: rgba(28, 24, 30, 0.035);
+  background: rgba(28, 24, 30, 0.03);
   background-clip: content-box;
 }
 
 .km-stage:hover::-webkit-scrollbar-thumb {
-  background: rgba(28, 24, 30, 0.14);
+  background: rgba(28, 24, 30, 0.11);
   background-clip: content-box;
 }
 
@@ -53,20 +53,20 @@
   }
 
   .km-stage {
-    scrollbar-color: rgba(255, 255, 255, 0.06) transparent;
+    scrollbar-color: rgba(255, 255, 255, 0.05) transparent;
   }
 
   .km-stage:hover {
-    scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+    scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
   }
 
   .km-stage::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.05);
     background-clip: content-box;
   }
 
   .km-stage:hover::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.16);
     background-clip: content-box;
   }
 }

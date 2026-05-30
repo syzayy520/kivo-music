@@ -2,18 +2,18 @@
   grid-column: 2;
   grid-row: 3;
   align-self: end;
-  height: 64px;
+  height: 62px;
   display: grid;
   grid-template-columns: minmax(210px, 260px) minmax(300px, 1fr) minmax(170px, 230px);
   gap: clamp(12px, 1.8vw, 18px);
   align-items: center;
-  margin: 0 clamp(18px, 2.4vw, 26px) 14px;
+  margin: 0 clamp(18px, 2.4vw, 26px) 18px;
   padding: 8px 14px;
-  border: 1px solid rgba(25, 20, 28, 0.06);
+  border: 1px solid rgba(25, 20, 28, 0.055);
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(24px) saturate(1.12);
-  box-shadow: 0 10px 34px rgba(62, 51, 68, 0.13);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px) saturate(1.15);
+  box-shadow: 0 14px 40px rgba(70, 58, 76, 0.11);
 }
 
 .km-player-track {
@@ -68,27 +68,27 @@
 }
 
 .km-player button {
-  min-width: 46px;
-  border: 1px solid rgba(25, 20, 28, 0.07);
+  min-width: 42px;
+  border: 1px solid rgba(25, 20, 28, 0.06);
   border-radius: 999px;
   color: var(--km-text);
-  background: rgba(255, 255, 255, 0.5);
-  padding: 7px 13px;
+  background: rgba(255, 255, 255, 0.52);
+  padding: 6px 11px;
   box-shadow: none;
 }
 
 .km-player .play {
-  min-width: 50px;
+  min-width: 46px;
   color: #101015;
-  background: rgba(255, 255, 255, 0.86);
-  box-shadow: 0 8px 18px rgba(55, 45, 62, 0.1);
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 6px 14px rgba(55, 45, 62, 0.08);
 }
 
 .km-player-progress {
   height: 3px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(28, 24, 30, 0.08);
+  background: rgba(28, 24, 30, 0.075);
 }
 
 .km-player-progress span {
