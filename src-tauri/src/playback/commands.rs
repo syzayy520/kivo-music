@@ -2,6 +2,7 @@ use tauri::State;
 
 use super::backend_status::BackendStatus;
 use super::backends::backend_types::PlaybackBackendDescriptor;
+use super::core_profile::KivoCoreAudioProfile;
 use super::errors::PlaybackError;
 use super::manager::PlaybackManagerState;
 use super::state::PlaybackState;
@@ -24,6 +25,11 @@ pub fn playback_get_compatibility_backends(
     manager: State<'_, PlaybackManagerState>,
 ) -> Vec<PlaybackBackendDescriptor> {
     manager.compatibility_backends()
+}
+
+#[tauri::command]
+pub fn playback_get_core_profile() -> KivoCoreAudioProfile {
+    KivoCoreAudioProfile::default()
 }
 
 #[tauri::command]
