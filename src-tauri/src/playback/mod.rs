@@ -2,6 +2,7 @@ pub mod backends;
 pub mod backend_status;
 pub mod capabilities;
 pub mod commands;
+pub mod core_profile;
 pub mod decoder;
 pub mod engine;
 pub mod errors;
