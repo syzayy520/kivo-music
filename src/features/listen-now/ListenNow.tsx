@@ -1,12 +1,12 @@
 import './listenNow.css'
 import '../../shared/styles/artwork.css'
 import { AlbumShelf } from './components/AlbumShelf'
-import { ListenNowHero } from './components/ListenNowHero'
+import { TopPicksShelf } from './components/TopPicksShelf'
 
 export function ListenNow() {
   return (
     <>
-      <ListenNowHero />
+      <TopPicksShelf />
       <AlbumShelf shelfKey="recentlyPlayed" />
       <AlbumShelf shelfKey="recentlyAdded" />
     </>
