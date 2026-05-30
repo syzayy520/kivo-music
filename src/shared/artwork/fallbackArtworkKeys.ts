@@ -16,18 +16,18 @@ export const fallbackArtworkKeys = {
 export type FallbackArtworkKey = (typeof fallbackArtworkKeys)[keyof typeof fallbackArtworkKeys]
 
 export const fallbackArtworkUrls: Record<FallbackArtworkKey, string> = {
-  'pink-hill': '/artwork/fallback/pink-hill.svg',
-  'purple-cloud': '/artwork/fallback/purple-cloud.svg',
-  'green-hills': '/artwork/fallback/green-hills.svg',
-  'summer-lake': '/artwork/fallback/summer-lake.svg',
-  'moon-pink': '/artwork/fallback/moon-pink.svg',
-  'beam-sky': '/artwork/fallback/beam-sky.svg',
-  'spring-bloom': '/artwork/fallback/spring-bloom.svg',
-  'autumn-sunset': '/artwork/fallback/autumn-sunset.svg',
-  'winter-mist': '/artwork/fallback/winter-mist.svg',
-  'ocean-wave': '/artwork/fallback/ocean-wave.svg',
-  'paper-plane': '/artwork/fallback/paper-plane.svg',
-  'frequency-blue': '/artwork/fallback/frequency-blue.svg',
+  'pink-hill': '/artwork/fallback/pink-hill.webp',
+  'purple-cloud': '/artwork/fallback/purple-cloud.webp',
+  'green-hills': '/artwork/fallback/green-hills.webp',
+  'summer-lake': '/artwork/fallback/summer-lake.webp',
+  'moon-pink': '/artwork/fallback/moon-pink.webp',
+  'beam-sky': '/artwork/fallback/beam-sky.webp',
+  'spring-bloom': '/artwork/fallback/spring-bloom.webp',
+  'autumn-sunset': '/artwork/fallback/autumn-sunset.webp',
+  'winter-mist': '/artwork/fallback/winter-mist.webp',
+  'ocean-wave': '/artwork/fallback/ocean-wave.webp',
+  'paper-plane': '/artwork/fallback/paper-plane.webp',
+  'frequency-blue': '/artwork/fallback/frequency-blue.webp',
 }
 
 export const fallbackArtworkSequence: FallbackArtworkKey[] = [
