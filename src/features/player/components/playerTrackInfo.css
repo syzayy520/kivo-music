@@ -1,0 +1,69 @@
+.km-player-track {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 50px minmax(0, 1fr) auto;
+  gap: 11px;
+  align-items: center;
+}
+
+.km-player-art {
+  width: 50px;
+  height: 50px;
+  border-radius: 13px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow:
+    0 10px 20px rgba(56, 44, 64, 0.13),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.km-player-copy {
+  min-width: 0;
+}
+
+.km-player-copy strong,
+.km-player-copy span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.km-player-copy strong {
+  color: var(--km-text);
+  font-size: 13px;
+  font-weight: 780;
+  letter-spacing: -0.02em;
+}
+
+.km-player-copy span {
+  margin-top: 3px;
+  color: var(--km-muted);
+  font-size: 12px;
+}
+
+.km-player-track-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.km-player-action {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  color: rgba(34, 27, 38, 0.5);
+  background: transparent;
+}
+
+@media (prefers-color-scheme: dark) {
+  .km-player-art {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.26);
+  }
+
+  .km-player-action {
+    color: rgba(255, 255, 255, 0.54);
+    background: transparent;
+  }
+}
