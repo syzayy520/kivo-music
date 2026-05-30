@@ -5,6 +5,27 @@ use super::super::errors::{PlaybackError, PlaybackResult};
 use super::super::state::PlaybackState;
 use super::super::types::PlaybackTrack;
 
+#[derive(Clone, Debug)]
+enum NativeRuntimePhase {
+    Idle,
+    Prepared,
+    Active,
+    Paused,
+    Stopped,
+}
+
+impl Default for NativeRuntimePhase {
+    fn default() -> Self {
+        Self::Idle
+    }
+}
+
+#[derive(Clone, Debug, Default)]
+struct NativeRuntimeState {
+    phase: NativeRuntimePhase,
+    loaded_path: Option<String>,
+}
+
 pub fn descriptor() -> PlaybackBackendDescriptor {
     PlaybackBackendDescriptor {
         kind: PlaybackBackendKind::Native,
@@ -18,6 +39,7 @@ pub fn descriptor() -> PlaybackBackendDescriptor {
 pub struct NativeEngine {
     descriptor: PlaybackBackendDescriptor,
     state: PlaybackState,
+    runtime: NativeRuntimeState,
 }
 
 impl NativeEngine {
@@ -25,6 +47,7 @@ impl NativeEngine {
         Self {
             descriptor: descriptor(),
             state: PlaybackState::default(),
+            runtime: NativeRuntimeState::default(),
         }
     }
 
@@ -46,23 +69,30 @@ impl PlaybackEngine for NativeEngine {
         self.descriptor.clone()
     }
 
-    fn load(&mut self, _track: PlaybackTrack) -> PlaybackResult<PlaybackState> {
+    fn load(&mut self, track: PlaybackTrack) -> PlaybackResult<PlaybackState> {
+        self.runtime.phase = NativeRuntimePhase::Prepared;
+        self.runtime.loaded_path = Some(track.source_path.clone());
+        self.state.current_track = Some(track);
         self.unsupported("load")
     }
 
     fn play(&mut self) -> PlaybackResult<PlaybackState> {
+        self.runtime.phase = NativeRuntimePhase::Active;
         self.unsupported("play")
     }
 
     fn pause(&mut self) -> PlaybackResult<PlaybackState> {
+        self.runtime.phase = NativeRuntimePhase::Paused;
         self.unsupported("pause")
     }
 
     fn resume(&mut self) -> PlaybackResult<PlaybackState> {
+        self.runtime.phase = NativeRuntimePhase::Active;
         self.unsupported("resume")
     }
 
     fn stop(&mut self) -> PlaybackResult<PlaybackState> {
+        self.runtime.phase = NativeRuntimePhase::Stopped;
         self.unsupported("stop")
     }
 
@@ -83,6 +113,7 @@ impl PlaybackEngine for NativeEngine {
     }
 
     fn shutdown(&mut self) -> PlaybackResult<()> {
+        self.runtime.phase = NativeRuntimePhase::Stopped;
         Ok(())
     }
 }
