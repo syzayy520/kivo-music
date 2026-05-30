@@ -11,11 +11,15 @@
   padding: clamp(14px, 1.7vw, 18px);
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.032);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 79, 163, 0.1), transparent 34%),
+    rgba(255, 255, 255, 0.032);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
 .km-listen-hero-art {
   border-radius: 16px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.2);
 }
 
 .km-listen-hero-copy {
@@ -50,6 +54,7 @@
 
 .km-listen-hero-copy strong {
   max-width: 48ch;
+  color: rgba(255, 255, 255, 0.86);
   font-size: 13px;
   line-height: 1.35;
 }
@@ -98,7 +103,7 @@
   gap: 13px;
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  padding-bottom: 7px;
+  padding: 2px 2px 7px;
   scrollbar-width: none;
 }
 
@@ -108,12 +113,32 @@
 
 .km-album-card {
   min-width: 0;
+  cursor: grab;
+  border-radius: 13px;
+  outline: 1px solid transparent;
+  transition:
+    opacity 160ms ease,
+    outline-color 160ms ease,
+    transform 160ms ease;
+}
+
+.km-album-card:hover {
+  outline-color: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.km-album-card:active {
+  cursor: grabbing;
+  opacity: 0.68;
+  outline-color: rgba(255, 79, 163, 0.42);
+  transform: translateY(-1px) scale(0.985);
 }
 
 .km-album-card-art {
   aspect-ratio: 1;
   border-radius: 11px;
   margin-bottom: 8px;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.18);
 }
 
 .km-album-card strong,
@@ -127,9 +152,16 @@
 
 .km-album-card strong {
   font-size: 12px;
+  font-weight: 760;
+  letter-spacing: -0.01em;
 }
 
-.km-album-card span,
+.km-album-card span {
+  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+}
+
 .km-album-card em,
 .km-listen-hero-copy span {
   color: var(--km-muted);
