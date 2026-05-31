@@ -44,6 +44,9 @@ mod activity_log_state_tests;
 mod activity_recorder_tests;
 
 #[cfg(test)]
+mod decoder_request_tests;
+
+#[cfg(test)]
 mod lifecycle_activity_log_tests;
 
 #[cfg(test)]
