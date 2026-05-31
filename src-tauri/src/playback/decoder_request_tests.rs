@@ -31,3 +31,15 @@ fn open_request_does_not_depend_on_display_metadata() {
     assert_eq!(request.track_id, "track-1");
     assert_eq!(request.source_path, "C:/Music/track-1.flac");
 }
+
+#[test]
+fn open_request_keeps_owned_values_after_track_changes() {
+    let mut track = track();
+    let request = AudioDecoderOpenRequest::from_track(&track);
+
+    track.id = TrackId("track-2".to_string());
+    track.source_path = "C:/Music/track-2.flac".to_string();
+
+    assert_eq!(request.track_id, "track-1");
+    assert_eq!(request.source_path, "C:/Music/track-1.flac");
+}
