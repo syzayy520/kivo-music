@@ -1,16 +1,15 @@
 import type { Album } from '../../../shared/types/music'
 import { resolveArtworkStyle } from '../../../shared/artwork/resolveArtworkClass'
-import { listenNowCopy } from '../listenNowCopy'
+import { t } from '../../../shared/i18n'
+import { listenNowCopy, type ListenNowShelfKey } from '../listenNowCopy'
 import { listenNowData } from '../listenNowData'
 
-type ShelfKey = keyof typeof listenNowData.shelves
-
 type AlbumShelfProps = {
-  shelfKey: ShelfKey
+  shelfKey: ListenNowShelfKey
 }
 
 function artistName(album: Album) {
-  return listenNowData.artists.find((artist) => artist.id === album.artistId)?.name ?? 'Unknown Artist'
+  return listenNowData.artists.find((artist) => artist.id === album.artistId)?.name ?? t('common.unknownArtist')
 }
 
 function renderAlbumArtwork(album: Album, index: number) {
@@ -26,30 +25,35 @@ function renderAlbumArtwork(album: Album, index: number) {
 export function AlbumShelf({ shelfKey }: AlbumShelfProps) {
   const shelfCopy = listenNowCopy.shelves[shelfKey]
   const shelfAlbums = listenNowData.shelves[shelfKey]
+  const shelfTitle = t(shelfCopy.titleKey)
 
   return (
     <section className="km-album-shelf" id={shelfKey}>
       <div className="km-shelf-head">
         <div>
-          <p>{shelfCopy.eyebrow}</p>
-          <h3>{shelfCopy.title}</h3>
+          <p>{t(shelfCopy.eyebrowKey)}</p>
+          <h3>{shelfTitle}</h3>
         </div>
-        <button type="button">{listenNowCopy.showAll}</button>
+        <button type="button">{t(listenNowCopy.showAllKey)}</button>
       </div>
-      <div className="km-album-grid" aria-label={shelfCopy.title}>
-        {shelfAlbums.map((album, index) => (
-          <article
-            aria-label={`${album.title} by ${artistName(album)}`}
-            className="km-album-card"
-            draggable
-            key={`${shelfKey}-${album.id}`}
-          >
-            {renderAlbumArtwork(album, index)}
-            <strong>{album.title}</strong>
-            <span>{artistName(album)}</span>
-            <em>{album.qualityLabel}</em>
-          </article>
-        ))}
+      <div className="km-album-grid" aria-label={shelfTitle}>
+        {shelfAlbums.map((album, index) => {
+          const artist = artistName(album)
+
+          return (
+            <article
+              aria-label={t('home.albumCard.ariaLabel', { album: album.title, artist })}
+              className="km-album-card"
+              draggable
+              key={`${shelfKey}-${album.id}`}
+            >
+              {renderAlbumArtwork(album, index)}
+              <strong>{album.title}</strong>
+              <span>{artist}</span>
+              <em>{album.qualityLabel}</em>
+            </article>
+          )
+        })}
       </div>
     </section>
   )
