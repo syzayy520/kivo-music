@@ -5,6 +5,7 @@ export const frFR: TranslationDictionary = {
   'common.unknownArtist': 'Artiste inconnu',
   'sidebar.brandName': 'Kivo Music',
   'sidebar.brandTagline': 'Lecteur musical local',
+  'sidebar.ariaLabel': 'Navigation',
   'sidebar.group.forYou': 'Pour vous',
   'sidebar.group.library': 'Bibliotheque',
   'sidebar.group.system': 'Systeme',
