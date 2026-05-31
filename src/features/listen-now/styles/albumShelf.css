@@ -12,7 +12,11 @@
 
 .km-album-grid {
   display: grid;
-  grid-auto-columns: clamp(116px, 11.4vw, 132px);
+  grid-auto-columns: clamp(
+    var(--km-listen-album-card-min, 116px),
+    11.4vw,
+    var(--km-listen-album-card-max, 132px)
+  );
   grid-auto-flow: column;
   gap: var(--km-listen-album-grid-gap, 16px);
   overflow-x: auto;
@@ -60,21 +64,21 @@
 }
 
 .km-album-card strong {
-  font-size: 12px;
+  font-size: var(--km-listen-album-title-size, 12px);
   font-weight: 760;
   letter-spacing: -0.01em;
 }
 
 .km-album-card span {
-  margin-top: 2px;
+  margin-top: var(--km-listen-album-artist-top, 2px);
   color: var(--km-muted);
-  font-size: 12px;
+  font-size: var(--km-listen-album-artist-size, 12px);
 }
 
 .km-album-card em {
-  margin-top: 3px;
+  margin-top: var(--km-listen-album-quality-top, 3px);
   color: var(--km-muted);
-  font-size: 11px;
+  font-size: var(--km-listen-album-quality-size, 11px);
   font-style: normal;
   line-height: 1.3;
 }
