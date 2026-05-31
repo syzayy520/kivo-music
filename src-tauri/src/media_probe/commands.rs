@@ -1,6 +1,8 @@
 use tauri::State;
 
+use super::activity_log::MediaProbeActivityLogState;
 use super::errors::MediaProbeError;
+use super::event::MediaProbeEvent;
 use super::service::MediaProbeServiceState;
 use super::status::MediaProbeBackendStatus;
 use super::types::MediaProbeResult;
@@ -15,6 +17,18 @@ pub fn media_probe_get_backend_status(
     service: State<'_, MediaProbeServiceState>,
 ) -> MediaProbeBackendStatus {
     service.backend_status()
+}
+
+#[tauri::command]
+pub fn media_probe_get_activity_log(
+    activity_log: State<'_, MediaProbeActivityLogState>,
+) -> Vec<MediaProbeEvent> {
+    activity_log.entries()
+}
+
+#[tauri::command]
+pub fn media_probe_clear_activity_log(activity_log: State<'_, MediaProbeActivityLogState>) {
+    activity_log.clear();
 }
 
 #[tauri::command]
