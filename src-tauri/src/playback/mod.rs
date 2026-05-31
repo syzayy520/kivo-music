@@ -33,6 +33,7 @@ pub mod output_policy;
 pub mod output_sink;
 pub mod path;
 pub mod playback_worker_command;
+pub mod playback_worker_state;
 pub mod queue;
 pub mod queue_policy;
 pub mod state;
@@ -82,3 +83,6 @@ mod output_sink_tests;
 
 #[cfg(test)]
 mod playback_worker_command_tests;
+
+#[cfg(test)]
+mod playback_worker_state_tests;
