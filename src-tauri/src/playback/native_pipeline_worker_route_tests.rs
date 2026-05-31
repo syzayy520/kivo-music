@@ -239,3 +239,22 @@ fn route_seek_from_paused_keeps_paused_phase() {
         Some("unsupported operation: native pipeline worker command seek is not implemented yet")
     );
 }
+
+#[test]
+fn route_non_phase_commands_keep_loaded_phase() {
+    let mut pipeline = NativePipeline::new();
+    let mut state = PlaybackWorkerState::idle();
+    state.mark_loaded("route-track-8");
+
+    let commands = vec![
+        PlaybackWorkerCommand::Seek { position_ms: 321 },
+        PlaybackWorkerCommand::SetVolume { level: 0.5 },
+        PlaybackWorkerCommand::SetMuted { muted: false },
+    ];
+
+    for command in commands {
+        let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
+        assert_eq!(next.phase, PlaybackWorkerPhase::Loaded);
+        assert_eq!(next.active_track_id.as_deref(), Some("route-track-8"));
+    }
+}
