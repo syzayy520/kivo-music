@@ -30,6 +30,7 @@ pub mod native_output;
 pub mod output;
 pub mod output_frame;
 pub mod output_policy;
+pub mod output_sink;
 pub mod path;
 pub mod queue;
 pub mod queue_policy;
@@ -74,3 +75,6 @@ mod manager_queue_tests;
 
 #[cfg(test)]
 mod output_frame_tests;
+
+#[cfg(test)]
+mod output_sink_tests;
