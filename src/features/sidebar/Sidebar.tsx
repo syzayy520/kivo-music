@@ -1,3 +1,4 @@
+import { t } from '../../shared/i18n'
 import { sidebarGroups } from './sidebarItems'
 import './sidebar.css'
 
@@ -7,17 +8,17 @@ export function Sidebar() {
       <div className="km-brand">
         <span>K</span>
         <div>
-          <strong>Kivo Music</strong>
-          <small>Local library player</small>
+          <strong>{t('sidebar.brandName')}</strong>
+          <small>{t('sidebar.brandTagline')}</small>
         </div>
       </div>
       <nav className="km-nav">
         {sidebarGroups.map((group) => (
-          <section key={group.title}>
-            <p>{group.title}</p>
+          <section key={group.titleKey}>
+            <p>{t(group.titleKey)}</p>
             {group.items.map((item) => (
               <a className={item.id === 'listen-now' ? 'active' : ''} href={`#${item.id}`} key={item.id}>
-                {item.label}
+                {t(item.labelKey)}
               </a>
             ))}
           </section>
