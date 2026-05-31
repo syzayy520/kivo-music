@@ -29,6 +29,8 @@ export const zhCN: TranslationDictionary = {
   'home.topPicks.lateNight.description': '深夜本地精选',
   'home.topPicks.focus.description': '工作与专注流',
   'home.topPicks.unwind.description': '周末平静聆听',
+  'home.hero.play': '播放',
+  'home.hero.viewAlbum': '查看专辑',
   'home.shelves.recentlyPlayed.eyebrow': '最近播放',
   'home.shelves.recentlyPlayed.title': '继续聆听。',
   'home.shelves.recentlyAdded.eyebrow': '最近添加',
