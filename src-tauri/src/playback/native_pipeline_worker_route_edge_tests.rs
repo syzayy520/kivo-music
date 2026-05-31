@@ -1,6 +1,16 @@
 use super::native_pipeline::NativePipeline;
 use super::playback_worker_command::PlaybackWorkerCommand;
 use super::playback_worker_state::{PlaybackWorkerPhase, PlaybackWorkerState};
+use super::types::{PlaybackTrack, TrackId};
+
+fn edge_track(id: &str) -> PlaybackTrack {
+    PlaybackTrack {
+        id: TrackId(id.to_string()),
+        title: "Edge Track".to_string(),
+        artist: "Edge Artist".to_string(),
+        source_path: format!("C:/Music/{id}.wav"),
+    }
+}
 
 #[test]
 fn route_seek_from_playing_keeps_playing_phase() {
@@ -804,4 +814,19 @@ fn route_shutdown_from_playing_moves_to_stopped_phase() {
             "unsupported operation: native pipeline worker command shutdown is not implemented yet"
         )
     );
+}
+
+#[test]
+fn route_load_from_idle_sets_loaded_with_new_track() {
+    let mut pipeline = NativePipeline::new();
+    let state = PlaybackWorkerState::idle();
+    let command = PlaybackWorkerCommand::Load {
+        track: edge_track("edge-load-1"),
+    };
+
+    let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Loaded);
+    assert_eq!(next.active_track_id.as_deref(), Some("edge-load-1"));
+    assert_eq!(next.last_error, None);
 }
