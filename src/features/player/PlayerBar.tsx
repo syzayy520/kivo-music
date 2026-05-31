@@ -1,4 +1,5 @@
 import './playerBar.css'
+import { t } from '../../shared/i18n'
 import { PlayerControls } from './components/PlayerControls'
 import { PlayerMeta } from './components/PlayerMeta'
 import { PlayerTrackInfo } from './components/PlayerTrackInfo'
@@ -13,7 +14,7 @@ export function PlayerBar() {
   }
 
   return (
-    <footer className="km-player" aria-label="Player bar">
+    <footer className="km-player" aria-label={t('player.bar.ariaLabel')}>
       <PlayerTrackInfo />
       <PlayerControls />
       <PlayerMeta />
