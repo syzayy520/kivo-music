@@ -1,6 +1,7 @@
 use tauri::State;
 
-use super::service::{MediaProbeError, MediaProbeServiceState};
+use super::errors::MediaProbeError;
+use super::service::MediaProbeServiceState;
 use super::status::MediaProbeBackendStatus;
 use super::types::MediaProbeResult;
 
