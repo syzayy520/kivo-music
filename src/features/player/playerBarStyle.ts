@@ -24,4 +24,10 @@ export const playerBarStyle: PlayerBarStyle = {
   '--km-player-compact-track-max': `${playerTokens.compactTrackColumnMax}px`,
   '--km-player-compact-core-min': `${playerTokens.compactCoreColumn}px`,
   '--km-player-compact-gap': `${playerTokens.compactGap}px`,
+  '--km-player-control-core-gap': `${playerTokens.controlCoreGap}px`,
+  '--km-player-control-button-gap': `${playerTokens.controlButtonGap}px`,
+  '--km-player-control-size': `${playerTokens.controlSize}px`,
+  '--km-player-control-primary-size': `${playerTokens.controlPrimarySize}px`,
+  '--km-player-icon-size': `${playerTokens.iconSize}px`,
+  '--km-player-icon-primary-size': `${playerTokens.iconPrimarySize}px`,
 }
