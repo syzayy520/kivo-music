@@ -62,9 +62,9 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 42%),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.24), transparent 68%),
-    linear-gradient(0deg, rgba(0, 0, 0, 0.4), transparent 60%);
+    linear-gradient(180deg, var(--km-listen-top-pick-overlay-highlight), transparent 42%),
+    linear-gradient(90deg, var(--km-listen-top-pick-overlay-side), transparent 68%),
+    linear-gradient(0deg, var(--km-listen-top-pick-overlay-bottom), transparent 60%);
 }
 
 .km-top-pick-copy {
@@ -75,33 +75,33 @@
     var(--km-listen-top-pick-copy-top, 16px)
     var(--km-listen-top-pick-copy-inline, 18px)
     var(--km-listen-top-pick-copy-bottom, 20px);
-  color: #fff;
+  color: var(--km-listen-top-pick-text-color);
 }
 
 .km-top-pick-copy p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--km-listen-top-pick-muted-text-color);
   font-size: var(--km-listen-top-pick-eyebrow-size, 10px);
-  font-weight: 780;
-  letter-spacing: 0.08em;
+  font-weight: var(--km-listen-top-pick-eyebrow-weight, 780);
+  letter-spacing: var(--km-listen-top-pick-eyebrow-letter-spacing, 0.08em);
   text-transform: uppercase;
 }
 
 .km-top-pick-copy h2 {
-  margin: 4px 0 0;
+  margin: var(--km-listen-top-pick-title-top, 4px) 0 0;
   font-size: clamp(
     var(--km-listen-top-pick-title-min-size, 20px),
     2vw,
     var(--km-listen-top-pick-title-max-size, 28px)
   );
   line-height: 1;
-  letter-spacing: -0.04em;
+  letter-spacing: var(--km-listen-top-pick-title-letter-spacing, -0.04em);
 }
 
 .km-top-pick-copy span {
   display: block;
   margin-top: var(--km-listen-top-pick-description-top, 7px);
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--km-listen-top-pick-muted-text-color);
   font-size: var(--km-listen-top-pick-description-size, 11px);
   line-height: 1.25;
 }
@@ -117,7 +117,7 @@
   place-items: center;
   border: 0;
   border-radius: 999px;
-  color: rgba(21, 18, 22, 0.9);
-  background: rgba(255, 255, 255, 0.76);
-  box-shadow: 0 8px 18px rgba(39, 30, 43, 0.14);
+  color: var(--km-listen-top-pick-play-color);
+  background: var(--km-listen-top-pick-play-bg);
+  box-shadow: var(--km-listen-top-pick-play-shadow);
 }
