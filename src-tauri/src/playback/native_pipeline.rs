@@ -6,6 +6,7 @@ use super::decoder_runtime_state::DecoderRuntimeState;
 use super::decoder_session::DecoderSession;
 use super::errors::{PlaybackError, PlaybackResult};
 use super::output::{AudioOutputFrame, OutputRuntimeStatus, OutputSettings};
+use super::playback_worker_command::PlaybackWorkerCommand;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct NativePipelineState {
@@ -90,6 +91,24 @@ impl NativePipeline {
         self.state.output_status.pending_frames =
             self.state.output_status.pending_frames.saturating_add(1);
         self.state.output_status.is_active = true;
+    }
+
+    pub fn handle_worker_command(&mut self, command: &PlaybackWorkerCommand) -> PlaybackResult<()> {
+        let operation = match command {
+            PlaybackWorkerCommand::Load { .. } => "load",
+            PlaybackWorkerCommand::Play => "play",
+            PlaybackWorkerCommand::Pause => "pause",
+            PlaybackWorkerCommand::Resume => "resume",
+            PlaybackWorkerCommand::Stop => "stop",
+            PlaybackWorkerCommand::Seek { .. } => "seek",
+            PlaybackWorkerCommand::SetVolume { .. } => "set_volume",
+            PlaybackWorkerCommand::SetMuted { .. } => "set_muted",
+            PlaybackWorkerCommand::Shutdown => "shutdown",
+        };
+
+        Err(PlaybackError::UnsupportedOperation(format!(
+            "native pipeline worker command {operation} is not implemented yet"
+        )))
     }
 
     pub fn start(&mut self) -> PlaybackResult<()> {

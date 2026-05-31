@@ -4,6 +4,8 @@ use super::decoder_runtime_state::{DecoderRuntimePhase, DecoderRuntimeState};
 use super::errors::PlaybackError;
 use super::native_pipeline::NativePipeline;
 use super::output::{AudioOutputFrame, OutputRuntimeStatus, OutputSettings};
+use super::playback_worker_command::PlaybackWorkerCommand;
+use super::types::{PlaybackTrack, TrackId};
 
 fn request() -> AudioDecoderOpenRequest {
     AudioDecoderOpenRequest {
@@ -177,4 +179,46 @@ fn runtime_operations_are_typed_unsupported() {
     assert_unsupported(pipeline.start(), "start");
     assert_unsupported(pipeline.submit(), "submit");
     assert_unsupported(pipeline.shutdown(), "shutdown");
+}
+
+fn worker_track() -> PlaybackTrack {
+    PlaybackTrack {
+        id: TrackId("worker-track-1".to_string()),
+        title: "Worker Track".to_string(),
+        artist: "Worker Artist".to_string(),
+        source_path: "C:/Music/worker-track-1.wav".to_string(),
+    }
+}
+
+fn assert_worker_unsupported(result: Result<(), PlaybackError>, operation: &str) {
+    match result {
+        Err(PlaybackError::UnsupportedOperation(message)) => {
+            assert_eq!(
+                message,
+                format!("native pipeline worker command {operation} is not implemented yet")
+            );
+        }
+        Err(other) => panic!("expected unsupported operation, got {other}"),
+        Ok(_) => panic!("expected unsupported operation, got success"),
+    }
+}
+
+#[test]
+fn worker_commands_are_typed_unsupported() {
+    let mut pipeline = NativePipeline::new();
+    let commands = vec![
+        (PlaybackWorkerCommand::Load { track: worker_track() }, "load"),
+        (PlaybackWorkerCommand::Play, "play"),
+        (PlaybackWorkerCommand::Pause, "pause"),
+        (PlaybackWorkerCommand::Resume, "resume"),
+        (PlaybackWorkerCommand::Stop, "stop"),
+        (PlaybackWorkerCommand::Seek { position_ms: 1_000 }, "seek"),
+        (PlaybackWorkerCommand::SetVolume { level: 0.8 }, "set_volume"),
+        (PlaybackWorkerCommand::SetMuted { muted: true }, "set_muted"),
+        (PlaybackWorkerCommand::Shutdown, "shutdown"),
+    ];
+
+    for (command, operation) in commands {
+        assert_worker_unsupported(pipeline.handle_worker_command(&command), operation);
+    }
 }
