@@ -8,12 +8,12 @@
     minmax(var(--km-player-track-min, 260px), var(--km-player-track-max, 320px))
     minmax(var(--km-player-core-min, 360px), 1fr)
     minmax(var(--km-player-meta-min, 210px), var(--km-player-meta-max, 280px));
-  gap: clamp(14px, 2vw, 24px);
+  gap: clamp(var(--km-player-gap-min, 14px), var(--km-player-gap-vw, 2vw), var(--km-player-gap-max, 24px));
   align-items: center;
-  margin: 0 clamp(18px, 2.5vw, 30px) var(--km-player-floating-bottom, 16px);
-  padding: 10px 16px;
+  margin: 0 clamp(var(--km-player-margin-inline-min, 18px), var(--km-player-margin-inline-vw, 2.5vw), var(--km-player-margin-inline-max, 30px)) var(--km-player-floating-bottom, 16px);
+  padding: var(--km-player-padding-block, 10px) var(--km-player-padding-inline, 16px);
   border: 1px solid rgba(32, 27, 37, 0.045);
-  border-radius: 24px;
+  border-radius: var(--km-player-radius, 24px);
   background: rgba(255, 255, 255, 0.58);
   backdrop-filter: blur(30px) saturate(1.18);
   box-shadow: 0 16px 42px rgba(72, 58, 80, 0.105), inset 0 1px 0 rgba(255, 255, 255, 0.64);
@@ -45,7 +45,10 @@
 
 @media (max-width: 1120px) {
   .km-player {
-    grid-template-columns: minmax(220px, 280px) minmax(280px, 1fr) auto;
-    gap: 12px;
+    grid-template-columns:
+      minmax(var(--km-player-compact-track-min, 220px), var(--km-player-compact-track-max, 280px))
+      minmax(var(--km-player-compact-core-min, 280px), 1fr)
+      auto;
+    gap: var(--km-player-compact-gap, 12px);
   }
 }
