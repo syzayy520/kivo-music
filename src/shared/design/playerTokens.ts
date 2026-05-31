@@ -40,6 +40,17 @@ export const playerTokens = {
   trackInfoArtistFontSize: 12,
   trackInfoActionsGap: 4,
   trackInfoActionSize: 26,
+  metaGap: 10,
+  metaFontSize: 11,
+  metaQualityMaxWidth: 118,
+  metaMeterWidth: 76,
+  metaMeterIconColumn: 16,
+  metaMeterTrackMin: 38,
+  metaMeterGap: 7,
+  metaMeterHeight: 3,
+  metaQueueMinWidth: 66,
+  metaQueuePaddingBlock: 7,
+  metaQueuePaddingInline: 12,
 } as const
 
 export type PlayerTokens = typeof playerTokens
