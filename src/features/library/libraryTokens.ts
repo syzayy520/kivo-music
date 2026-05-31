@@ -1,0 +1,25 @@
+export const libraryTokens = {
+  overviewMargin: '0 clamp(20px, 3vw, 32px) 24px',
+  overviewPadding: 'clamp(18px, 2.2vw, 22px)',
+  overviewBorderColor: 'rgba(255, 255, 255, 0.07)',
+  overviewRadius: 28,
+  overviewBackground: 'rgba(255, 255, 255, 0.035)',
+  eyebrowFontSize: 11,
+  eyebrowWeight: 780,
+  eyebrowTracking: '0.08em',
+  titleTopSpace: 4,
+  titleBottomSpace: 18,
+  titleFontSize: 'clamp(22px, 2.2vw, 24px)',
+  titleTracking: '-0.04em',
+  statsColumns: 4,
+  statsGap: 10,
+  statsBottomSpace: 22,
+  statPadding: 14,
+  statBorderColor: 'rgba(255, 255, 255, 0.07)',
+  statRadius: 16,
+  statBackground: 'rgba(255, 255, 255, 0.035)',
+  statValueFontSize: 'clamp(20px, 2.2vw, 24px)',
+  statValueTracking: '-0.04em',
+} as const
+
+export type LibraryTokens = typeof libraryTokens
