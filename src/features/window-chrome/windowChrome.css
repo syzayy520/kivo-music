@@ -22,16 +22,16 @@
 .km-window-controls button {
   width: var(--km-window-chrome-control-width, 42px);
   border: 0;
-  color: rgba(255, 255, 255, 0.48);
+  color: var(--km-window-chrome-control-color, rgba(255, 255, 255, 0.48));
   background: transparent;
   font-size: var(--km-window-chrome-control-font-size, 13px);
 }
 
 .km-window-controls button:hover {
   color: var(--km-text);
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--km-window-chrome-control-hover-bg, rgba(255, 255, 255, 0.08));
 }
 
 .km-window-controls button.danger:hover {
-  background: #e81123;
+  background: var(--km-window-chrome-danger-hover-bg, #e81123);
 }
