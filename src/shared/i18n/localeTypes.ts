@@ -14,6 +14,7 @@ export type TranslationKey =
   | 'common.unknownArtist'
   | 'sidebar.brandName'
   | 'sidebar.brandTagline'
+  | 'sidebar.ariaLabel'
   | 'sidebar.group.forYou'
   | 'sidebar.group.library'
   | 'sidebar.group.system'
