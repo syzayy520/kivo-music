@@ -32,3 +32,6 @@ pub mod timeline;
 pub mod types;
 pub mod volume;
 pub mod windows_audio;
+
+#[cfg(test)]
+mod activity_log_tests;
