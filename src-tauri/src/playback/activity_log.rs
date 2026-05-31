@@ -1,5 +1,6 @@
 use std::sync::Mutex;
 
+use super::activity_snapshot::PlaybackActivityLogSnapshot;
 use super::events::PlaybackEvent;
 
 const DEFAULT_ACTIVITY_LOG_LIMIT: usize = 256;
@@ -34,8 +35,8 @@ impl PlaybackActivityLog {
         self.items.clear();
     }
 
-    pub fn snapshot(&self) -> Vec<PlaybackEvent> {
-        self.items.clone()
+    pub fn snapshot(&self) -> PlaybackActivityLogSnapshot {
+        PlaybackActivityLogSnapshot::new(self.items.clone(), self.limit)
     }
 }
 
@@ -63,10 +64,10 @@ impl PlaybackActivityLogState {
         }
     }
 
-    pub fn snapshot(&self) -> Vec<PlaybackEvent> {
+    pub fn snapshot(&self) -> PlaybackActivityLogSnapshot {
         match self.log.lock() {
             Ok(log) => log.snapshot(),
-            Err(_) => Vec::new(),
+            Err(_) => PlaybackActivityLogSnapshot::new(Vec::new(), 0),
         }
     }
 }
