@@ -28,7 +28,7 @@
 }
 
 .km-window-controls button:hover {
-  color: var(--km-text);
+  color: var(--km-window-chrome-control-hover-color, var(--km-text));
   background: var(--km-window-chrome-control-hover-bg, rgba(255, 255, 255, 0.08));
 }
 
