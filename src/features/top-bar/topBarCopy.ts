@@ -1,7 +1,10 @@
+import type { TranslationKey } from '../../shared/i18n'
+
 export const topBarCopy = {
-  title: 'Home',
-  searchLabel: 'Search',
-  searchPlaceholder: 'Albums, artists, lyrics, quality',
-  statusLabel: 'Local Library',
-  statusValue: 'Lossless Ready',
-}
+  titleKey: 'topBar.title.home',
+  searchLabelKey: 'topBar.search.label',
+  searchAriaLabelKey: 'topBar.search.ariaLabel',
+  searchPlaceholderKey: 'topBar.search.placeholder',
+  statusLabelKey: 'topBar.status.label',
+  statusValueKey: 'topBar.status.value',
+} satisfies Record<string, TranslationKey>
