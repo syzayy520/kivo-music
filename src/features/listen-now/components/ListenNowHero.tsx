@@ -15,8 +15,10 @@ export function ListenNowHero() {
         <span>{heroArtist?.name} · {heroAlbum.qualityLabel}</span>
         <strong>{t(featuredCopy.descriptionKey)}</strong>
         <div className="km-listen-actions">
-          <button type="button">Play</button>
-          <button type="button" className="secondary">View Album</button>
+          <button type="button">{t('home.hero.play')}</button>
+          <button type="button" className="secondary">
+            {t('home.hero.viewAlbum')}
+          </button>
         </div>
       </div>
     </section>
