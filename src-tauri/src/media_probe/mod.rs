@@ -1,6 +1,7 @@
 pub mod service;
 pub mod backend;
 pub mod errors;
+pub mod event;
 pub mod status;
 pub mod types;
 pub mod path;
