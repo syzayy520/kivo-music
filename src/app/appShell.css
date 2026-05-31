@@ -28,7 +28,7 @@
 }
 
 .km-stage::-webkit-scrollbar {
-  width: 7px;
+  width: var(--km-shell-stage-scrollbar-width, 7px);
 }
 
 .km-stage::-webkit-scrollbar-track {
@@ -36,7 +36,7 @@
 }
 
 .km-stage::-webkit-scrollbar-thumb {
-  border: 3px solid transparent;
+  border: var(--km-shell-stage-scrollbar-thumb-border, 3px) solid transparent;
   border-radius: 999px;
   background: rgba(28, 24, 30, 0.03);
   background-clip: content-box;
