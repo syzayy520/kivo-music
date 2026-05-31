@@ -142,3 +142,26 @@ fn route_set_volume_from_stopped_keeps_stopped_phase() {
         )
     );
 }
+
+#[test]
+fn route_set_muted_from_stopped_keeps_stopped_phase() {
+    let mut pipeline = NativePipeline::new();
+    let mut state = PlaybackWorkerState::idle();
+    state.mark_loaded("edge-track-8");
+    state.mark_stopped();
+
+    let next = pipeline.route_worker_command_record_runtime_error(
+        &state,
+        &PlaybackWorkerCommand::SetMuted { muted: true },
+    );
+    let snapshot = pipeline.state();
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
+    assert_eq!(next.active_track_id.as_deref(), Some("edge-track-8"));
+    assert_eq!(
+        snapshot.output_status.last_error.as_deref(),
+        Some(
+            "unsupported operation: native pipeline worker command set_muted is not implemented yet"
+        )
+    );
+}
