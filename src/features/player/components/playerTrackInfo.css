@@ -13,9 +13,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  box-shadow:
-    0 10px 20px rgba(56, 44, 64, 0.13),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  box-shadow: var(--km-player-track-info-art-shadow);
 }
 
 .km-player-copy {
@@ -53,17 +51,17 @@
   width: var(--km-player-track-info-action-size, 26px);
   height: var(--km-player-track-info-action-size, 26px);
   padding: 0;
-  color: rgba(34, 27, 38, 0.5);
+  color: var(--km-player-track-info-action-color);
   background: transparent;
 }
 
 @media (prefers-color-scheme: dark) {
   .km-player-art {
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.26);
+    box-shadow: var(--km-player-dark-track-info-art-shadow);
   }
 
   .km-player-action {
-    color: rgba(255, 255, 255, 0.54);
+    color: var(--km-player-dark-track-info-action-color);
     background: transparent;
   }
 }
