@@ -59,13 +59,17 @@ impl PlaybackEventBus {
     }
 
     pub fn flush_to_activity(&mut self) -> Vec<PlaybackEvent> {
-        let events = self.dispatcher.drain();
+        let events = self.drain_events();
 
         for event in events.iter().cloned() {
             self.activity.append(event);
         }
 
         events
+    }
+
+    pub fn drain_events(&mut self) -> Vec<PlaybackEvent> {
+        self.dispatcher.drain()
     }
 
     pub fn activity_snapshot(&self) -> PlaybackActivityLogSnapshot {

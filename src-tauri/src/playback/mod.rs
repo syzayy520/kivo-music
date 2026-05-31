@@ -36,6 +36,7 @@ pub mod output_policy;
 pub mod output_sink;
 pub mod path;
 pub mod playback_event_bus;
+pub mod playback_event_bridge;
 pub mod playback_event_dispatcher;
 pub mod playback_worker_command;
 pub mod playback_worker_state;
@@ -101,6 +102,9 @@ mod playback_event_dispatcher_tests;
 
 #[cfg(test)]
 mod playback_event_bus_tests;
+
+#[cfg(test)]
+mod playback_event_bridge_tests;
 
 #[cfg(test)]
 mod playback_worker_state_tests;
