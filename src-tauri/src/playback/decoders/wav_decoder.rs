@@ -1,22 +1,14 @@
 use std::fs::File;
 use std::io::BufReader;
 
-use hound::{SampleFormat, WavReader};
+use hound::WavReader;
 
-use crate::playback::decoder::{
-    AudioDecoder, AudioSampleFormat, AudioStreamInfo, DecodedAudioFrame,
-};
+use crate::playback::decoder::{AudioDecoder, AudioStreamInfo, DecodedAudioFrame};
+use crate::playback::decoders::wav_format::{map_sample_kind, WavSampleKind};
+use crate::playback::decoders::wav_samples::normalize_int_sample;
 use crate::playback::errors::{PlaybackError, PlaybackResult};
 
 const WAV_FRAME_CHUNK_SIZE: usize = 1024;
-
-#[derive(Clone, Debug)]
-enum WavSampleKind {
-    Int16,
-    Int24,
-    Int32,
-    Float32,
-}
 
 #[derive(Default)]
 pub struct WavDecoder {
@@ -49,30 +41,6 @@ impl WavDecoder {
 
         Ok((reader, stream, sample_kind))
     }
-
-    fn normalize_int_sample(value: i32, bits_per_sample: u16) -> f32 {
-        let max = (1_i64 << (bits_per_sample.saturating_sub(1))) - 1;
-        if max <= 0 {
-            return 0.0;
-        }
-
-        (value as f64 / max as f64).clamp(-1.0, 1.0) as f32
-    }
-
-    fn map_sample_kind(
-        spec_format: SampleFormat,
-        bits_per_sample: u16,
-    ) -> PlaybackResult<(WavSampleKind, AudioSampleFormat)> {
-        match (spec_format, bits_per_sample) {
-            (SampleFormat::Float, 32) => Ok((WavSampleKind::Float32, AudioSampleFormat::Float32)),
-            (SampleFormat::Int, 16) => Ok((WavSampleKind::Int16, AudioSampleFormat::Signed16)),
-            (SampleFormat::Int, 24) => Ok((WavSampleKind::Int24, AudioSampleFormat::Signed24)),
-            (SampleFormat::Int, 32) => Ok((WavSampleKind::Int32, AudioSampleFormat::Signed32)),
-            _ => Err(PlaybackError::UnsupportedFormat(format!(
-                "wav {spec_format:?} {bits_per_sample}-bit"
-            ))),
-        }
-    }
 }
 
 impl AudioDecoder for WavDecoder {
@@ -81,7 +49,7 @@ impl AudioDecoder for WavDecoder {
             WavReader::open(path).map_err(|error| PlaybackError::Backend(error.to_string()))?;
         let spec = reader.spec();
         let (sample_kind, sample_format) =
-            Self::map_sample_kind(spec.sample_format, spec.bits_per_sample)?;
+            map_sample_kind(spec.sample_format, spec.bits_per_sample)?;
 
         let stream = AudioStreamInfo {
             sample_rate_hz: spec.sample_rate,
@@ -119,9 +87,7 @@ impl AudioDecoder for WavDecoder {
                 let mut values = reader.samples::<i16>();
                 for _ in 0..target_samples {
                     match values.next() {
-                        Some(Ok(value)) => {
-                            samples.push(Self::normalize_int_sample(value as i32, 16))
-                        }
+                        Some(Ok(value)) => samples.push(normalize_int_sample(value as i32, 16)),
                         Some(Err(error)) => return Err(PlaybackError::Backend(error.to_string())),
                         None => break,
                     }
@@ -131,7 +97,7 @@ impl AudioDecoder for WavDecoder {
                 let mut values = reader.samples::<i32>();
                 for _ in 0..target_samples {
                     match values.next() {
-                        Some(Ok(value)) => samples.push(Self::normalize_int_sample(value, 24)),
+                        Some(Ok(value)) => samples.push(normalize_int_sample(value, 24)),
                         Some(Err(error)) => return Err(PlaybackError::Backend(error.to_string())),
                         None => break,
                     }
@@ -141,7 +107,7 @@ impl AudioDecoder for WavDecoder {
                 let mut values = reader.samples::<i32>();
                 for _ in 0..target_samples {
                     match values.next() {
-                        Some(Ok(value)) => samples.push(Self::normalize_int_sample(value, 32)),
+                        Some(Ok(value)) => samples.push(normalize_int_sample(value, 32)),
                         Some(Err(error)) => return Err(PlaybackError::Backend(error.to_string())),
                         None => break,
                     }
