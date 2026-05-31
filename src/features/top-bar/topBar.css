@@ -44,7 +44,7 @@
   border: 1px solid var(--km-border);
   border-radius: 999px;
   background: var(--km-surface-strong);
-  box-shadow: 0 8px 22px rgba(63, 54, 67, 0.06);
+  box-shadow: var(--km-topbar-search-shadow, 0 8px 22px rgba(63, 54, 67, 0.06));
 }
 
 .km-search span {
@@ -66,10 +66,10 @@
 
 .km-library-status {
   padding: var(--km-topbar-status-padding-block, 9px) var(--km-topbar-status-padding-inline, 12px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--km-topbar-status-border-color, rgba(0, 0, 0, 0.08));
   border-radius: var(--km-topbar-status-radius, 14px);
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 2px 12px rgba(63, 54, 67, 0.10);
+  background: var(--km-topbar-status-bg, rgba(255, 255, 255, 0.88));
+  box-shadow: var(--km-topbar-status-shadow, 0 2px 12px rgba(63, 54, 67, 0.10));
 }
 
 .km-library-status small {
@@ -92,7 +92,7 @@
   height: var(--km-topbar-status-dot, 6px);
   margin-left: var(--km-topbar-status-dot-gap, 7px);
   border-radius: 999px;
-  background: #30c790;
+  background: var(--km-topbar-status-dot-bg, #30c790);
   flex-shrink: 0;
 }
 
