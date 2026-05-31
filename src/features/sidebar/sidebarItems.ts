@@ -1,32 +1,34 @@
+import type { TranslationKey } from '../../shared/i18n'
+
 export type SidebarItem = {
   id: string
-  label: string
+  labelKey: TranslationKey
 }
 
 export type SidebarGroup = {
-  title: string
+  titleKey: TranslationKey
   items: SidebarItem[]
 }
 
 export const sidebarGroups: SidebarGroup[] = [
   {
-    title: 'For You',
-    items: [{ id: 'listen-now', label: 'Home' }],
+    titleKey: 'sidebar.group.forYou',
+    items: [{ id: 'listen-now', labelKey: 'sidebar.home' }],
   },
   {
-    title: 'Library',
+    titleKey: 'sidebar.group.library',
     items: [
-      { id: 'albums', label: 'Albums' },
-      { id: 'artists', label: 'Artists' },
-      { id: 'songs', label: 'Songs' },
-      { id: 'playlists', label: 'Playlists' },
+      { id: 'albums', labelKey: 'sidebar.albums' },
+      { id: 'artists', labelKey: 'sidebar.artists' },
+      { id: 'songs', labelKey: 'sidebar.songs' },
+      { id: 'playlists', labelKey: 'sidebar.playlists' },
     ],
   },
   {
-    title: 'System',
+    titleKey: 'sidebar.group.system',
     items: [
-      { id: 'now-playing', label: 'Now Playing' },
-      { id: 'settings', label: 'Settings' },
+      { id: 'now-playing', labelKey: 'sidebar.nowPlaying' },
+      { id: 'settings', labelKey: 'sidebar.settings' },
     ],
   },
 ]
