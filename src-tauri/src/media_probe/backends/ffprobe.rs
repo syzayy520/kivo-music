@@ -1,6 +1,7 @@
 use super::ffprobe_command::read_probe_json;
 use super::ffprobe_json::parse_probe_result;
-use super::super::service::{MediaProbeResultValue, ProbeBackend};
+use super::super::backend::ProbeBackend;
+use super::super::errors::MediaProbeResultValue;
 use super::super::types::MediaProbeResult;
 
 #[derive(Clone, Debug, Default)]
