@@ -63,9 +63,17 @@ export const playerTokens = {
   metaMeterTrackMin: 38,
   metaMeterGap: 7,
   metaMeterHeight: 3,
+  metaMeterColor: 'rgba(55, 45, 62, 0.5)',
+  metaMeterBackground: 'rgba(30, 24, 34, 0.075)',
+  metaMeterFillBackground: 'rgba(52, 43, 60, 0.36)',
+  darkMetaMeterColor: 'rgba(255, 255, 255, 0.54)',
+  darkMetaMeterBackground: 'rgba(255, 255, 255, 0.12)',
+  darkMetaMeterFillBackground: 'rgba(255, 255, 255, 0.48)',
   metaQueueMinWidth: 66,
   metaQueuePaddingBlock: 7,
   metaQueuePaddingInline: 12,
+  metaQueueColor: 'rgba(25, 20, 29, 0.7)',
+  metaQueueBackground: 'rgba(255, 255, 255, 0.38)',
 } as const
 
 export type PlayerTokens = typeof playerTokens
