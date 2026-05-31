@@ -864,3 +864,20 @@ fn route_load_from_paused_sets_loaded_with_new_track() {
     assert_eq!(next.active_track_id.as_deref(), Some("edge-load-3"));
     assert_eq!(next.last_error, None);
 }
+
+#[test]
+fn route_load_from_stopped_sets_loaded_with_new_track() {
+    let mut pipeline = NativePipeline::new();
+    let mut state = PlaybackWorkerState::idle();
+    state.mark_loaded("edge-old-3");
+    state.mark_stopped();
+    let command = PlaybackWorkerCommand::Load {
+        track: edge_track("edge-load-4"),
+    };
+
+    let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Loaded);
+    assert_eq!(next.active_track_id.as_deref(), Some("edge-load-4"));
+    assert_eq!(next.last_error, None);
+}
