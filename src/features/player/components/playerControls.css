@@ -16,26 +16,26 @@
   width: var(--km-player-control-size, 30px);
   height: var(--km-player-control-size, 30px);
   padding: 0;
-  color: rgba(28, 23, 32, 0.7);
+  color: var(--km-player-control-color);
   background: transparent;
 }
 
 .km-player-control-subtle {
   border-color: transparent;
-  color: rgba(34, 27, 38, 0.5);
+  color: var(--km-player-control-subtle-color);
 }
 
 .km-player-control-transport {
   border-color: transparent;
-  color: rgba(18, 14, 22, 0.72);
+  color: var(--km-player-control-transport-color);
 }
 
 .km-player-control-primary {
   width: var(--km-player-control-primary-size, 38px);
   height: var(--km-player-control-primary-size, 38px);
-  color: #121016;
-  background: rgba(255, 255, 255, 0.84);
-  box-shadow: 0 8px 18px rgba(62, 50, 68, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  color: var(--km-player-control-primary-color);
+  background: var(--km-player-control-primary-bg);
+  box-shadow: var(--km-player-control-primary-shadow);
 }
 
 .km-player-icon {
@@ -61,7 +61,7 @@
     var(--km-player-timebar-side, 36px);
   gap: var(--km-player-timebar-gap, 9px);
   align-items: center;
-  color: rgba(55, 45, 62, 0.48);
+  color: var(--km-player-timebar-color);
   font-size: var(--km-player-timebar-font-size, 10.5px);
   font-variant-numeric: tabular-nums;
 }
@@ -74,36 +74,36 @@
   height: var(--km-player-progress-height, 3px);
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(30, 24, 34, 0.075);
+  background: var(--km-player-progress-bg);
 }
 
 .km-player-progress span {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--km-red), var(--km-pink));
+  background: var(--km-player-progress-fill-bg);
 }
 
 @media (prefers-color-scheme: dark) {
   .km-player-control {
-    color: rgba(255, 255, 255, 0.66);
+    color: var(--km-player-dark-control-color);
     background: transparent;
   }
 
   .km-player-control-subtle {
-    color: rgba(255, 255, 255, 0.52);
+    color: var(--km-player-dark-control-subtle-color);
   }
 
   .km-player-control-primary {
-    color: #101015;
-    background: rgba(255, 255, 255, 0.9);
+    color: var(--km-player-dark-control-primary-color);
+    background: var(--km-player-dark-control-primary-bg);
   }
 
   .km-player-timeline {
-    color: rgba(255, 255, 255, 0.52);
+    color: var(--km-player-dark-timebar-color);
   }
 
   .km-player-progress {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--km-player-dark-progress-bg);
   }
 }
