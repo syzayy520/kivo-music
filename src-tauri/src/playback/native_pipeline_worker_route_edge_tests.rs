@@ -898,3 +898,22 @@ fn route_load_from_failed_sets_loaded_with_new_track_and_clears_error() {
     assert_eq!(next.active_track_id.as_deref(), Some("edge-load-5"));
     assert_eq!(next.last_error, None);
 }
+
+#[test]
+fn route_load_records_runtime_unsupported_context() {
+    let mut pipeline = NativePipeline::new();
+    let state = PlaybackWorkerState::idle();
+    let command = PlaybackWorkerCommand::Load {
+        track: edge_track("edge-load-6"),
+    };
+
+    let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
+    let snapshot = pipeline.state();
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Loaded);
+    assert_eq!(next.active_track_id.as_deref(), Some("edge-load-6"));
+    assert_eq!(
+        snapshot.output_status.last_error.as_deref(),
+        Some("unsupported operation: native pipeline worker command load is not implemented yet")
+    );
+}
