@@ -10,6 +10,7 @@ pub mod engine;
 pub mod errors;
 pub mod events;
 pub mod lifecycle;
+pub mod lifecycle_activity_log;
 pub mod lifecycle_event;
 pub mod lyrics_clock;
 pub mod manager;
