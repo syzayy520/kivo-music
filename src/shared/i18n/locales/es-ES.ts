@@ -5,6 +5,7 @@ export const esES: TranslationDictionary = {
   'common.unknownArtist': 'Artista desconocido',
   'sidebar.brandName': 'Kivo Music',
   'sidebar.brandTagline': 'Reproductor local',
+  'sidebar.ariaLabel': 'Navegacion',
   'sidebar.group.forYou': 'Para ti',
   'sidebar.group.library': 'Biblioteca',
   'sidebar.group.system': 'Sistema',
