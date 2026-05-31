@@ -4,8 +4,8 @@ use super::activity_log::MediaProbeActivityLogState;
 use super::activity_logger::{
     record_probe_failed, record_probe_started, record_probe_succeeded,
 };
+use super::activity_snapshot::MediaProbeActivityLogSnapshot;
 use super::errors::MediaProbeError;
-use super::event::MediaProbeEvent;
 use super::service::MediaProbeServiceState;
 use super::status::MediaProbeBackendStatus;
 use super::types::MediaProbeResult;
@@ -25,8 +25,8 @@ pub fn media_probe_get_backend_status(
 #[tauri::command]
 pub fn media_probe_get_activity_log(
     activity_log: State<'_, MediaProbeActivityLogState>,
-) -> Vec<MediaProbeEvent> {
-    activity_log.entries()
+) -> MediaProbeActivityLogSnapshot {
+    activity_log.snapshot()
 }
 
 #[tauri::command]
