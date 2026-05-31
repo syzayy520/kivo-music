@@ -29,6 +29,8 @@ export const jaJP: TranslationDictionary = {
   'home.topPicks.lateNight.description': '深夜のローカルピック',
   'home.topPicks.focus.description': '作業と集中の流れ',
   'home.topPicks.unwind.description': '穏やかな週末リスニング',
+  'home.hero.play': '再生',
+  'home.hero.viewAlbum': 'アルバムを見る',
   'home.shelves.recentlyPlayed.eyebrow': '最近再生',
   'home.shelves.recentlyPlayed.title': '続きを聴く。',
   'home.shelves.recentlyAdded.eyebrow': '最近追加',
