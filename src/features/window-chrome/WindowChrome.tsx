@@ -1,5 +1,6 @@
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import type { MouseEvent } from 'react'
+import { windowChromeStyle } from './windowChromeStyle'
 import './windowChrome.css'
 
 const appWindow = getCurrentWindow()
@@ -27,6 +28,7 @@ export function WindowChrome() {
     <header
       className="km-window-chrome"
       data-tauri-drag-region
+      style={windowChromeStyle}
       onDoubleClick={() => void appWindow.toggleMaximize()}
       onMouseDown={startWindowDrag}
     >
