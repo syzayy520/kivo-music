@@ -179,6 +179,10 @@ fn runtime_operations_are_typed_unsupported() {
     assert_unsupported(pipeline.start(), "start");
     assert_unsupported(pipeline.schedule_decode_step(), "schedule_decode_step");
     assert_unsupported(pipeline.submit(), "submit");
+    assert_unsupported(
+        pipeline.schedule_output_submit_step(),
+        "schedule_output_submit_step",
+    );
     assert_unsupported(pipeline.shutdown(), "shutdown");
 }
 

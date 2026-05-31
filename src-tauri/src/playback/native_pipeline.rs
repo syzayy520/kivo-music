@@ -129,6 +129,12 @@ impl NativePipeline {
         ))
     }
 
+    pub fn schedule_output_submit_step(&mut self) -> PlaybackResult<()> {
+        Err(PlaybackError::UnsupportedOperation(
+            "native pipeline schedule_output_submit_step is not implemented yet".to_string(),
+        ))
+    }
+
     pub fn shutdown(&mut self) -> PlaybackResult<()> {
         Err(PlaybackError::UnsupportedOperation(
             "native pipeline shutdown is not implemented yet".to_string(),
