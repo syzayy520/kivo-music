@@ -281,3 +281,22 @@ fn route_resume_from_failed_moves_to_playing_phase() {
         Some("unsupported operation: native pipeline worker command resume is not implemented yet")
     );
 }
+
+#[test]
+fn route_pause_from_failed_moves_to_paused_phase() {
+    let mut pipeline = NativePipeline::new();
+    let mut state = PlaybackWorkerState::idle();
+    state.mark_loaded("edge-track-15");
+    state.mark_failed("edge-failed");
+
+    let next =
+        pipeline.route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Pause);
+    let snapshot = pipeline.state();
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Paused);
+    assert_eq!(next.active_track_id.as_deref(), Some("edge-track-15"));
+    assert_eq!(
+        snapshot.output_status.last_error.as_deref(),
+        Some("unsupported operation: native pipeline worker command pause is not implemented yet")
+    );
+}
