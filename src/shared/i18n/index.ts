@@ -36,13 +36,17 @@ export function setActiveLocale(locale: LocaleCode | string): LocaleCode {
   return activeLocale
 }
 
+function replaceToken(message: string, key: string, value: string | number): string {
+  return message.split(`{${key}}`).join(String(value))
+}
+
 function formatTranslation(template: string, params?: TranslationParams): string {
   if (!params) {
     return template
   }
 
   return Object.entries(params).reduce(
-    (message, [key, value]) => message.replaceAll(`{${key}}`, String(value)),
+    (message, [key, value]) => replaceToken(message, key, value),
     template,
   )
 }
