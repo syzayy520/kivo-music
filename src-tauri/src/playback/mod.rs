@@ -35,8 +35,8 @@ pub mod output_frame;
 pub mod output_policy;
 pub mod output_sink;
 pub mod path;
-pub mod playback_event_bus;
 pub mod playback_event_bridge;
+pub mod playback_event_bus;
 pub mod playback_event_dispatcher;
 pub mod playback_worker_command;
 pub mod playback_worker_state;
@@ -87,6 +87,9 @@ mod manager_queue_tests;
 
 #[cfg(test)]
 mod native_pipeline_tests;
+
+#[cfg(test)]
+mod native_pipeline_worker_route_tests;
 
 #[cfg(test)]
 mod output_frame_tests;
