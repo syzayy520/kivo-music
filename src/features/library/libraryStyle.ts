@@ -19,10 +19,4 @@ export const libraryStyle: LibraryStyle = {
   '--km-library-stats-columns': String(libraryTokens.statsColumns),
   '--km-library-stats-gap': `${libraryTokens.statsGap}px`,
   '--km-library-stats-bottom': `${libraryTokens.statsBottomSpace}px`,
-  '--km-library-stat-padding': `${libraryTokens.statPadding}px`,
-  '--km-library-stat-border-color': libraryTokens.statBorderColor,
-  '--km-library-stat-radius': `${libraryTokens.statRadius}px`,
-  '--km-library-stat-bg': libraryTokens.statBackground,
-  '--km-library-stat-value-size': libraryTokens.statValueFontSize,
-  '--km-library-stat-value-letter-spacing': libraryTokens.statValueTracking,
 }
