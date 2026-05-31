@@ -19,7 +19,7 @@ fn set_volume_updates_state_and_returns_typed_unsupported() {
     assert_eq!(state.volume.level, 1.0);
     assert_eq!(
         state.error.as_deref(),
-        Some("unsupported operation: kivo core audio set volume is not implemented yet")
+        Some("kivo core audio set volume is not implemented yet")
     );
 }
 
@@ -40,6 +40,6 @@ fn set_muted_updates_state_and_returns_typed_unsupported() {
     assert!(state.volume.muted);
     assert_eq!(
         state.error.as_deref(),
-        Some("unsupported operation: kivo core audio set muted is not implemented yet")
+        Some("kivo core audio set muted is not implemented yet")
     );
 }
