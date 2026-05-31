@@ -41,3 +41,6 @@ mod lifecycle_activity_log_tests;
 
 #[cfg(test)]
 mod lifecycle_event_tests;
+
+#[cfg(test)]
+mod lifecycle_recorder_tests;
