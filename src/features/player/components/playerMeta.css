@@ -3,59 +3,59 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: var(--km-player-meta-gap, 10px);
+  gap: var(--km-player-meta-gap);
   color: var(--km-muted);
-  font-size: var(--km-player-meta-font-size, 11px);
+  font-size: var(--km-player-meta-font-size);
 }
 
 .km-player-quality {
-  max-width: var(--km-player-meta-quality-max, 118px);
+  max-width: var(--km-player-meta-quality-max);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .km-player-volume {
-  width: var(--km-player-meta-meter-width, 76px);
+  width: var(--km-player-meta-meter-width);
   display: grid;
-  grid-template-columns: var(--km-player-meta-meter-icon, 16px) minmax(var(--km-player-meta-meter-track-min, 38px), 1fr);
-  gap: var(--km-player-meta-meter-gap, 7px);
+  grid-template-columns: var(--km-player-meta-meter-icon) minmax(var(--km-player-meta-meter-track-min), 1fr);
+  gap: var(--km-player-meta-meter-gap);
   align-items: center;
-  color: rgba(55, 45, 62, 0.5);
+  color: var(--km-player-meta-meter-color);
 }
 
 .km-player-volume > div {
-  height: var(--km-player-meta-meter-height, 3px);
+  height: var(--km-player-meta-meter-height);
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(30, 24, 34, 0.075);
+  background: var(--km-player-meta-meter-bg);
 }
 
 .km-player-volume > div span {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: rgba(52, 43, 60, 0.36);
+  background: var(--km-player-meta-meter-fill-bg);
 }
 
 .km-player-queue {
-  min-width: var(--km-player-meta-queue-min, 66px);
-  padding: var(--km-player-meta-queue-padding-block, 7px) var(--km-player-meta-queue-padding-inline, 12px);
-  color: rgba(25, 20, 29, 0.7);
-  background: rgba(255, 255, 255, 0.38);
+  min-width: var(--km-player-meta-queue-min);
+  padding: var(--km-player-meta-queue-padding-block) var(--km-player-meta-queue-padding-inline);
+  color: var(--km-player-meta-queue-color);
+  background: var(--km-player-meta-queue-bg);
 }
 
 @media (prefers-color-scheme: dark) {
   .km-player-volume {
-    color: rgba(255, 255, 255, 0.54);
+    color: var(--km-player-dark-meta-meter-color);
   }
 
   .km-player-volume > div {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--km-player-dark-meta-meter-bg);
   }
 
   .km-player-volume > div span {
-    background: rgba(255, 255, 255, 0.48);
+    background: var(--km-player-dark-meta-meter-fill-bg);
   }
 }
 
