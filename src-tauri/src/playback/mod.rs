@@ -54,3 +54,6 @@ mod lifecycle_event_tests;
 
 #[cfg(test)]
 mod lifecycle_recorder_tests;
+
+#[cfg(test)]
+mod manager_queue_tests;

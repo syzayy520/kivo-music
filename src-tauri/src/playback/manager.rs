@@ -2,14 +2,17 @@ use std::sync::Mutex;
 
 use super::backends::{backend_types::PlaybackBackendDescriptor, mpv, native::KivoNativeEngine};
 use super::engine::PlaybackEngine;
-use super::errors::PlaybackResult;
+use super::errors::{PlaybackError, PlaybackResult};
+use super::queue::PlaybackQueue;
+use super::queue_policy::{decide_queue_step, QueueStepReason};
 use super::state::PlaybackState;
-use super::types::PlaybackTrack;
+use super::types::{PlaybackTrack, RepeatMode};
 
 #[derive(Debug)]
 pub struct PlaybackManager {
     primary_engine: KivoNativeEngine,
     compatibility_backends: Vec<PlaybackBackendDescriptor>,
+    queue: PlaybackQueue,
 }
 
 impl PlaybackManager {
@@ -17,6 +20,7 @@ impl PlaybackManager {
         Self {
             primary_engine: KivoNativeEngine::new(),
             compatibility_backends: vec![mpv::descriptor()],
+            queue: PlaybackQueue::default(),
         }
     }
 
@@ -30,6 +34,60 @@ impl PlaybackManager {
 
     pub fn compatibility_backends(&self) -> Vec<PlaybackBackendDescriptor> {
         self.compatibility_backends.clone()
+    }
+
+    pub fn queue(&self) -> PlaybackQueue {
+        self.queue.clone()
+    }
+
+    pub fn queue_append(&mut self, track: PlaybackTrack) -> PlaybackQueue {
+        self.queue.append(track);
+        self.queue.clone()
+    }
+
+    pub fn queue_remove(&mut self, index: usize) -> PlaybackResult<PlaybackQueue> {
+        self.queue.remove(index)?;
+        Ok(self.queue.clone())
+    }
+
+    pub fn queue_set_repeat_mode(&mut self, repeat_mode: RepeatMode) -> PlaybackQueue {
+        self.queue.repeat_mode = repeat_mode;
+        self.queue.clone()
+    }
+
+    pub fn queue_set_shuffle(&mut self, shuffle: bool) -> PlaybackQueue {
+        self.queue.shuffle = shuffle;
+        self.queue.clone()
+    }
+
+    pub fn queue_set_current(&mut self, index: usize) -> PlaybackResult<PlaybackState> {
+        self.queue.set_current_index(index)?;
+        let track = self
+            .queue
+            .current_track()
+            .ok_or_else(|| PlaybackError::Queue("queue has no current track".to_string()))?;
+
+        self.load(track)
+    }
+
+    pub fn queue_next(&mut self) -> PlaybackResult<PlaybackState> {
+        let decision = decide_queue_step(&self.queue, QueueStepReason::Next);
+
+        let index = decision
+            .target_index
+            .ok_or_else(|| PlaybackError::Queue("queue reached end".to_string()))?;
+
+        self.queue_set_current(index)
+    }
+
+    pub fn queue_previous(&mut self) -> PlaybackResult<PlaybackState> {
+        let decision = decide_queue_step(&self.queue, QueueStepReason::Previous);
+
+        let index = decision
+            .target_index
+            .ok_or_else(|| PlaybackError::Queue("queue has no previous track".to_string()))?;
+
+        self.queue_set_current(index)
     }
 
     pub fn load(&mut self, track: PlaybackTrack) -> PlaybackResult<PlaybackState> {
@@ -102,6 +160,78 @@ impl PlaybackManagerState {
             .unwrap_or_else(|poisoned| poisoned.into_inner());
 
         manager.compatibility_backends()
+    }
+
+    pub fn queue(&self) -> PlaybackQueue {
+        let manager = self
+            .manager
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+
+        manager.queue()
+    }
+
+    pub fn queue_append(&self, track: PlaybackTrack) -> PlaybackQueue {
+        let mut manager = self
+            .manager
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+
+        manager.queue_append(track)
+    }
+
+    pub fn queue_remove(&self, index: usize) -> PlaybackResult<PlaybackQueue> {
+        let mut manager = self
+            .manager
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+
+        manager.queue_remove(index)
+    }
+
+    pub fn queue_set_repeat_mode(&self, repeat_mode: RepeatMode) -> PlaybackQueue {
+        let mut manager = self
+            .manager
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+
+        manager.queue_set_repeat_mode(repeat_mode)
+    }
+
+    pub fn queue_set_shuffle(&self, shuffle: bool) -> PlaybackQueue {
+        let mut manager = self
+            .manager
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+
+        manager.queue_set_shuffle(shuffle)
+    }
+
+    pub fn queue_set_current(&self, index: usize) -> PlaybackResult<PlaybackState> {
+        let mut manager = self
+            .manager
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+
+        manager.queue_set_current(index)
+    }
+
+    pub fn queue_next(&self) -> PlaybackResult<PlaybackState> {
+        let mut manager = self
+            .manager
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+
+        manager.queue_next()
+    }
+
+    pub fn queue_previous(&self) -> PlaybackResult<PlaybackState> {
+        let mut manager = self
+            .manager
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+
+        manager.queue_previous()
     }
 
     pub fn load(&self, track: PlaybackTrack) -> PlaybackResult<PlaybackState> {
