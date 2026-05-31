@@ -1,8 +1,8 @@
-use super::ffprobe_command::read_probe_json;
-use super::ffprobe_json::parse_probe_result;
 use super::super::backend::ProbeBackend;
 use super::super::errors::MediaProbeResultValue;
 use super::super::types::MediaProbeResult;
+use super::ffprobe_command::read_probe_json;
+use super::ffprobe_json::parse_probe_result;
 
 #[derive(Clone, Debug, Default)]
 pub struct FfprobeBackend;

@@ -7,7 +7,10 @@ pub struct ActiveLyricLine {
     pub text: String,
 }
 
-pub fn find_active_lyric_line(lines: &[ActiveLyricLine], position_ms: u64) -> Option<ActiveLyricLine> {
+pub fn find_active_lyric_line(
+    lines: &[ActiveLyricLine],
+    position_ms: u64,
+) -> Option<ActiveLyricLine> {
     lines
         .iter()
         .filter(|line| line.starts_at_ms <= position_ms)

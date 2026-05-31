@@ -1,5 +1,5 @@
-use super::backends::mpv;
 use super::backends::backend_types::PlaybackBackendDescriptor;
+use super::backends::mpv;
 use super::errors::PlaybackResult;
 
 #[derive(Clone, Debug)]

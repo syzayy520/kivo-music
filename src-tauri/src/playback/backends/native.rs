@@ -1,11 +1,11 @@
-use super::backend_types::{PlaybackBackendDescriptor, PlaybackBackendKind};
-use super::native_playback::KivoNativePlayback;
-use super::native_unsupported::unsupported_operation_message;
 use super::super::capabilities::PlaybackCapabilities;
 use super::super::engine::PlaybackEngine;
 use super::super::errors::{PlaybackError, PlaybackResult};
 use super::super::state::PlaybackState;
 use super::super::types::PlaybackTrack;
+use super::backend_types::{PlaybackBackendDescriptor, PlaybackBackendKind};
+use super::native_playback::KivoNativePlayback;
+use super::native_unsupported::unsupported_operation_message;
 
 pub fn descriptor() -> PlaybackBackendDescriptor {
     PlaybackBackendDescriptor {

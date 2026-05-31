@@ -6,7 +6,10 @@ use super::state::PlaybackState;
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum PlaybackEvent {
     StateChanged(PlaybackState),
-    Progress { position_ms: u64, duration_ms: Option<u64> },
+    Progress {
+        position_ms: u64,
+        duration_ms: Option<u64>,
+    },
     TrackChanged(PlaybackState),
     Error(PlaybackError),
 }

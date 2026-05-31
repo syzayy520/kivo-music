@@ -28,12 +28,10 @@ fn recorder_appends_lifecycle_events_in_order() {
         &snapshot.entries[2].kind,
         PlaybackLifecycleEventKind::ShutdownSucceeded
     ));
-    assert!(
-        snapshot
-            .entries
-            .iter()
-            .all(|entry| entry.backend_name == "kivo-core-audio")
-    );
+    assert!(snapshot
+        .entries
+        .iter()
+        .all(|entry| entry.backend_name == "kivo-core-audio"));
 }
 
 #[test]

@@ -5,7 +5,9 @@ pub fn record_lifecycle_initialized(
     activity: &PlaybackLifecycleActivityLogState,
     backend_name: &str,
 ) {
-    activity.append(PlaybackLifecycleEvent::initialized(backend_name.to_string()));
+    activity.append(PlaybackLifecycleEvent::initialized(
+        backend_name.to_string(),
+    ));
 }
 
 pub fn record_lifecycle_shutdown_started(

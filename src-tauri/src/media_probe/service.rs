@@ -41,17 +41,26 @@ pub struct MediaProbeServiceState {
 
 impl MediaProbeServiceState {
     pub fn backend_name(&self) -> &'static str {
-        let service = self.service.lock().expect("media probe service lock failed");
+        let service = self
+            .service
+            .lock()
+            .expect("media probe service lock failed");
         service.backend_name()
     }
 
     pub fn backend_status(&self) -> MediaProbeBackendStatus {
-        let service = self.service.lock().expect("media probe service lock failed");
+        let service = self
+            .service
+            .lock()
+            .expect("media probe service lock failed");
         service.backend_status()
     }
 
     pub fn probe(&self, path: &str) -> MediaProbeResultValue<MediaProbeResult> {
-        let service = self.service.lock().expect("media probe service lock failed");
+        let service = self
+            .service
+            .lock()
+            .expect("media probe service lock failed");
         service.probe(path)
     }
 }

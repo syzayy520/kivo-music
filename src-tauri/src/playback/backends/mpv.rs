@@ -1,5 +1,5 @@
-use super::backend_types::{PlaybackBackendDescriptor, PlaybackBackendKind};
 use super::super::capabilities::PlaybackCapabilities;
+use super::backend_types::{PlaybackBackendDescriptor, PlaybackBackendKind};
 
 pub fn descriptor() -> PlaybackBackendDescriptor {
     PlaybackBackendDescriptor {

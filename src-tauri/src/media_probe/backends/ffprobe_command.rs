@@ -2,8 +2,8 @@ use std::process::Command;
 
 use serde_json::Value;
 
-use super::ffprobe_error::{command_error_message, spawn_error_message};
 use super::super::errors::{MediaProbeError, MediaProbeResultValue};
+use super::ffprobe_error::{command_error_message, spawn_error_message};
 
 pub fn read_probe_json(path: &str) -> MediaProbeResultValue<Value> {
     let output = Command::new("ffprobe")

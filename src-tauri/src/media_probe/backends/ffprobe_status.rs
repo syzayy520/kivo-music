@@ -1,7 +1,7 @@
 use std::process::Command;
 
-use super::ffprobe_error::{command_error_message, spawn_error_message};
 use super::super::status::MediaProbeBackendStatus;
+use super::ffprobe_error::{command_error_message, spawn_error_message};
 
 pub fn ffprobe_status() -> MediaProbeBackendStatus {
     match Command::new("ffprobe").arg("-version").output() {

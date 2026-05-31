@@ -42,14 +42,19 @@ fn parse_video_probe(streams: &[Value], format: Option<&Value>) -> Option<VideoP
         container: format.and_then(|value| string_field(value, "format_name")),
         width: number_field(stream, "width"),
         height: number_field(stream, "height"),
-        frame_rate: string_field(stream, "avg_frame_rate").or_else(|| string_field(stream, "r_frame_rate")),
+        frame_rate: string_field(stream, "avg_frame_rate")
+            .or_else(|| string_field(stream, "r_frame_rate")),
         hdr_format: hdr_format(stream),
         dolby_vision_profile: dolby_vision_profile(stream),
         audio_layout: first_stream(streams, "audio", false).and_then(audio_layout),
     })
 }
 
-fn first_stream<'a>(streams: &'a [Value], kind: &str, skip_attached_picture: bool) -> Option<&'a Value> {
+fn first_stream<'a>(
+    streams: &'a [Value],
+    kind: &str,
+    skip_attached_picture: bool,
+) -> Option<&'a Value> {
     streams.iter().find(|stream| {
         string_field(stream, "codec_type").as_deref() == Some(kind)
             && (!skip_attached_picture || !is_attached_picture(stream))
@@ -86,9 +91,8 @@ fn bit_depth(stream: &Value) -> Option<u16> {
 }
 
 fn audio_layout(stream: &Value) -> Option<String> {
-    string_field(stream, "channel_layout").or_else(|| {
-        number_field(stream, "channels").map(|channels| format!("{channels} channels"))
-    })
+    string_field(stream, "channel_layout")
+        .or_else(|| number_field(stream, "channels").map(|channels| format!("{channels} channels")))
 }
 
 fn hdr_format(stream: &Value) -> Option<String> {
