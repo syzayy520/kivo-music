@@ -17,15 +17,15 @@ fn recorder_appends_lifecycle_events_in_order() {
 
     assert_eq!(snapshot.entry_count, 3);
     assert!(matches!(
-        snapshot.entries[0].kind,
+        &snapshot.entries[0].kind,
         PlaybackLifecycleEventKind::Initialized
     ));
     assert!(matches!(
-        snapshot.entries[1].kind,
+        &snapshot.entries[1].kind,
         PlaybackLifecycleEventKind::ShutdownStarted
     ));
     assert!(matches!(
-        snapshot.entries[2].kind,
+        &snapshot.entries[2].kind,
         PlaybackLifecycleEventKind::ShutdownSucceeded
     ));
     assert!(
@@ -46,7 +46,7 @@ fn recorder_keeps_shutdown_failed_message() {
 
     assert_eq!(snapshot.entry_count, 1);
     assert!(matches!(
-        snapshot.entries[0].kind,
+        &snapshot.entries[0].kind,
         PlaybackLifecycleEventKind::ShutdownFailed
     ));
     assert_eq!(
