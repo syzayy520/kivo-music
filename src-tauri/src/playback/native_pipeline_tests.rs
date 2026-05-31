@@ -3,7 +3,7 @@ use super::decoder_request::AudioDecoderOpenRequest;
 use super::decoder_runtime_state::{DecoderRuntimePhase, DecoderRuntimeState};
 use super::errors::PlaybackError;
 use super::native_pipeline::NativePipeline;
-use super::output::OutputSettings;
+use super::output::{AudioOutputFrame, OutputRuntimeStatus, OutputSettings};
 
 fn request() -> AudioDecoderOpenRequest {
     AudioDecoderOpenRequest {
@@ -17,6 +17,14 @@ fn stream_info() -> AudioStreamInfo {
         sample_rate_hz: 48_000,
         channels: 2,
         sample_format: AudioSampleFormat::Float32,
+    }
+}
+
+fn output_frame() -> AudioOutputFrame {
+    AudioOutputFrame {
+        stream: stream_info(),
+        position_ms: 100,
+        samples: vec![0.0, 0.1, -0.1, 0.2],
     }
 }
 
@@ -105,6 +113,48 @@ fn configure_decoder_open_creates_session_and_marks_open() {
     assert_eq!(session.opened_at_ms, 2_000);
     assert_eq!(session.last_position_ms, 4_500);
     assert_eq!(session.decoded_frame_count, 1);
+}
+
+#[test]
+fn output_settings_and_status_are_stored_in_pipeline_state() {
+    let mut pipeline = NativePipeline::new();
+    let mut settings = OutputSettings::default();
+    settings.selected_device_id = Some("device-1".to_string());
+    settings.exclusive_mode = true;
+    let mut status = OutputRuntimeStatus::default();
+    status.active_device_id = Some("device-1".to_string());
+    status.is_open = true;
+
+    pipeline.set_output_settings(settings.clone());
+    pipeline.set_output_status(status.clone());
+
+    let state = pipeline.state();
+    assert_eq!(
+        state.output_settings.selected_device_id,
+        settings.selected_device_id
+    );
+    assert_eq!(
+        state.output_settings.exclusive_mode,
+        settings.exclusive_mode
+    );
+    assert_eq!(
+        state.output_status.active_device_id,
+        status.active_device_id
+    );
+    assert_eq!(state.output_status.is_open, status.is_open);
+}
+
+#[test]
+fn note_frame_submitted_updates_output_runtime_counters() {
+    let mut pipeline = NativePipeline::new();
+    let frame = output_frame();
+
+    pipeline.note_frame_submitted(&frame);
+    pipeline.note_frame_submitted(&frame);
+
+    let state = pipeline.state();
+    assert!(state.output_status.is_active);
+    assert_eq!(state.output_status.pending_frames, 2);
 }
 
 fn assert_unsupported(result: Result<(), PlaybackError>, operation: &str) {
