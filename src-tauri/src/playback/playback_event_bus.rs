@@ -1,5 +1,6 @@
 use super::activity_log::PlaybackActivityLogState;
 use super::activity_snapshot::PlaybackActivityLogSnapshot;
+use super::errors::PlaybackResult;
 use super::events::PlaybackEvent;
 use super::playback_event_dispatcher::PlaybackEventDispatcher;
 use super::state::PlaybackState;
@@ -33,6 +34,20 @@ impl PlaybackEventBus {
     pub fn emit_progress_at(&mut self, position_ms: u64, duration_ms: Option<u64>, now_ms: u64) {
         self.dispatcher
             .emit_progress_at(position_ms, duration_ms, now_ms);
+    }
+
+    pub fn emit_state_result(&mut self, result: &PlaybackResult<PlaybackState>) {
+        match result {
+            Ok(state) => self.emit_state_changed(state.clone()),
+            Err(error) => self.emit_error(error.clone()),
+        }
+    }
+
+    pub fn emit_track_result(&mut self, result: &PlaybackResult<PlaybackState>) {
+        match result {
+            Ok(state) => self.emit_track_changed(state.clone()),
+            Err(error) => self.emit_error(error.clone()),
+        }
     }
 
     pub fn flush_to_activity(&mut self) -> Vec<PlaybackEvent> {

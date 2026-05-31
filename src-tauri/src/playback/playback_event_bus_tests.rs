@@ -30,3 +30,30 @@ fn progress_throttle_is_kept_when_flushing() {
     let snapshot = bus.activity_snapshot();
     assert_eq!(snapshot.entry_count, 2);
 }
+
+#[test]
+fn state_result_maps_success_to_state_changed() {
+    let mut bus = PlaybackEventBus::default();
+    let result = Ok(PlaybackState::default());
+
+    bus.emit_state_result(&result);
+    let emitted = bus.flush_to_activity();
+
+    assert_eq!(emitted.len(), 1);
+    assert!(matches!(
+        emitted[0],
+        super::events::PlaybackEvent::StateChanged(_)
+    ));
+}
+
+#[test]
+fn track_result_maps_error_to_error_event() {
+    let mut bus = PlaybackEventBus::default();
+    let result = Err(PlaybackError::Playback("track failed".to_string()));
+
+    bus.emit_track_result(&result);
+    let emitted = bus.flush_to_activity();
+
+    assert_eq!(emitted.len(), 1);
+    assert!(matches!(emitted[0], super::events::PlaybackEvent::Error(_)));
+}
