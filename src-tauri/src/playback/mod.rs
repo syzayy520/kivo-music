@@ -11,6 +11,7 @@ pub mod commands;
 pub mod core_profile;
 pub mod decoder;
 pub mod decoder_request;
+pub mod decoder_runtime_state;
 pub mod decoder_session;
 pub mod decoders;
 pub mod engine;
@@ -51,6 +52,9 @@ mod audio_buffer_tests;
 
 #[cfg(test)]
 mod decoder_request_tests;
+
+#[cfg(test)]
+mod decoder_runtime_state_tests;
 
 #[cfg(test)]
 mod decoder_session_tests;
