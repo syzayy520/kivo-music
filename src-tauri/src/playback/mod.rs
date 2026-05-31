@@ -27,6 +27,7 @@ pub mod lyrics_clock;
 pub mod manager;
 pub mod metadata;
 pub mod native_output;
+pub mod native_pipeline;
 pub mod output;
 pub mod output_frame;
 pub mod output_policy;
@@ -74,6 +75,9 @@ mod lifecycle_recorder_tests;
 
 #[cfg(test)]
 mod manager_queue_tests;
+
+#[cfg(test)]
+mod native_pipeline_tests;
 
 #[cfg(test)]
 mod output_frame_tests;
