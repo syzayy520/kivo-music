@@ -5,6 +5,7 @@ pub fn run() {
     tauri::Builder::default()
         .manage(playback::manager::PlaybackManagerState::default())
         .manage(playback::activity_log::PlaybackActivityLogState::default())
+        .manage(playback::lifecycle_activity_log::PlaybackLifecycleActivityLogState::default())
         .manage(media_probe::service::MediaProbeServiceState::default())
         .manage(media_probe::activity_log::MediaProbeActivityLogState::default())
         .invoke_handler(tauri::generate_handler![
@@ -23,6 +24,8 @@ pub fn run() {
             playback::commands::playback_seek,
             playback::commands::playback_set_volume,
             playback::commands::playback_set_muted,
+            playback::lifecycle_commands::playback_get_lifecycle_activity_log,
+            playback::lifecycle_commands::playback_clear_lifecycle_activity_log,
             media_probe::commands::media_probe_get_backend_name,
             media_probe::commands::media_probe_get_backend_status,
             media_probe::commands::media_probe_get_activity_log,
