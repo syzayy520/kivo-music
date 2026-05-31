@@ -17,16 +17,20 @@
 .km-topbar-title p {
   margin: 0;
   color: var(--km-muted);
-  font-size: 11px;
+  font-size: var(--km-topbar-title-eyebrow-size, 11px);
   font-weight: 760;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .km-topbar-title h1 {
-  margin: 3px 0 0;
-  max-width: 18ch;
-  font-size: clamp(30px, 3vw, 42px);
+  margin: var(--km-topbar-title-top, 3px) 0 0;
+  max-width: var(--km-topbar-title-max-width, 18ch);
+  font-size: clamp(
+    var(--km-topbar-title-min-size, 30px),
+    3vw,
+    var(--km-topbar-title-max-size, 42px)
+  );
   line-height: 1.02;
   letter-spacing: -0.05em;
 }
@@ -45,7 +49,7 @@
 
 .km-search span {
   color: var(--km-muted);
-  font-size: 10px;
+  font-size: var(--km-topbar-search-label-size, 10px);
   font-weight: 760;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -70,14 +74,14 @@
 
 .km-library-status small {
   color: var(--km-muted);
-  font-size: 11px;
+  font-size: var(--km-topbar-status-label-size, 11px);
 }
 
 .km-library-status strong {
   display: flex;
   align-items: center;
-  margin-top: 2px;
-  font-size: 12px;
+  margin-top: var(--km-topbar-status-value-top, 2px);
+  font-size: var(--km-topbar-status-value-size, 12px);
   font-weight: 740;
 }
 
@@ -107,8 +111,8 @@
   }
 
   .km-topbar-title h1 {
-    max-width: 16ch;
-    font-size: 32px;
+    max-width: var(--km-topbar-compact-title-max-width, 16ch);
+    font-size: var(--km-topbar-compact-title-size, 32px);
   }
 
   .km-library-status {
