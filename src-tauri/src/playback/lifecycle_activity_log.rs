@@ -1,5 +1,6 @@
 use std::sync::Mutex;
 
+use super::lifecycle_activity_snapshot::PlaybackLifecycleActivityLogSnapshot;
 use super::lifecycle_event::PlaybackLifecycleEvent;
 
 const DEFAULT_LIFECYCLE_ACTIVITY_LOG_LIMIT: usize = 64;
@@ -31,8 +32,8 @@ impl PlaybackLifecycleActivityLog {
         self.items.clear();
     }
 
-    pub fn snapshot(&self) -> Vec<PlaybackLifecycleEvent> {
-        self.items.clone()
+    pub fn snapshot(&self) -> PlaybackLifecycleActivityLogSnapshot {
+        PlaybackLifecycleActivityLogSnapshot::new(self.items.clone(), self.limit)
     }
 }
 
@@ -60,10 +61,10 @@ impl PlaybackLifecycleActivityLogState {
         }
     }
 
-    pub fn snapshot(&self) -> Vec<PlaybackLifecycleEvent> {
+    pub fn snapshot(&self) -> PlaybackLifecycleActivityLogSnapshot {
         match self.log.lock() {
             Ok(log) => log.snapshot(),
-            Err(_) => Vec::new(),
+            Err(_) => PlaybackLifecycleActivityLogSnapshot::new(Vec::new(), 0),
         }
     }
 }
