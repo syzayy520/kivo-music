@@ -29,6 +29,8 @@ export const koKR: TranslationDictionary = {
   'home.topPicks.lateNight.description': '늦은 밤 로컬 추천',
   'home.topPicks.focus.description': '업무와 집중을 위한 흐름',
   'home.topPicks.unwind.description': '차분한 주말 감상',
+  'home.hero.play': '재생',
+  'home.hero.viewAlbum': '앨범 보기',
   'home.shelves.recentlyPlayed.eyebrow': '최근 재생',
   'home.shelves.recentlyPlayed.title': '계속 듣기.',
   'home.shelves.recentlyAdded.eyebrow': '최근 추가',
