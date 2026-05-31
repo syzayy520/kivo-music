@@ -3,11 +3,12 @@ import { libraryCopy } from './libraryCopy'
 import { libraryData } from './libraryData'
 import { LibraryStatCard } from './components/LibraryStatCard'
 import { RecentlyAddedShelf } from './components/RecentlyAddedShelf'
+import { libraryStyle } from './libraryStyle'
 import './library.css'
 
 export function LibraryOverview() {
   return (
-    <section className="km-library-overview" id="library">
+    <section className="km-library-overview" id="library" style={libraryStyle}>
       <div className="km-library-head">
         <p>{libraryCopy.eyebrow}</p>
         <h2>{libraryCopy.title}</h2>
