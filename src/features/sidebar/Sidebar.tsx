@@ -5,7 +5,7 @@ import './sidebar.css'
 
 export function Sidebar() {
   return (
-    <aside className="km-sidebar" aria-label="Navigation" style={sidebarStyle}>
+    <aside className="km-sidebar" aria-label={t('sidebar.ariaLabel')} style={sidebarStyle}>
       <div className="km-brand">
         <span>K</span>
         <div>
