@@ -10,15 +10,15 @@
   margin: 0;
   color: var(--km-muted);
   font-size: var(--km-listen-shelf-eyebrow-size, 10px);
-  font-weight: 780;
-  letter-spacing: 0.08em;
+  font-weight: var(--km-listen-shelf-eyebrow-weight, 780);
+  letter-spacing: var(--km-listen-shelf-eyebrow-letter-spacing, 0.08em);
   text-transform: uppercase;
 }
 
 .km-shelf-head h3 {
   margin: var(--km-listen-shelf-title-top, 3px) 0 0;
   font-size: var(--km-listen-shelf-title-size, 18px);
-  letter-spacing: -0.035em;
+  letter-spacing: var(--km-listen-shelf-title-letter-spacing, -0.035em);
 }
 
 .km-shelf-head button {
@@ -32,6 +32,6 @@
 
 @media (prefers-color-scheme: dark) {
   .km-shelf-head button {
-    background: rgba(255, 255, 255, 0.07);
+    background: var(--km-listen-dark-shelf-button-bg);
   }
 }
