@@ -13,6 +13,7 @@ pub mod lifecycle;
 pub mod lifecycle_activity_log;
 pub mod lifecycle_commands;
 pub mod lifecycle_event;
+pub mod lifecycle_recorder;
 pub mod lyrics_clock;
 pub mod manager;
 pub mod metadata;
