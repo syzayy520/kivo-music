@@ -5,6 +5,7 @@ export const deDE: TranslationDictionary = {
   'common.unknownArtist': 'Unbekannter Künstler',
   'sidebar.brandName': 'Kivo Music',
   'sidebar.brandTagline': 'Lokaler Musikplayer',
+  'sidebar.ariaLabel': 'Navigation',
   'sidebar.group.forYou': 'Für dich',
   'sidebar.group.library': 'Mediathek',
   'sidebar.group.system': 'System',
