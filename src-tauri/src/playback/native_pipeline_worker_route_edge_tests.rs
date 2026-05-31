@@ -521,3 +521,20 @@ fn route_shutdown_from_idle_moves_to_stopped_phase() {
         )
     );
 }
+
+#[test]
+fn route_play_from_idle_moves_to_playing_phase() {
+    let mut pipeline = NativePipeline::new();
+    let state = PlaybackWorkerState::idle();
+
+    let next =
+        pipeline.route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Play);
+    let snapshot = pipeline.state();
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
+    assert_eq!(next.active_track_id, None);
+    assert_eq!(
+        snapshot.output_status.last_error.as_deref(),
+        Some("unsupported operation: native pipeline worker command play is not implemented yet")
+    );
+}
