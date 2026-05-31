@@ -1,39 +1,39 @@
 .km-library-overview {
-  margin: 0 clamp(20px, 3vw, 32px) 24px;
-  padding: clamp(18px, 2.2vw, 22px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.035);
+  margin: var(--km-library-overview-margin, 0 clamp(20px, 3vw, 32px) 24px);
+  padding: var(--km-library-overview-padding, clamp(18px, 2.2vw, 22px));
+  border: 1px solid var(--km-library-overview-border-color, rgba(255, 255, 255, 0.07));
+  border-radius: var(--km-library-overview-radius, 28px);
+  background: var(--km-library-overview-bg, rgba(255, 255, 255, 0.035));
 }
 
 .km-library-head p {
   margin: 0;
   color: var(--km-muted);
-  font-size: 11px;
-  font-weight: 780;
-  letter-spacing: 0.08em;
+  font-size: var(--km-library-eyebrow-size, 11px);
+  font-weight: var(--km-library-eyebrow-weight, 780);
+  letter-spacing: var(--km-library-eyebrow-letter-spacing, 0.08em);
   text-transform: uppercase;
 }
 
 .km-library-head h2 {
-  margin: 4px 0 18px;
-  font-size: clamp(22px, 2.2vw, 24px);
-  letter-spacing: -0.04em;
+  margin: var(--km-library-title-top, 4px) 0 var(--km-library-title-bottom, 18px);
+  font-size: var(--km-library-title-size, clamp(22px, 2.2vw, 24px));
+  letter-spacing: var(--km-library-title-letter-spacing, -0.04em);
 }
 
 .km-library-stats {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 22px;
+  grid-template-columns: repeat(var(--km-library-stats-columns, 4), minmax(0, 1fr));
+  gap: var(--km-library-stats-gap, 10px);
+  margin-bottom: var(--km-library-stats-bottom, 22px);
 }
 
 .km-library-stat {
   min-width: 0;
-  padding: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.035);
+  padding: var(--km-library-stat-padding, 14px);
+  border: 1px solid var(--km-library-stat-border-color, rgba(255, 255, 255, 0.07));
+  border-radius: var(--km-library-stat-radius, 16px);
+  background: var(--km-library-stat-bg, rgba(255, 255, 255, 0.035));
 }
 
 .km-library-stat strong,
@@ -42,8 +42,8 @@
 }
 
 .km-library-stat strong {
-  font-size: clamp(20px, 2.2vw, 24px);
-  letter-spacing: -0.04em;
+  font-size: var(--km-library-stat-value-size, clamp(20px, 2.2vw, 24px));
+  letter-spacing: var(--km-library-stat-value-letter-spacing, -0.04em);
 }
 
 .km-library-stat span,
