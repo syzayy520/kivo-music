@@ -1,6 +1,4 @@
-import './styles/albumShelf.css'
-import './styles/shelfHead.css'
-import './styles/topPicks.css'
+import './styles/listenNowStyles.css'
 import '../../shared/styles/artwork.css'
 import { AlbumShelf } from './components/AlbumShelf'
 import { TopPicksShelf } from './components/TopPicksShelf'
