@@ -15,9 +15,16 @@ export const listenNowTokens = {
   shelfButtonPaddingX: 14,
   albumGridGap: 16,
   albumShelfLastBottomSpace: 182,
+  albumCardMinWidth: 116,
+  albumCardMaxWidth: 132,
   albumCardRadius: 13,
   albumArtRadius: 11,
   albumArtBottomSpace: 8,
+  albumTitleFontSize: 12,
+  albumArtistTopSpace: 2,
+  albumArtistFontSize: 12,
+  albumQualityTopSpace: 3,
+  albumQualityFontSize: 11,
 } as const
 
 export type ListenNowTokens = typeof listenNowTokens
