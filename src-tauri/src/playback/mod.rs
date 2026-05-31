@@ -28,6 +28,7 @@ pub mod manager;
 pub mod metadata;
 pub mod native_output;
 pub mod output;
+pub mod output_frame;
 pub mod output_policy;
 pub mod path;
 pub mod queue;
@@ -70,3 +71,6 @@ mod lifecycle_recorder_tests;
 
 #[cfg(test)]
 mod manager_queue_tests;
+
+#[cfg(test)]
+mod output_frame_tests;
