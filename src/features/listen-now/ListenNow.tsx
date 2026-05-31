@@ -1,4 +1,3 @@
-import './listenNow.css'
 import './styles/albumShelf.css'
 import './styles/shelfHead.css'
 import './styles/topPicks.css'
