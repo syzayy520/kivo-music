@@ -4,6 +4,7 @@ pub mod errors;
 pub mod event;
 pub mod activity_log;
 pub mod activity_logger;
+pub mod activity_snapshot;
 pub mod clock;
 pub mod status;
 pub mod types;
