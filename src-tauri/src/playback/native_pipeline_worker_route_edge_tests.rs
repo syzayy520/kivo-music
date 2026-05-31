@@ -361,3 +361,26 @@ fn route_seek_from_failed_keeps_failed_phase() {
         Some("unsupported operation: native pipeline worker command seek is not implemented yet")
     );
 }
+
+#[test]
+fn route_set_volume_from_failed_keeps_failed_phase() {
+    let mut pipeline = NativePipeline::new();
+    let mut state = PlaybackWorkerState::idle();
+    state.mark_loaded("edge-track-19");
+    state.mark_failed("edge-failed");
+
+    let next = pipeline.route_worker_command_record_runtime_error(
+        &state,
+        &PlaybackWorkerCommand::SetVolume { level: 0.66 },
+    );
+    let snapshot = pipeline.state();
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Failed);
+    assert_eq!(next.active_track_id.as_deref(), Some("edge-track-19"));
+    assert_eq!(
+        snapshot.output_status.last_error.as_deref(),
+        Some(
+            "unsupported operation: native pipeline worker command set_volume is not implemented yet"
+        )
+    );
+}
