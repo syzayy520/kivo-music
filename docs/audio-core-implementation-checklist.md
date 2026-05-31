@@ -2,6 +2,11 @@
 
 This document is the source of truth for Kivo's final audio-core implementation order and module boundaries.
 
+Execution authority note:
+- This file defines roadmap and ordering.
+- Strict ticket execution format, guard checks, and conflict precedence are defined in `docs/AUDIO_CORE_EXECUTION_SPEC.md`.
+- If rules conflict, the stricter rule wins.
+
 ## Final target
 
 Kivo's long-term main playback core is **Kivo Native Engine**.
@@ -54,6 +59,30 @@ This section tracks progress against the original execution queue without changi
 8. KIVO-AUDIO-NATIVE-MIN-PLAYBACK-P0-005E
 9. KIVO-AUDIO-NATIVE-MIN-PLAYBACK-P0-005F
 10. KIVO-AUDIO-QUEUE-P0-009A
+
+## Truth snapshot policy (code-verified)
+
+This section resolves ambiguity between "ticket completed" and "runtime capability available".
+
+Rules:
+
+1. Ticket completion status and runtime capability status must be reported separately.
+2. Runtime capability claims are valid only if verified from current code and test evidence.
+3. If a capability is scaffolded but returns typed unsupported errors, it must be marked as "Not runtime-closed".
+4. Every baseline refresh must include verification date and verifier initials.
+
+Current code-verified snapshot (2026-05-31):
+
+- Playback architecture layering is present across commands, manager, engine, pipeline, and domain modules.
+- Native playback runtime loop is not closed yet.
+- Native pipeline start/decode/submit scheduling paths are not implemented yet.
+- Output sink runtime submission path is not implemented yet.
+- mpv is currently represented as compatibility descriptor-level status in this tree.
+
+Claim discipline:
+
+1. Any runtime capability claim must include code path + test evidence in the same report.
+2. If evidence is missing, capability must be marked `Not runtime-closed`.
 
 ## Non-negotiable principles
 
@@ -228,6 +257,40 @@ Must not own:
 - UI state
 - Library state
 
+## Backend selection policy (deterministic)
+
+The manager owns backend selection and fallback decisions. Backend selection must be deterministic and testable.
+
+Selection order:
+
+1. Primary target is `KivoNativeEngine`.
+2. Compatibility backend candidates are evaluated in declared order.
+3. If no backend can satisfy required operation, return typed error without fake success.
+
+Fallback policy:
+
+1. Fallback is allowed only for categories explicitly marked recoverable.
+2. Non-recoverable categories must fail fast with typed error.
+3. Fallback must emit an observable backend-switch event for UI diagnostics.
+
+Minimum recoverability categories:
+
+- backend initialization failure
+- backend process unavailable
+- output device unavailable (when compatibility backend has no device routing conflict)
+
+Non-recoverable categories:
+
+- invalid path
+- unsupported format across all available backends
+- queue policy violation
+
+User-visible policy:
+
+1. UI must be able to display active backend identity.
+2. UI must be able to show that compatibility fallback is active.
+3. Error payloads must include backend context and operation context.
+
 ## P0 implementation order
 
 ### KIVO-AUDIO-NATIVE-ARCH-P0-001
@@ -367,6 +430,9 @@ Done when:
 - playback state is backed by real native behavior
 - no fake state
 - cargo check passes
+- real audio output frame submission is observed in runtime tests
+- state transition assertions pass for load/play/pause/seek/stop
+- progress events are emitted from runtime state and can recover via state pull
 
 ### KIVO-AUDIO-MPV-COMPAT-P0-006
 
@@ -426,6 +492,7 @@ Done when:
 - events are manager-owned
 - backend only reports backend facts
 - cargo check passes
+- event ordering contract tests pass for load/seek/track-end/error sequences
 
 ### KIVO-AUDIO-QUEUE-P0-009
 
@@ -484,7 +551,7 @@ Before adding mpv, FFmpeg, ffprobe, decoder, or output dependencies:
 
 ## Current baseline finding
 
-Current playback code is a useful module skeleton but not yet a real playback core:
+Current playback code is a useful module skeleton but not yet a runtime-closed playback core:
 
 - playback_get_state returns default state
 - mpv module is descriptor-only

@@ -2,6 +2,10 @@
 
 Kivo Playback Core is the final playback architecture for Kivo Music. It is not a temporary player, not a React component, and not a thin wrapper around a single backend. It must be designed from day one as the long-term playback heart of the product.
 
+Execution authority note:
+- This file defines architecture intent and stage targets.
+- Strict execution precedence and ticket acceptance format are defined in `docs/AUDIO_CORE_EXECUTION_SPEC.md`.
+
 ## Final position
 
 Kivo Playback Core owns playback control, state, timeline, queue, lyrics synchronization, metadata, output configuration, events, and backend abstraction.
@@ -112,6 +116,33 @@ Feature components may consume this shared playback layer, but they must not dir
 - Events must be typed and versionable.
 - Frontend must be able to recover from missed progress events by requesting current state.
 
+### Event ordering contract (must-test)
+
+Event ordering must be explicit and stable. The following sequences are normative unless a ticket explicitly revises them.
+
+1. `load(track)` success:
+`TrackChanged` -> `StateChanged`
+2. `play()` success:
+`StateChanged` -> `Progress`
+3. `seek(position)` success:
+`StateChanged` -> `SeekComplete` -> `Progress`
+4. track end with queue advance:
+`TrackEnded` -> `TrackChanged` -> `StateChanged`
+5. operation failure:
+`Error` -> `StateChanged` (state contains typed error fact)
+
+Rules:
+
+1. No synthetic progress events are allowed before real runtime clock exists.
+2. Event versions must remain backward-compatible for frontend playback boundary.
+3. Event order changes require dedicated ticket and migration notes.
+
+Implementation phase note:
+
+1. `SeekComplete`, `TrackEnded`, and `BackendSwitched` are target events in this contract.
+2. Until these event variants are implemented in code, tickets must mark them as `planned/not yet emitted`.
+3. Do not claim these events are active without code + test evidence.
+
 ## Path safety rules
 
 - Empty paths are invalid.
@@ -182,6 +213,37 @@ play failed
 seek failed
 output device unavailable
 ```
+
+## State transition matrix (minimum contract)
+
+Playback state transitions must be explicit and test-covered.
+
+Allowed transitions:
+
+1. `Idle -> Loading`
+2. `Loading -> Paused` (loaded, ready to play)
+3. `Paused -> Playing`
+4. `Playing -> Paused`
+5. `Playing -> Stopped`
+6. `Paused -> Stopped`
+7. `Stopped -> Loading`
+
+Seek behavior:
+
+1. `Playing -> Playing` with updated timeline position.
+2. `Paused -> Paused` with updated timeline position.
+
+Illegal transition handling:
+
+1. Illegal transitions must return typed errors.
+2. Illegal transitions must not mutate queue ownership.
+3. Illegal transitions must not emit fake success events.
+
+Scaffold-phase exemption:
+
+1. Before runtime-closed playback loop lands, unsupported paths may return typed unsupported errors.
+2. During scaffold phase, matrix compliance is evaluated on implemented transitions only.
+3. Unsupported operations must remain explicit and must not mutate runtime into fake success states.
 
 ## Stage plan
 

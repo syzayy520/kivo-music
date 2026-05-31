@@ -3,6 +3,9 @@
 This document is the mandatory execution contract for Kivo Native-first playback core work.
 It formalizes a strict layered delegation model so code stays small, maintainable, and honest.
 
+Execution authority note:
+- For strict per-ticket execution format and conflict precedence, see `docs/AUDIO_CORE_EXECUTION_SPEC.md`.
+
 ## 1. Core doctrine
 
 1. Native-first self-owned playback core is the main line.
@@ -10,6 +13,8 @@ It formalizes a strict layered delegation model so code stays small, maintainabl
 3. Every layer manages only its direct children.
 4. No cross-layer shortcuts.
 5. One ticket = one responsibility block.
+6. One module/file = one primary responsibility.
+7. Page-level UI files are composition-only; no playback business logic is allowed at page level.
 
 ## 2. Family-tree architecture (delegation chain)
 
@@ -90,6 +95,37 @@ Every ticket must follow:
 5. Exact-file staging only (never `git add .`).
 6. One ticket, one commit, ticket ID in commit message.
 
+### 5A. Gate tiers by ticket type
+
+Use differentiated gates by ticket type. A ticket cannot use a weaker gate tier than required.
+
+Strictness resolver:
+
+If gate tier rules conflict with any stricter project-level mandate, run the stricter gate set.
+
+1. Architecture Gate (`ARCH` tickets):
+- `cargo fmt --manifest-path src-tauri/Cargo.toml`
+- `cargo check --manifest-path src-tauri/Cargo.toml`
+- focused unit tests for touched modules
+
+2. Runtime Gate (`RUNTIME` tickets):
+- Architecture Gate +
+- `cargo test --manifest-path src-tauri/Cargo.toml`
+- operation-level transition assertions for affected commands
+- event ordering assertions for affected flows
+
+3. Device Gate (`OUTPUT/WASAPI` tickets):
+- Runtime Gate +
+- output error recovery assertions
+- device selection/fallback assertions
+
+Default enforcement in this repository:
+- Unless a ticket explicitly states otherwise and is approved, run full gates:
+- `cargo fmt --manifest-path src-tauri/Cargo.toml`
+- `cargo check --manifest-path src-tauri/Cargo.toml`
+- `cargo test --manifest-path src-tauri/Cargo.toml`
+- `npm run build`
+
 ## 6. Refactor safety protocol
 
 For refactor/thinning tickets:
@@ -120,6 +156,17 @@ Before opening any new ticket:
 1. If required files are outside `Allowed files`, stop and escalate.
 2. Do not pull future-ticket work into current ticket.
 3. Do not add dependencies unless the ticket explicitly allows it.
+
+## 9A. File growth enforcement policy
+
+If a file is at or above hard threshold (220 lines), any new behavior addition must be paired with a split plan in the same ticket or the immediately following dedicated split ticket.
+
+Mandatory actions:
+
+1. Record current line count before edit.
+2. Record projected line count after edit.
+3. If projected count remains above hard threshold, document split target modules.
+4. Block merge if split plan is missing.
 
 ## 10. Required delivery format
 
