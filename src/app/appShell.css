@@ -1,10 +1,10 @@
 .km-app {
   height: 100vh;
-  min-width: 1040px;
-  min-height: 720px;
+  min-width: var(--km-shell-min-width, 1040px);
+  min-height: var(--km-shell-min-height, 720px);
   display: grid;
-  grid-template-columns: var(--km-sidebar) minmax(0, 1fr);
-  grid-template-rows: 28px minmax(0, 1fr) var(--km-player);
+  grid-template-columns: var(--km-shell-sidebar, var(--km-sidebar)) minmax(0, 1fr);
+  grid-template-rows: var(--km-shell-top-row, 28px) minmax(0, 1fr) var(--km-player);
   overflow: hidden;
   background: var(--km-window);
   color: var(--km-text);
@@ -17,7 +17,7 @@
   grid-row: 2 / 4;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-bottom: 182px;
+  padding-bottom: var(--km-shell-stage-bottom, 182px);
   scroll-behavior: smooth;
   scrollbar-color: rgba(28, 24, 30, 0.03) transparent;
   scrollbar-width: thin;
@@ -73,6 +73,6 @@
 
 @media (max-width: 1120px) {
   .km-app {
-    grid-template-columns: 224px minmax(0, 1fr);
+    grid-template-columns: var(--km-shell-sidebar-compact, 224px) minmax(0, 1fr);
   }
 }
