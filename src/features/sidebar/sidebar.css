@@ -5,7 +5,7 @@
   padding: var(--km-sidebar-padding-block, 22px) var(--km-sidebar-padding-inline, 14px);
   border-right: 1px solid var(--km-border);
   background: var(--km-sidebar-bg);
-  backdrop-filter: blur(26px);
+  backdrop-filter: blur(var(--km-sidebar-backdrop-blur));
 }
 
 .km-brand {
@@ -21,8 +21,8 @@
   width: var(--km-sidebar-brand-mark, 32px);
   height: var(--km-sidebar-brand-mark, 32px);
   border-radius: var(--km-sidebar-brand-radius, 10px);
-  color: #fff;
-  background: linear-gradient(135deg, var(--km-red), var(--km-pink));
+  color: var(--km-sidebar-brand-color);
+  background: var(--km-sidebar-brand-bg);
   font-weight: 900;
 }
 
