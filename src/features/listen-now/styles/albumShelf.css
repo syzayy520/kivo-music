@@ -30,18 +30,18 @@
   cursor: grab;
   border-radius: var(--km-listen-album-card-radius, 13px);
   transition:
-    opacity 160ms ease,
-    transform 160ms ease;
+    opacity var(--km-listen-album-card-transition-ms, 160ms) ease,
+    transform var(--km-listen-album-card-transition-ms, 160ms) ease;
 }
 
 .km-album-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(var(--km-listen-album-card-hover-lift, -2px));
 }
 
 .km-album-card:active {
   cursor: grabbing;
-  opacity: 0.72;
-  transform: translateY(-1px) scale(0.985);
+  opacity: var(--km-listen-album-card-active-opacity, 0.72);
+  transform: translateY(var(--km-listen-album-card-active-lift, -1px)) scale(var(--km-listen-album-card-active-scale, 0.985));
 }
 
 .km-album-card-art {
@@ -65,8 +65,8 @@
 
 .km-album-card strong {
   font-size: var(--km-listen-album-title-size, 12px);
-  font-weight: 760;
-  letter-spacing: -0.01em;
+  font-weight: var(--km-listen-album-title-weight, 760);
+  letter-spacing: var(--km-listen-album-title-letter-spacing, -0.01em);
 }
 
 .km-album-card span {
