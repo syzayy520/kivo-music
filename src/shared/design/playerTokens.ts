@@ -26,6 +26,12 @@ export const playerTokens = {
   controlPrimarySize: 38,
   iconSize: 17,
   iconPrimarySize: 18,
+  timebarMaxWidth: 480,
+  timebarSideColumn: 36,
+  timebarTrackMin: 170,
+  timebarGap: 9,
+  timebarFontSize: 10.5,
+  progressHeight: 3,
 } as const
 
 export type PlayerTokens = typeof playerTokens
