@@ -1,16 +1,12 @@
 use std::sync::Mutex;
 
+use super::backend::ProbeBackend;
 use super::backends::ffprobe::FfprobeBackend;
 use super::backends::ffprobe_status::ffprobe_status;
 use super::errors::MediaProbeResultValue;
 use super::path::validate_probe_path;
 use super::status::MediaProbeBackendStatus;
 use super::types::MediaProbeResult;
-
-pub trait ProbeBackend {
-    fn name(&self) -> &'static str;
-    fn probe(&self, path: &str) -> MediaProbeResultValue<MediaProbeResult>;
-}
 
 #[derive(Clone, Debug, Default)]
 pub struct MediaProbeService {
