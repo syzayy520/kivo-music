@@ -1,0 +1,37 @@
+.km-shelf-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--km-listen-shelf-head-gap, 10px);
+  margin-bottom: var(--km-listen-shelf-head-bottom, 10px);
+}
+
+.km-shelf-head p {
+  margin: 0;
+  color: var(--km-muted);
+  font-size: 10px;
+  font-weight: 780;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.km-shelf-head h3 {
+  margin: 3px 0 0;
+  font-size: 18px;
+  letter-spacing: -0.035em;
+}
+
+.km-shelf-head button {
+  border: 1px solid var(--km-border);
+  border-radius: 999px;
+  color: var(--km-text);
+  background: var(--km-surface-strong);
+  padding: var(--km-listen-shelf-button-y, 8px) var(--km-listen-shelf-button-x, 14px);
+  box-shadow: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .km-shelf-head button {
+    background: rgba(255, 255, 255, 0.07);
+  }
+}
