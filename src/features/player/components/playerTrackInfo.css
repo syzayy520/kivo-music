@@ -1,15 +1,15 @@
 .km-player-track {
   min-width: 0;
   display: grid;
-  grid-template-columns: 50px minmax(0, 1fr) auto;
-  gap: 11px;
+  grid-template-columns: var(--km-player-track-info-art, 50px) minmax(0, 1fr) auto;
+  gap: var(--km-player-track-info-gap, 11px);
   align-items: center;
 }
 
 .km-player-art {
-  width: 50px;
-  height: 50px;
-  border-radius: 13px;
+  width: var(--km-player-track-info-art, 50px);
+  height: var(--km-player-track-info-art, 50px);
+  border-radius: var(--km-player-track-info-art-radius, 13px);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -32,26 +32,26 @@
 
 .km-player-copy strong {
   color: var(--km-text);
-  font-size: 13px;
+  font-size: var(--km-player-track-info-title-size, 13px);
   font-weight: 780;
   letter-spacing: -0.02em;
 }
 
 .km-player-copy span {
-  margin-top: 3px;
+  margin-top: var(--km-player-track-info-artist-top, 3px);
   color: var(--km-muted);
-  font-size: 12px;
+  font-size: var(--km-player-track-info-artist-size, 12px);
 }
 
 .km-player-track-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--km-player-track-info-actions-gap, 4px);
 }
 
 .km-player-action {
-  width: 26px;
-  height: 26px;
+  width: var(--km-player-track-info-action-size, 26px);
+  height: var(--km-player-track-info-action-size, 26px);
   padding: 0;
   color: rgba(34, 27, 38, 0.5);
   background: transparent;
