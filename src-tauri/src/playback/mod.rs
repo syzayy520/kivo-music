@@ -92,6 +92,9 @@ mod native_pipeline_tests;
 mod native_pipeline_worker_route_tests;
 
 #[cfg(test)]
+mod native_pipeline_worker_runtime_tests;
+
+#[cfg(test)]
 mod output_frame_tests;
 
 #[cfg(test)]

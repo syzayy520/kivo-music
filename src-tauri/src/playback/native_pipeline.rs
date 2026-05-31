@@ -37,6 +37,20 @@ impl Default for NativePipelineState {
 }
 
 impl NativePipeline {
+    fn worker_operation_name(command: &PlaybackWorkerCommand) -> &'static str {
+        match command {
+            PlaybackWorkerCommand::Load { .. } => "load",
+            PlaybackWorkerCommand::Play => "play",
+            PlaybackWorkerCommand::Pause => "pause",
+            PlaybackWorkerCommand::Resume => "resume",
+            PlaybackWorkerCommand::Stop => "stop",
+            PlaybackWorkerCommand::Seek { .. } => "seek",
+            PlaybackWorkerCommand::SetVolume { .. } => "set_volume",
+            PlaybackWorkerCommand::SetMuted { .. } => "set_muted",
+            PlaybackWorkerCommand::Shutdown => "shutdown",
+        }
+    }
+
     pub fn new() -> Self {
         Self::default()
     }
@@ -96,17 +110,7 @@ impl NativePipeline {
     }
 
     pub fn handle_worker_command(&mut self, command: &PlaybackWorkerCommand) -> PlaybackResult<()> {
-        let operation = match command {
-            PlaybackWorkerCommand::Load { .. } => "load",
-            PlaybackWorkerCommand::Play => "play",
-            PlaybackWorkerCommand::Pause => "pause",
-            PlaybackWorkerCommand::Resume => "resume",
-            PlaybackWorkerCommand::Stop => "stop",
-            PlaybackWorkerCommand::Seek { .. } => "seek",
-            PlaybackWorkerCommand::SetVolume { .. } => "set_volume",
-            PlaybackWorkerCommand::SetMuted { .. } => "set_muted",
-            PlaybackWorkerCommand::Shutdown => "shutdown",
-        };
+        let operation = Self::worker_operation_name(command);
 
         Err(PlaybackError::UnsupportedOperation(format!(
             "native pipeline worker command {operation} is not implemented yet"
