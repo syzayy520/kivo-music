@@ -26,7 +26,13 @@ fn load_keeps_track_and_returns_typed_unsupported() {
     }
 
     let state = engine.current_state();
-    assert_eq!(state.current_track.as_ref().map(|track| &track.title), Some(&"Track 1".to_string()));
+    assert_eq!(
+        state
+            .current_track
+            .as_ref()
+            .map(|track| track.title.as_str()),
+        Some("Track 1")
+    );
     assert_eq!(
         state.error.as_deref(),
         Some("kivo core audio load is not implemented yet")
