@@ -32,6 +32,14 @@ export const playerTokens = {
   timebarGap: 9,
   timebarFontSize: 10.5,
   progressHeight: 3,
+  trackInfoArtSize: 50,
+  trackInfoGap: 11,
+  trackInfoArtRadius: 13,
+  trackInfoTitleFontSize: 13,
+  trackInfoArtistTopSpace: 3,
+  trackInfoArtistFontSize: 12,
+  trackInfoActionsGap: 4,
+  trackInfoActionSize: 26,
 } as const
 
 export type PlayerTokens = typeof playerTokens
