@@ -1,10 +1,11 @@
+import type { TranslationKey } from '../../shared/i18n'
 import type { PlayerIconName } from './playerIcons'
 
 export type PlayerControlVariant = 'subtle' | 'transport' | 'primary'
 
 export type PlayerControlButton = {
   key: string
-  label: string
+  labelKey: TranslationKey
   icon: PlayerIconName
   variant: PlayerControlVariant
 }
@@ -12,31 +13,31 @@ export type PlayerControlButton = {
 export const playerControlButtons: PlayerControlButton[] = [
   {
     key: 'shuffle',
-    label: 'Shuffle',
+    labelKey: 'player.controls.shuffle',
     icon: 'shuffle',
     variant: 'subtle',
   },
   {
     key: 'previous',
-    label: 'Previous track',
+    labelKey: 'player.controls.previous',
     icon: 'previous',
     variant: 'transport',
   },
   {
     key: 'play-pause',
-    label: 'Pause',
+    labelKey: 'player.controls.pause',
     icon: 'pause',
     variant: 'primary',
   },
   {
     key: 'next',
-    label: 'Next track',
+    labelKey: 'player.controls.next',
     icon: 'next',
     variant: 'transport',
   },
   {
     key: 'repeat',
-    label: 'Repeat',
+    labelKey: 'player.controls.repeat',
     icon: 'repeat',
     variant: 'subtle',
   },
