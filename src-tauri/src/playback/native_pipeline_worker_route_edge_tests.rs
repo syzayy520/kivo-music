@@ -407,3 +407,22 @@ fn route_set_muted_from_failed_keeps_failed_phase() {
         )
     );
 }
+
+#[test]
+fn route_seek_from_idle_keeps_idle_phase() {
+    let mut pipeline = NativePipeline::new();
+    let state = PlaybackWorkerState::idle();
+
+    let next = pipeline.route_worker_command_record_runtime_error(
+        &state,
+        &PlaybackWorkerCommand::Seek { position_ms: 1 },
+    );
+    let snapshot = pipeline.state();
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Idle);
+    assert_eq!(next.active_track_id, None);
+    assert_eq!(
+        snapshot.output_status.last_error.as_deref(),
+        Some("unsupported operation: native pipeline worker command seek is not implemented yet")
+    );
+}
