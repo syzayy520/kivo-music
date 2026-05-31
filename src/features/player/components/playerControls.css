@@ -1,7 +1,7 @@
 .km-player-core {
   min-width: 0;
   display: grid;
-  gap: 7px;
+  gap: var(--km-player-control-core-gap, 7px);
   justify-items: center;
 }
 
@@ -9,12 +9,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px;
+  gap: var(--km-player-control-button-gap, 12px);
 }
 
 .km-player-control {
-  width: 30px;
-  height: 30px;
+  width: var(--km-player-control-size, 30px);
+  height: var(--km-player-control-size, 30px);
   padding: 0;
   color: rgba(28, 23, 32, 0.7);
   background: transparent;
@@ -31,24 +31,24 @@
 }
 
 .km-player-control-primary {
-  width: 38px;
-  height: 38px;
+  width: var(--km-player-control-primary-size, 38px);
+  height: var(--km-player-control-primary-size, 38px);
   color: #121016;
   background: rgba(255, 255, 255, 0.84);
   box-shadow: 0 8px 18px rgba(62, 50, 68, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.86);
 }
 
 .km-player-icon {
-  width: 17px;
-  height: 17px;
+  width: var(--km-player-icon-size, 17px);
+  height: var(--km-player-icon-size, 17px);
   fill: none;
   stroke: currentColor;
   stroke-width: 1.85;
 }
 
 .km-player-control-primary .km-player-icon {
-  width: 18px;
-  height: 18px;
+  width: var(--km-player-icon-primary-size, 18px);
+  height: var(--km-player-icon-primary-size, 18px);
   stroke-width: 2.1;
 }
 
