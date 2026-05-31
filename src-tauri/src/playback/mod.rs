@@ -11,6 +11,7 @@ pub mod errors;
 pub mod events;
 pub mod lifecycle;
 pub mod lifecycle_activity_log;
+pub mod lifecycle_activity_snapshot;
 pub mod lifecycle_commands;
 pub mod lifecycle_event;
 pub mod lifecycle_recorder;
