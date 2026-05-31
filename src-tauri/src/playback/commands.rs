@@ -1,10 +1,10 @@
 use tauri::State;
 
 use super::activity_log::PlaybackActivityLogState;
-use super::activity_recorder::{record_state_result, record_track_result};
 use super::activity_snapshot::PlaybackActivityLogSnapshot;
 use super::backend_status::BackendStatus;
 use super::backends::backend_types::PlaybackBackendDescriptor;
+use super::command_activity::{run_state_command, run_track_command};
 use super::core_profile::KivoCoreAudioProfile;
 use super::errors::PlaybackError;
 use super::manager::PlaybackManagerState;
@@ -65,9 +65,7 @@ pub fn playback_load(
     activity: State<'_, PlaybackActivityLogState>,
     track: PlaybackTrack,
 ) -> Result<PlaybackState, PlaybackError> {
-    let result = manager.load(track);
-    record_track_result(&activity, &result);
-    result
+    run_track_command(&manager, &activity, move |service| service.load(track))
 }
 
 #[tauri::command]
@@ -75,9 +73,7 @@ pub fn playback_play(
     manager: State<'_, PlaybackManagerState>,
     activity: State<'_, PlaybackActivityLogState>,
 ) -> Result<PlaybackState, PlaybackError> {
-    let result = manager.play();
-    record_state_result(&activity, &result);
-    result
+    run_state_command(&manager, &activity, PlaybackManagerState::play)
 }
 
 #[tauri::command]
@@ -85,9 +81,7 @@ pub fn playback_pause(
     manager: State<'_, PlaybackManagerState>,
     activity: State<'_, PlaybackActivityLogState>,
 ) -> Result<PlaybackState, PlaybackError> {
-    let result = manager.pause();
-    record_state_result(&activity, &result);
-    result
+    run_state_command(&manager, &activity, PlaybackManagerState::pause)
 }
 
 #[tauri::command]
@@ -95,9 +89,7 @@ pub fn playback_resume(
     manager: State<'_, PlaybackManagerState>,
     activity: State<'_, PlaybackActivityLogState>,
 ) -> Result<PlaybackState, PlaybackError> {
-    let result = manager.resume();
-    record_state_result(&activity, &result);
-    result
+    run_state_command(&manager, &activity, PlaybackManagerState::resume)
 }
 
 #[tauri::command]
@@ -105,9 +97,7 @@ pub fn playback_stop(
     manager: State<'_, PlaybackManagerState>,
     activity: State<'_, PlaybackActivityLogState>,
 ) -> Result<PlaybackState, PlaybackError> {
-    let result = manager.stop();
-    record_state_result(&activity, &result);
-    result
+    run_state_command(&manager, &activity, PlaybackManagerState::stop)
 }
 
 #[tauri::command]
@@ -116,9 +106,9 @@ pub fn playback_seek(
     activity: State<'_, PlaybackActivityLogState>,
     position_ms: u64,
 ) -> Result<PlaybackState, PlaybackError> {
-    let result = manager.seek(position_ms);
-    record_state_result(&activity, &result);
-    result
+    run_state_command(&manager, &activity, move |service| {
+        service.seek(position_ms)
+    })
 }
 
 #[tauri::command]
@@ -127,9 +117,9 @@ pub fn playback_set_volume(
     activity: State<'_, PlaybackActivityLogState>,
     level: f32,
 ) -> Result<PlaybackState, PlaybackError> {
-    let result = manager.set_volume(level);
-    record_state_result(&activity, &result);
-    result
+    run_state_command(&manager, &activity, move |service| {
+        service.set_volume(level)
+    })
 }
 
 #[tauri::command]
@@ -138,9 +128,7 @@ pub fn playback_set_muted(
     activity: State<'_, PlaybackActivityLogState>,
     muted: bool,
 ) -> Result<PlaybackState, PlaybackError> {
-    let result = manager.set_muted(muted);
-    record_state_result(&activity, &result);
-    result
+    run_state_command(&manager, &activity, move |service| service.set_muted(muted))
 }
 
 #[tauri::command]
@@ -186,9 +174,9 @@ pub fn playback_queue_set_current(
     activity: State<'_, PlaybackActivityLogState>,
     index: usize,
 ) -> Result<PlaybackState, PlaybackError> {
-    let result = manager.queue_set_current(index);
-    record_state_result(&activity, &result);
-    result
+    run_state_command(&manager, &activity, move |service| {
+        service.queue_set_current(index)
+    })
 }
 
 #[tauri::command]
@@ -196,9 +184,7 @@ pub fn playback_queue_next(
     manager: State<'_, PlaybackManagerState>,
     activity: State<'_, PlaybackActivityLogState>,
 ) -> Result<PlaybackState, PlaybackError> {
-    let result = manager.queue_next();
-    record_state_result(&activity, &result);
-    result
+    run_state_command(&manager, &activity, PlaybackManagerState::queue_next)
 }
 
 #[tauri::command]
@@ -206,7 +192,5 @@ pub fn playback_queue_previous(
     manager: State<'_, PlaybackManagerState>,
     activity: State<'_, PlaybackActivityLogState>,
 ) -> Result<PlaybackState, PlaybackError> {
-    let result = manager.queue_previous();
-    record_state_result(&activity, &result);
-    result
+    run_state_command(&manager, &activity, PlaybackManagerState::queue_previous)
 }

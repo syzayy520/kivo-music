@@ -7,6 +7,7 @@ pub mod backend_status;
 pub mod backends;
 pub mod capabilities;
 pub mod clock;
+pub mod command_activity;
 pub mod commands;
 pub mod core_profile;
 pub mod decoder;
@@ -54,6 +55,9 @@ mod activity_recorder_tests;
 
 #[cfg(test)]
 mod audio_buffer_tests;
+
+#[cfg(test)]
+mod command_activity_tests;
 
 #[cfg(test)]
 mod decoder_request_tests;
