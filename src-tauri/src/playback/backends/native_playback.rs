@@ -1,6 +1,7 @@
-use super::super::errors::{PlaybackError, PlaybackResult};
+use super::super::errors::PlaybackResult;
 use super::super::types::{PlaybackStatus, PlaybackTrack};
 use super::native_backend::KivoNativeBackend;
+use super::native_unsupported::unsupported_operation;
 
 #[derive(Clone, Debug)]
 pub struct KivoNativePlayback {
@@ -27,29 +28,23 @@ impl KivoNativePlayback {
     }
 
     pub fn play(&self) -> PlaybackResult<PlaybackStatus> {
-        Self::unsupported("native playback play")
+        unsupported_operation("native playback play")
     }
 
     pub fn pause(&self) -> PlaybackResult<PlaybackStatus> {
-        Self::unsupported("native playback pause")
+        unsupported_operation("native playback pause")
     }
 
     pub fn resume(&self) -> PlaybackResult<PlaybackStatus> {
-        Self::unsupported("native playback resume")
+        unsupported_operation("native playback resume")
     }
 
     pub fn stop(&self) -> PlaybackResult<PlaybackStatus> {
-        Self::unsupported("native playback stop")
+        unsupported_operation("native playback stop")
     }
 
     pub fn seek(&self, _position_ms: u64) -> PlaybackResult<PlaybackStatus> {
-        Self::unsupported("native playback seek")
-    }
-
-    fn unsupported(operation: &str) -> PlaybackResult<PlaybackStatus> {
-        Err(PlaybackError::UnsupportedOperation(format!(
-            "{operation} is not implemented yet"
-        )))
+        unsupported_operation("native playback seek")
     }
 }
 
