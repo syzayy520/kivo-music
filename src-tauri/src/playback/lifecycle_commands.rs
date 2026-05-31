@@ -1,12 +1,12 @@
 use tauri::State;
 
 use super::lifecycle_activity_log::PlaybackLifecycleActivityLogState;
-use super::lifecycle_event::PlaybackLifecycleEvent;
+use super::lifecycle_activity_snapshot::PlaybackLifecycleActivityLogSnapshot;
 
 #[tauri::command]
 pub fn playback_get_lifecycle_activity_log(
     activity: State<'_, PlaybackLifecycleActivityLogState>,
-) -> Vec<PlaybackLifecycleEvent> {
+) -> PlaybackLifecycleActivityLogSnapshot {
     activity.snapshot()
 }
 
