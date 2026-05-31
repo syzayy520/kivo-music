@@ -29,6 +29,8 @@ export const ptBR: TranslationDictionary = {
   'home.topPicks.lateNight.description': 'Seleções locais noturnas',
   'home.topPicks.focus.description': 'Fluxo para trabalho e foco',
   'home.topPicks.unwind.description': 'Escuta calma de final de semana',
+  'home.hero.play': 'Tocar',
+  'home.hero.viewAlbum': 'Ver álbum',
   'home.shelves.recentlyPlayed.eyebrow': 'Tocado recentemente',
   'home.shelves.recentlyPlayed.title': 'Continue ouvindo.',
   'home.shelves.recentlyAdded.eyebrow': 'Adicionado recentemente',
