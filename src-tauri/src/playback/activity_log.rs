@@ -1,5 +1,6 @@
 use std::sync::Mutex;
 
+use super::activity_entry::PlaybackActivityLogEntry;
 use super::activity_snapshot::PlaybackActivityLogSnapshot;
 use super::events::PlaybackEvent;
 
@@ -7,7 +8,7 @@ const DEFAULT_ACTIVITY_LOG_LIMIT: usize = 256;
 
 #[derive(Clone, Debug)]
 pub struct PlaybackActivityLog {
-    items: Vec<PlaybackEvent>,
+    items: Vec<PlaybackActivityLogEntry>,
     limit: usize,
 }
 
@@ -28,7 +29,7 @@ impl PlaybackActivityLog {
             self.items.drain(0..1);
         }
 
-        self.items.push(item);
+        self.items.push(PlaybackActivityLogEntry::new(item));
     }
 
     pub fn clear(&mut self) {
