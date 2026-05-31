@@ -186,3 +186,22 @@ fn route_seek_from_stopped_keeps_stopped_phase() {
         Some("unsupported operation: native pipeline worker command seek is not implemented yet")
     );
 }
+
+#[test]
+fn route_play_from_stopped_moves_to_playing_phase() {
+    let mut pipeline = NativePipeline::new();
+    let mut state = PlaybackWorkerState::idle();
+    state.mark_loaded("edge-track-10");
+    state.mark_stopped();
+
+    let next =
+        pipeline.route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Play);
+    let snapshot = pipeline.state();
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
+    assert_eq!(next.active_track_id.as_deref(), Some("edge-track-10"));
+    assert_eq!(
+        snapshot.output_status.last_error.as_deref(),
+        Some("unsupported operation: native pipeline worker command play is not implemented yet")
+    );
+}
