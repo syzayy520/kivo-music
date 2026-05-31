@@ -20,6 +20,12 @@ export const playerTokens = {
   compactTrackColumnMax: 280,
   compactCoreColumn: 280,
   compactGap: 12,
+  controlCoreGap: 7,
+  controlButtonGap: 12,
+  controlSize: 30,
+  controlPrimarySize: 38,
+  iconSize: 17,
+  iconPrimarySize: 18,
 } as const
 
 export type PlayerTokens = typeof playerTokens
