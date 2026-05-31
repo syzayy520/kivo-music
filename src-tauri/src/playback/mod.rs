@@ -1,3 +1,4 @@
+pub mod activity_entry;
 pub mod activity_log;
 pub mod activity_recorder;
 pub mod activity_snapshot;
