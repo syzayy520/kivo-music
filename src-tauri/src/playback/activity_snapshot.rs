@@ -1,16 +1,16 @@
 use serde::{Deserialize, Serialize};
 
-use super::events::PlaybackEvent;
+use super::activity_entry::PlaybackActivityLogEntry;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct PlaybackActivityLogSnapshot {
-    pub entries: Vec<PlaybackEvent>,
+    pub entries: Vec<PlaybackActivityLogEntry>,
     pub entry_count: usize,
     pub limit: usize,
 }
 
 impl PlaybackActivityLogSnapshot {
-    pub fn new(entries: Vec<PlaybackEvent>, limit: usize) -> Self {
+    pub fn new(entries: Vec<PlaybackActivityLogEntry>, limit: usize) -> Self {
         let entry_count = entries.len();
 
         Self {
