@@ -3,6 +3,7 @@ pub mod activity_recorder;
 pub mod backend_status;
 pub mod backends;
 pub mod capabilities;
+pub mod clock;
 pub mod commands;
 pub mod core_profile;
 pub mod decoder;
