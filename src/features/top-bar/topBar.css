@@ -1,10 +1,13 @@
 .km-topbar {
-  min-height: 72px;
+  min-height: var(--km-topbar-min-height, 72px);
   display: grid;
-  grid-template-columns: minmax(480px, 1fr) minmax(240px, 360px) auto;
+  grid-template-columns:
+    minmax(var(--km-topbar-title-min, 480px), 1fr)
+    minmax(var(--km-topbar-search-min, 240px), var(--km-topbar-search-max, 360px))
+    auto;
   align-items: center;
-  gap: 16px;
-  padding: 20px clamp(20px, 3vw, 32px) 12px;
+  gap: var(--km-topbar-gap, 16px);
+  padding: var(--km-topbar-padding-top, 20px) var(--km-stage-inline-compact, clamp(20px, 3vw, 32px)) var(--km-topbar-padding-bottom, 12px);
 }
 
 .km-topbar-title {
@@ -31,9 +34,9 @@
 .km-search {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: var(--km-topbar-search-gap, 9px);
   min-width: 0;
-  padding: 9px 13px;
+  padding: var(--km-topbar-search-padding-block, 9px) var(--km-topbar-search-padding-inline, 13px);
   border: 1px solid var(--km-border);
   border-radius: 999px;
   background: var(--km-surface-strong);
@@ -58,9 +61,9 @@
 }
 
 .km-library-status {
-  padding: 9px 12px;
+  padding: var(--km-topbar-status-padding-block, 9px) var(--km-topbar-status-padding-inline, 12px);
   border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 14px;
+  border-radius: var(--km-topbar-status-radius, 14px);
   background: rgba(255, 255, 255, 0.88);
   box-shadow: 0 2px 12px rgba(63, 54, 67, 0.10);
 }
@@ -81,9 +84,9 @@
 .km-library-status strong::after {
   content: '';
   display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-left: 7px;
+  width: var(--km-topbar-status-dot, 6px);
+  height: var(--km-topbar-status-dot, 6px);
+  margin-left: var(--km-topbar-status-dot-gap, 7px);
   border-radius: 999px;
   background: #30c790;
   flex-shrink: 0;
@@ -98,7 +101,9 @@
 
 @media (max-width: 1120px) {
   .km-topbar {
-    grid-template-columns: minmax(360px, 1fr) minmax(220px, 300px);
+    grid-template-columns:
+      minmax(var(--km-topbar-compact-title-min, 360px), 1fr)
+      minmax(var(--km-topbar-compact-search-min, 220px), var(--km-topbar-compact-search-max, 300px));
   }
 
   .km-topbar-title h1 {
