@@ -1,4 +1,4 @@
-use super::service::{MediaProbeError, MediaProbeResultValue};
+use super::errors::{MediaProbeError, MediaProbeResultValue};
 
 pub fn validate_probe_path(path: &str) -> MediaProbeResultValue<&str> {
     let path = path.trim();
