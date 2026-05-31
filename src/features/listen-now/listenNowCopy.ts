@@ -1,23 +1,53 @@
-export const listenNowCopy = {
-  heroEyebrow: 'Top Picks for You',
-  heroTitle: 'Midnight Archive',
-  heroDescription: 'Album-first listening from your local library.',
-  showAll: 'Show All',
-  topPicksTitle: 'Made for your library.',
-  topPickEyebrows: ['Late Night', 'Focus', 'Unwind'],
-  topPickDescriptions: [
-    'Late-night local picks',
-    'Work and focus flow',
-    'Calm weekend listening',
-  ],
+import type { TranslationKey } from '../../shared/i18n'
+
+export type ListenNowShelfKey = 'recentlyPlayed' | 'recentlyAdded'
+
+type ShelfCopy = {
+  eyebrowKey: TranslationKey
+  titleKey: TranslationKey
+}
+
+type TopPickCopy = {
+  eyebrowKey: TranslationKey
+  descriptionKey: TranslationKey
+}
+
+export const listenNowCopy: {
+  showAllKey: TranslationKey
+  topPicks: {
+    eyebrowKey: TranslationKey
+    titleKey: TranslationKey
+    items: TopPickCopy[]
+  }
+  shelves: Record<ListenNowShelfKey, ShelfCopy>
+} = {
+  showAllKey: 'common.showAll',
+  topPicks: {
+    eyebrowKey: 'home.topPicks.eyebrow',
+    titleKey: 'home.topPicks.title',
+    items: [
+      {
+        eyebrowKey: 'home.topPicks.lateNight.eyebrow',
+        descriptionKey: 'home.topPicks.lateNight.description',
+      },
+      {
+        eyebrowKey: 'home.topPicks.focus.eyebrow',
+        descriptionKey: 'home.topPicks.focus.description',
+      },
+      {
+        eyebrowKey: 'home.topPicks.unwind.eyebrow',
+        descriptionKey: 'home.topPicks.unwind.description',
+      },
+    ],
+  },
   shelves: {
     recentlyPlayed: {
-      eyebrow: 'Recently Played',
-      title: 'Continue listening.',
+      eyebrowKey: 'home.shelves.recentlyPlayed.eyebrow',
+      titleKey: 'home.shelves.recentlyPlayed.title',
     },
     recentlyAdded: {
-      eyebrow: 'Recently Added',
-      title: 'New in your library.',
+      eyebrowKey: 'home.shelves.recentlyAdded.eyebrow',
+      titleKey: 'home.shelves.recentlyAdded.title',
     },
   },
 }
