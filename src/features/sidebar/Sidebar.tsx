@@ -1,10 +1,11 @@
 import { t } from '../../shared/i18n'
 import { sidebarGroups } from './sidebarItems'
+import { sidebarStyle } from './sidebarStyle'
 import './sidebar.css'
 
 export function Sidebar() {
   return (
-    <aside className="km-sidebar" aria-label="Navigation">
+    <aside className="km-sidebar" aria-label="Navigation" style={sidebarStyle}>
       <div className="km-brand">
         <span>K</span>
         <div>
