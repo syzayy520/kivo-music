@@ -15,7 +15,7 @@ fn record_state_result_appends_state_changed_event() {
 
     assert_eq!(snapshot.entry_count, 1);
     assert!(matches!(
-        snapshot.entries[0].event,
+        &snapshot.entries[0].event,
         PlaybackEvent::StateChanged(_)
     ));
     assert!(snapshot.entries[0].timestamp_ms > 0);
@@ -32,7 +32,7 @@ fn record_track_result_appends_track_changed_event() {
 
     assert_eq!(snapshot.entry_count, 1);
     assert!(matches!(
-        snapshot.entries[0].event,
+        &snapshot.entries[0].event,
         PlaybackEvent::TrackChanged(_)
     ));
     assert!(snapshot.entries[0].timestamp_ms > 0);
@@ -49,7 +49,7 @@ fn recorder_appends_error_event_on_failure() {
 
     assert_eq!(snapshot.entry_count, 1);
     assert!(matches!(
-        snapshot.entries[0].event,
+        &snapshot.entries[0].event,
         PlaybackEvent::Error(PlaybackError::Playback(_))
     ));
 }
