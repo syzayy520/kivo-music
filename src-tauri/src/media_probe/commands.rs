@@ -34,7 +34,25 @@ pub fn media_probe_clear_activity_log(activity_log: State<'_, MediaProbeActivity
 #[tauri::command]
 pub fn media_probe_file(
     service: State<'_, MediaProbeServiceState>,
+    activity_log: State<'_, MediaProbeActivityLogState>,
     path: String,
 ) -> Result<MediaProbeResult, MediaProbeError> {
-    service.probe(&path)
+    let backend_name = service.backend_name().to_string();
+
+    activity_log.record(MediaProbeEvent::started(path.clone(), backend_name.clone()));
+
+    match service.probe(&path) {
+        Ok(result) => {
+            activity_log.record(MediaProbeEvent::succeeded(path, backend_name));
+            Ok(result)
+        }
+        Err(error) => {
+            activity_log.record(MediaProbeEvent::failed(
+                path,
+                backend_name,
+                error.to_string(),
+            ));
+            Err(error)
+        }
+    }
 }
