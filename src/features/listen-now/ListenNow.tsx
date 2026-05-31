@@ -1,5 +1,6 @@
 import './listenNow.css'
 import './styles/shelfHead.css'
+import './styles/topPicks.css'
 import '../../shared/styles/artwork.css'
 import { AlbumShelf } from './components/AlbumShelf'
 import { TopPicksShelf } from './components/TopPicksShelf'
