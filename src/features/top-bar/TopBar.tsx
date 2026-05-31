@@ -1,10 +1,11 @@
 import { t } from '../../shared/i18n'
 import { topBarCopy } from './topBarCopy'
+import { topBarStyle } from './topBarStyle'
 import './topBar.css'
 
 export function TopBar() {
   return (
-    <header className="km-topbar">
+    <header className="km-topbar" style={topBarStyle}>
       <div className="km-topbar-title">
         <h1>{t(topBarCopy.titleKey)}</h1>
       </div>
