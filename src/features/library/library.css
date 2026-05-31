@@ -46,8 +46,7 @@
   letter-spacing: var(--km-library-stat-value-letter-spacing, -0.04em);
 }
 
-.km-library-stat span,
-.km-recently-added-card span {
+.km-library-stat span {
   color: var(--km-muted);
 }
 
@@ -55,37 +54,6 @@
   margin: 0 0 12px;
   font-size: 18px;
   letter-spacing: -0.03em;
-}
-
-.km-recently-added {
-  display: grid;
-  grid-auto-columns: clamp(132px, 16vw, 176px);
-  grid-auto-flow: column;
-  gap: 14px;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  padding-bottom: 8px;
-}
-
-.km-recently-added-art {
-  aspect-ratio: 1;
-  border-radius: 14px;
-  margin-bottom: 10px;
-}
-
-.km-recently-added-card strong,
-.km-recently-added-card span {
-  display: block;
-}
-
-.km-recently-added-card strong {
-  font-size: 13px;
-}
-
-.km-recently-added-card span {
-  margin-top: 4px;
-  font-size: 12px;
-  line-height: 1.35;
 }
 
 @media (max-width: 1120px) {
