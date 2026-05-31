@@ -20,14 +20,19 @@ export const topBarTokens = {
   searchPaddingBlock: 9,
   searchPaddingInline: 13,
   searchLabelFontSize: 10,
+  searchShadow: '0 8px 22px rgba(63, 54, 67, 0.06)',
   statusPaddingBlock: 9,
   statusPaddingInline: 12,
+  statusBorderColor: 'rgba(0, 0, 0, 0.08)',
   statusRadius: 14,
+  statusBackground: 'rgba(255, 255, 255, 0.88)',
+  statusShadow: '0 2px 12px rgba(63, 54, 67, 0.10)',
   statusLabelFontSize: 11,
   statusValueTopSpace: 2,
   statusValueFontSize: 12,
   statusDotSize: 6,
   statusDotGap: 7,
+  statusDotBackground: '#30c790',
 } as const
 
 export type TopBarTokens = typeof topBarTokens
