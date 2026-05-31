@@ -33,7 +33,7 @@
 }
 
 .km-brand strong {
-  font-size: 13px;
+  font-size: var(--km-sidebar-brand-name-size, 13px);
 }
 
 .km-brand small,
@@ -43,7 +43,7 @@
 }
 
 .km-brand small {
-  font-size: 11px;
+  font-size: var(--km-sidebar-brand-tagline-size, 11px);
 }
 
 .km-nav {
@@ -53,17 +53,17 @@
 
 .km-nav p {
   margin: 0 0 var(--km-sidebar-nav-label-bottom, 7px);
-  font-size: 10px;
+  font-size: var(--km-sidebar-nav-label-size, 10px);
   font-weight: 750;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 .km-nav a {
-  margin: 1px 0;
+  margin: var(--km-sidebar-nav-item-margin-y, 1px) 0;
   padding: var(--km-sidebar-nav-item-block, 8px) var(--km-sidebar-nav-item-inline, 10px);
   border-radius: var(--km-sidebar-nav-item-radius, 10px);
-  font-size: 13px;
+  font-size: var(--km-sidebar-nav-item-size, 13px);
   text-decoration: none;
 }
 
