@@ -1,5 +1,6 @@
 use std::sync::Mutex;
 
+use super::activity_snapshot::MediaProbeActivityLogSnapshot;
 use super::event::MediaProbeEvent;
 
 const DEFAULT_ACTIVITY_LOG_LIMIT: usize = 128;
@@ -45,6 +46,10 @@ impl MediaProbeActivityLogState {
             .expect("media probe activity log lock failed");
 
         entries.clone()
+    }
+
+    pub fn snapshot(&self) -> MediaProbeActivityLogSnapshot {
+        MediaProbeActivityLogSnapshot::new(self.entries(), self.limit)
     }
 
     pub fn clear(&self) {
