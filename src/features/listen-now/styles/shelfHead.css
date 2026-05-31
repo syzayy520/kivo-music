@@ -9,15 +9,15 @@
 .km-shelf-head p {
   margin: 0;
   color: var(--km-muted);
-  font-size: 10px;
+  font-size: var(--km-listen-shelf-eyebrow-size, 10px);
   font-weight: 780;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .km-shelf-head h3 {
-  margin: 3px 0 0;
-  font-size: 18px;
+  margin: var(--km-listen-shelf-title-top, 3px) 0 0;
+  font-size: var(--km-listen-shelf-title-size, 18px);
   letter-spacing: -0.035em;
 }
 
