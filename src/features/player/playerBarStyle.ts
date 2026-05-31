@@ -30,4 +30,10 @@ export const playerBarStyle: PlayerBarStyle = {
   '--km-player-control-primary-size': `${playerTokens.controlPrimarySize}px`,
   '--km-player-icon-size': `${playerTokens.iconSize}px`,
   '--km-player-icon-primary-size': `${playerTokens.iconPrimarySize}px`,
+  '--km-player-timebar-max': `${playerTokens.timebarMaxWidth}px`,
+  '--km-player-timebar-side': `${playerTokens.timebarSideColumn}px`,
+  '--km-player-timebar-track-min': `${playerTokens.timebarTrackMin}px`,
+  '--km-player-timebar-gap': `${playerTokens.timebarGap}px`,
+  '--km-player-timebar-font-size': `${playerTokens.timebarFontSize}px`,
+  '--km-player-progress-height': `${playerTokens.progressHeight}px`,
 }
