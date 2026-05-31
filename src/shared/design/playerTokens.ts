@@ -7,6 +7,19 @@ export const playerTokens = {
   minCoreColumn: 360,
   minMetaColumn: 210,
   maxMetaColumn: 280,
+  gapMin: 14,
+  gapViewport: 2,
+  gapMax: 24,
+  marginInlineMin: 18,
+  marginInlineViewport: 2.5,
+  marginInlineMax: 30,
+  paddingBlock: 10,
+  paddingInline: 16,
+  radius: 24,
+  compactTrackColumn: 220,
+  compactTrackColumnMax: 280,
+  compactCoreColumn: 280,
+  compactGap: 12,
 } as const
 
 export type PlayerTokens = typeof playerTokens
