@@ -5,6 +5,7 @@ export const ptBR: TranslationDictionary = {
   'common.unknownArtist': 'Artista desconhecido',
   'sidebar.brandName': 'Kivo Music',
   'sidebar.brandTagline': 'Reprodutor local',
+  'sidebar.ariaLabel': 'Navegação',
   'sidebar.group.forYou': 'Para você',
   'sidebar.group.library': 'Biblioteca',
   'sidebar.group.system': 'Sistema',
