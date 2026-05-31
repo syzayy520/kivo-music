@@ -1,5 +1,6 @@
 use super::backend_types::{PlaybackBackendDescriptor, PlaybackBackendKind};
 use super::native_playback::KivoNativePlayback;
+use super::native_unsupported::unsupported_operation_message;
 use super::super::capabilities::PlaybackCapabilities;
 use super::super::engine::PlaybackEngine;
 use super::super::errors::{PlaybackError, PlaybackResult};
@@ -32,7 +33,7 @@ impl KivoNativeEngine {
     }
 
     fn unsupported(&mut self, operation: &str) -> PlaybackResult<PlaybackState> {
-        let message = format!("kivo core audio {operation} is not implemented yet");
+        let message = unsupported_operation_message(operation);
         self.state.error = Some(message.clone());
         Err(PlaybackError::UnsupportedOperation(message))
     }
