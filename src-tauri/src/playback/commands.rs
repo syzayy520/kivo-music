@@ -2,11 +2,11 @@ use tauri::State;
 
 use super::activity_log::PlaybackActivityLogState;
 use super::activity_recorder::{record_state_result, record_track_result};
+use super::activity_snapshot::PlaybackActivityLogSnapshot;
 use super::backend_status::BackendStatus;
 use super::backends::backend_types::PlaybackBackendDescriptor;
 use super::core_profile::KivoCoreAudioProfile;
 use super::errors::PlaybackError;
-use super::events::PlaybackEvent;
 use super::manager::PlaybackManagerState;
 use super::state::PlaybackState;
 use super::types::PlaybackTrack;
@@ -38,7 +38,7 @@ pub fn playback_get_core_profile() -> KivoCoreAudioProfile {
 #[tauri::command]
 pub fn playback_get_activity_log(
     activity: State<'_, PlaybackActivityLogState>,
-) -> Vec<PlaybackEvent> {
+) -> PlaybackActivityLogSnapshot {
     activity.snapshot()
 }
 
