@@ -6,10 +6,13 @@ type SidebarStyle = CSSProperties & Record<`--${string}`, string>
 export const sidebarStyle: SidebarStyle = {
   '--km-sidebar-padding-block': `${sidebarTokens.paddingBlock}px`,
   '--km-sidebar-padding-inline': `${sidebarTokens.paddingInline}px`,
+  '--km-sidebar-backdrop-blur': `${sidebarTokens.backdropBlur}px`,
   '--km-sidebar-brand-gap': `${sidebarTokens.brandGap}px`,
   '--km-sidebar-brand-bottom': `${sidebarTokens.brandBottomSpace}px`,
   '--km-sidebar-brand-mark': `${sidebarTokens.brandMarkSize}px`,
   '--km-sidebar-brand-radius': `${sidebarTokens.brandMarkRadius}px`,
+  '--km-sidebar-brand-color': sidebarTokens.brandMarkColor,
+  '--km-sidebar-brand-bg': sidebarTokens.brandMarkBackground,
   '--km-sidebar-brand-name-size': `${sidebarTokens.brandNameFontSize}px`,
   '--km-sidebar-brand-tagline-size': `${sidebarTokens.brandTaglineFontSize}px`,
   '--km-sidebar-nav-gap': `${sidebarTokens.navGap}px`,
