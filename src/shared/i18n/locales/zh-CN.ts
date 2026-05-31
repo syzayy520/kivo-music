@@ -5,6 +5,7 @@ export const zhCN: TranslationDictionary = {
   'common.unknownArtist': '未知艺人',
   'sidebar.brandName': 'Kivo Music',
   'sidebar.brandTagline': '本地音乐播放器',
+  'sidebar.ariaLabel': '导航',
   'sidebar.group.forYou': '为你推荐',
   'sidebar.group.library': '资料库',
   'sidebar.group.system': '系统',
