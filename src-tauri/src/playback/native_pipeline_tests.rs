@@ -177,6 +177,7 @@ fn runtime_operations_are_typed_unsupported() {
     let mut pipeline = NativePipeline::new();
 
     assert_unsupported(pipeline.start(), "start");
+    assert_unsupported(pipeline.schedule_decode_step(), "schedule_decode_step");
     assert_unsupported(pipeline.submit(), "submit");
     assert_unsupported(pipeline.shutdown(), "shutdown");
 }

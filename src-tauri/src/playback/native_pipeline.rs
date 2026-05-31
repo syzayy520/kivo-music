@@ -117,6 +117,12 @@ impl NativePipeline {
         ))
     }
 
+    pub fn schedule_decode_step(&mut self) -> PlaybackResult<()> {
+        Err(PlaybackError::UnsupportedOperation(
+            "native pipeline schedule_decode_step is not implemented yet".to_string(),
+        ))
+    }
+
     pub fn submit(&mut self) -> PlaybackResult<()> {
         Err(PlaybackError::UnsupportedOperation(
             "native pipeline submit is not implemented yet".to_string(),
