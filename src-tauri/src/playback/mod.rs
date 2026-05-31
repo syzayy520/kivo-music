@@ -2,6 +2,7 @@ pub mod activity_entry;
 pub mod activity_log;
 pub mod activity_recorder;
 pub mod activity_snapshot;
+pub mod audio_buffer;
 pub mod backend_status;
 pub mod backends;
 pub mod capabilities;
@@ -43,6 +44,9 @@ mod activity_log_state_tests;
 
 #[cfg(test)]
 mod activity_recorder_tests;
+
+#[cfg(test)]
+mod audio_buffer_tests;
 
 #[cfg(test)]
 mod decoder_request_tests;
