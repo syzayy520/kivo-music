@@ -1,7 +1,7 @@
 .km-window-chrome {
   grid-column: 2;
   grid-row: 1;
-  height: 28px;
+  height: var(--km-window-chrome-height, 28px);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
@@ -20,11 +20,11 @@
 }
 
 .km-window-controls button {
-  width: 42px;
+  width: var(--km-window-chrome-control-width, 42px);
   border: 0;
   color: rgba(255, 255, 255, 0.48);
   background: transparent;
-  font-size: 13px;
+  font-size: var(--km-window-chrome-control-font-size, 13px);
 }
 
 .km-window-controls button:hover {
