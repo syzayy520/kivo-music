@@ -666,3 +666,142 @@ fn route_pause_from_playing_moves_to_paused_phase() {
         Some("unsupported operation: native pipeline worker command pause is not implemented yet")
     );
 }
+
+#[test]
+fn route_stop_from_paused_moves_to_stopped_phase() {
+    let mut pipeline = NativePipeline::new();
+    let mut state = PlaybackWorkerState::idle();
+    state.mark_loaded("edge-track-26");
+    state.mark_paused();
+
+    let next =
+        pipeline.route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Stop);
+    let snapshot = pipeline.state();
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
+    assert_eq!(next.active_track_id.as_deref(), Some("edge-track-26"));
+    assert_eq!(
+        snapshot.output_status.last_error.as_deref(),
+        Some("unsupported operation: native pipeline worker command stop is not implemented yet")
+    );
+}
+
+#[test]
+fn route_play_from_paused_moves_to_playing_phase() {
+    let mut pipeline = NativePipeline::new();
+    let mut state = PlaybackWorkerState::idle();
+    state.mark_loaded("edge-track-27");
+    state.mark_paused();
+
+    let next =
+        pipeline.route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Play);
+    let snapshot = pipeline.state();
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
+    assert_eq!(next.active_track_id.as_deref(), Some("edge-track-27"));
+    assert_eq!(
+        snapshot.output_status.last_error.as_deref(),
+        Some("unsupported operation: native pipeline worker command play is not implemented yet")
+    );
+}
+
+#[test]
+fn route_resume_from_paused_moves_to_playing_phase() {
+    let mut pipeline = NativePipeline::new();
+    let mut state = PlaybackWorkerState::idle();
+    state.mark_loaded("edge-track-28");
+    state.mark_paused();
+
+    let next =
+        pipeline.route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Resume);
+    let snapshot = pipeline.state();
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
+    assert_eq!(next.active_track_id.as_deref(), Some("edge-track-28"));
+    assert_eq!(
+        snapshot.output_status.last_error.as_deref(),
+        Some("unsupported operation: native pipeline worker command resume is not implemented yet")
+    );
+}
+
+#[test]
+fn route_seek_from_paused_keeps_paused_phase() {
+    let mut pipeline = NativePipeline::new();
+    let mut state = PlaybackWorkerState::idle();
+    state.mark_loaded("edge-track-29");
+    state.mark_paused();
+
+    let next = pipeline.route_worker_command_record_runtime_error(
+        &state,
+        &PlaybackWorkerCommand::Seek { position_ms: 555 },
+    );
+    let snapshot = pipeline.state();
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Paused);
+    assert_eq!(next.active_track_id.as_deref(), Some("edge-track-29"));
+    assert_eq!(
+        snapshot.output_status.last_error.as_deref(),
+        Some("unsupported operation: native pipeline worker command seek is not implemented yet")
+    );
+}
+
+#[test]
+fn route_shutdown_from_paused_moves_to_stopped_phase() {
+    let mut pipeline = NativePipeline::new();
+    let mut state = PlaybackWorkerState::idle();
+    state.mark_loaded("edge-track-30");
+    state.mark_paused();
+
+    let next = pipeline
+        .route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Shutdown);
+    let snapshot = pipeline.state();
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
+    assert_eq!(next.active_track_id.as_deref(), Some("edge-track-30"));
+    assert_eq!(
+        snapshot.output_status.last_error.as_deref(),
+        Some(
+            "unsupported operation: native pipeline worker command shutdown is not implemented yet"
+        )
+    );
+}
+
+#[test]
+fn route_stop_from_playing_moves_to_stopped_phase() {
+    let mut pipeline = NativePipeline::new();
+    let mut state = PlaybackWorkerState::idle();
+    state.mark_loaded("edge-track-31");
+    state.mark_playing();
+
+    let next =
+        pipeline.route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Stop);
+    let snapshot = pipeline.state();
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
+    assert_eq!(next.active_track_id.as_deref(), Some("edge-track-31"));
+    assert_eq!(
+        snapshot.output_status.last_error.as_deref(),
+        Some("unsupported operation: native pipeline worker command stop is not implemented yet")
+    );
+}
+
+#[test]
+fn route_shutdown_from_playing_moves_to_stopped_phase() {
+    let mut pipeline = NativePipeline::new();
+    let mut state = PlaybackWorkerState::idle();
+    state.mark_loaded("edge-track-32");
+    state.mark_playing();
+
+    let next = pipeline
+        .route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Shutdown);
+    let snapshot = pipeline.state();
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
+    assert_eq!(next.active_track_id.as_deref(), Some("edge-track-32"));
+    assert_eq!(
+        snapshot.output_status.last_error.as_deref(),
+        Some(
+            "unsupported operation: native pipeline worker command shutdown is not implemented yet"
+        )
+    );
+}
