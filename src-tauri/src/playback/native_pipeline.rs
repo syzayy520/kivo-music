@@ -7,6 +7,8 @@ use super::decoder_session::DecoderSession;
 use super::errors::{PlaybackError, PlaybackResult};
 use super::output::{AudioOutputFrame, OutputRuntimeStatus, OutputSettings};
 use super::playback_worker_command::PlaybackWorkerCommand;
+use super::playback_worker_state::PlaybackWorkerState;
+use super::playback_worker_transition;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct NativePipelineState {
@@ -109,6 +111,16 @@ impl NativePipeline {
         Err(PlaybackError::UnsupportedOperation(format!(
             "native pipeline worker command {operation} is not implemented yet"
         )))
+    }
+
+    pub fn map_worker_state(
+        &self,
+        state: &PlaybackWorkerState,
+        command: &PlaybackWorkerCommand,
+    ) -> PlaybackWorkerState {
+        let mut next = state.clone();
+        playback_worker_transition::apply_command(&mut next, command);
+        next
     }
 
     pub fn start(&mut self) -> PlaybackResult<()> {

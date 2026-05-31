@@ -5,6 +5,7 @@ use super::errors::PlaybackError;
 use super::native_pipeline::NativePipeline;
 use super::output::{AudioOutputFrame, OutputRuntimeStatus, OutputSettings};
 use super::playback_worker_command::PlaybackWorkerCommand;
+use super::playback_worker_state::PlaybackWorkerState;
 use super::types::{PlaybackTrack, TrackId};
 
 fn request() -> AudioDecoderOpenRequest {
@@ -226,4 +227,16 @@ fn worker_commands_are_typed_unsupported() {
     for (command, operation) in commands {
         assert_worker_unsupported(pipeline.handle_worker_command(&command), operation);
     }
+}
+
+#[test]
+fn map_worker_state_routes_transition_without_runtime_side_effects() {
+    let pipeline = NativePipeline::new();
+    let state = PlaybackWorkerState::idle();
+    let command = PlaybackWorkerCommand::Play;
+
+    let next = pipeline.map_worker_state(&state, &command);
+
+    assert_eq!(next.phase, super::playback_worker_state::PlaybackWorkerPhase::Playing);
+    assert_eq!(state.phase, super::playback_worker_state::PlaybackWorkerPhase::Idle);
 }
