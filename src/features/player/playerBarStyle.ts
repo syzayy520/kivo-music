@@ -36,4 +36,12 @@ export const playerBarStyle: PlayerBarStyle = {
   '--km-player-timebar-gap': `${playerTokens.timebarGap}px`,
   '--km-player-timebar-font-size': `${playerTokens.timebarFontSize}px`,
   '--km-player-progress-height': `${playerTokens.progressHeight}px`,
+  '--km-player-track-info-art': `${playerTokens.trackInfoArtSize}px`,
+  '--km-player-track-info-gap': `${playerTokens.trackInfoGap}px`,
+  '--km-player-track-info-art-radius': `${playerTokens.trackInfoArtRadius}px`,
+  '--km-player-track-info-title-size': `${playerTokens.trackInfoTitleFontSize}px`,
+  '--km-player-track-info-artist-top': `${playerTokens.trackInfoArtistTopSpace}px`,
+  '--km-player-track-info-artist-size': `${playerTokens.trackInfoArtistFontSize}px`,
+  '--km-player-track-info-actions-gap': `${playerTokens.trackInfoActionsGap}px`,
+  '--km-player-track-info-action-size': `${playerTokens.trackInfoActionSize}px`,
 }
