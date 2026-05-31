@@ -8,4 +8,6 @@ export const appShellStyle = {
   '--km-shell-sidebar': `${shellTokens.sidebarWidth}px`,
   '--km-shell-sidebar-compact': `${shellTokens.sidebarCompactWidth}px`,
   '--km-shell-stage-bottom': `${shellTokens.stageBottomSpace}px`,
+  '--km-shell-stage-scrollbar-width': `${shellTokens.stageScrollbarWidth}px`,
+  '--km-shell-stage-scrollbar-thumb-border': `${shellTokens.stageScrollbarThumbBorder}px`,
 } as CSSProperties
