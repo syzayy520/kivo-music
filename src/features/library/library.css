@@ -28,28 +28,6 @@
   margin-bottom: var(--km-library-stats-bottom, 22px);
 }
 
-.km-library-stat {
-  min-width: 0;
-  padding: var(--km-library-stat-padding, 14px);
-  border: 1px solid var(--km-library-stat-border-color, rgba(255, 255, 255, 0.07));
-  border-radius: var(--km-library-stat-radius, 16px);
-  background: var(--km-library-stat-bg, rgba(255, 255, 255, 0.035));
-}
-
-.km-library-stat strong,
-.km-library-stat span {
-  display: block;
-}
-
-.km-library-stat strong {
-  font-size: var(--km-library-stat-value-size, clamp(20px, 2.2vw, 24px));
-  letter-spacing: var(--km-library-stat-value-letter-spacing, -0.04em);
-}
-
-.km-library-stat span {
-  color: var(--km-muted);
-}
-
 .km-library-shelf-head h3 {
   margin: 0 0 12px;
   font-size: 18px;
