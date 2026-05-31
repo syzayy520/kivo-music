@@ -917,3 +917,24 @@ fn route_load_records_runtime_unsupported_context() {
         Some("unsupported operation: native pipeline worker command load is not implemented yet")
     );
 }
+
+#[test]
+fn route_load_from_playing_records_runtime_unsupported_context() {
+    let mut pipeline = NativePipeline::new();
+    let mut state = PlaybackWorkerState::idle();
+    state.mark_loaded("edge-before-load-ctx-1");
+    state.mark_playing();
+    let command = PlaybackWorkerCommand::Load {
+        track: edge_track("edge-load-ctx-1"),
+    };
+
+    let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
+    let snapshot = pipeline.state();
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Loaded);
+    assert_eq!(next.active_track_id.as_deref(), Some("edge-load-ctx-1"));
+    assert_eq!(
+        snapshot.output_status.last_error.as_deref(),
+        Some("unsupported operation: native pipeline worker command load is not implemented yet")
+    );
+}
