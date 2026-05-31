@@ -1,0 +1,43 @@
+use super::native_pipeline::NativePipeline;
+use super::playback_worker_command::PlaybackWorkerCommand;
+use super::playback_worker_state::{PlaybackWorkerPhase, PlaybackWorkerState};
+
+#[test]
+fn route_seek_from_playing_keeps_playing_phase() {
+    let mut pipeline = NativePipeline::new();
+    let mut state = PlaybackWorkerState::idle();
+    state.mark_loaded("edge-track-1");
+    state.mark_playing();
+
+    let next = pipeline.route_worker_command_record_runtime_error(
+        &state,
+        &PlaybackWorkerCommand::Seek { position_ms: 9_999 },
+    );
+    let snapshot = pipeline.state();
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
+    assert_eq!(next.active_track_id.as_deref(), Some("edge-track-1"));
+    assert_eq!(
+        snapshot.output_status.last_error.as_deref(),
+        Some("unsupported operation: native pipeline worker command seek is not implemented yet")
+    );
+}
+
+#[test]
+fn route_play_from_playing_keeps_playing_phase() {
+    let mut pipeline = NativePipeline::new();
+    let mut state = PlaybackWorkerState::idle();
+    state.mark_loaded("edge-track-2");
+    state.mark_playing();
+
+    let next =
+        pipeline.route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Play);
+    let snapshot = pipeline.state();
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
+    assert_eq!(next.active_track_id.as_deref(), Some("edge-track-2"));
+    assert_eq!(
+        snapshot.output_status.last_error.as_deref(),
+        Some("unsupported operation: native pipeline worker command play is not implemented yet")
+    );
+}
