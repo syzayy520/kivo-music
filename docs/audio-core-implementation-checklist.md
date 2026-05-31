@@ -8,6 +8,53 @@ Kivo's long-term main playback core is **Kivo Native Engine**.
 
 The architecture must be designed for a self-owned native engine from the start. mpv/libmpv is a compatibility backend, FFmpeg/ffprobe is a media probe layer, and WASAPI is the Windows output layer.
 
+## Execution status baseline (2026-05-31)
+
+This section tracks progress against the original execution queue without changing the core roadmap.
+
+### Completed tickets
+
+1. KIVO-RUSTFMT-P0-000B
+2. KIVO-AUDIO-BUFFER-P0-016C-CLOSE
+3. KIVO-WAV-DECODER-SPLIT-P0-016E
+4. KIVO-DECODER-SESSION-P0-017A
+5. KIVO-DECODER-RUNTIME-STATE-P0-017B
+6. KIVO-OUTPUT-FRAME-P0-018A
+7. KIVO-OUTPUT-SINK-BOUNDARY-P0-018B
+8. KIVO-PLAYBACK-WORKER-COMMAND-P0-019A
+9. KIVO-PLAYBACK-WORKER-STATE-P0-019B
+10. KIVO-NATIVE-PIPELINE-BOUNDARY-P0-020A
+11. KIVO-COMMANDS-THIN-WRAPPER-P0-021B
+12. KIVO-MANAGER-QUEUE-FACADE-P0-021C
+13. KIVO-WORKER-COMMAND-STATE-MAPPING-P0-019C
+14. KIVO-DECODER-PIPELINE-GLUE-P0-005A
+15. KIVO-OUTPUT-PIPELINE-GLUE-P0-005B
+16. KIVO-NATIVE-ENGINE-PIPELINE-WIRING-P0-005C
+17. KIVO-AUDIO-EVENT-DISPATCH-P0-008A
+18. KIVO-AUDIO-EVENT-BUS-P0-008B
+19. KIVO-AUDIO-EVENT-RESULT-MAP-P0-008C
+20. KIVO-AUDIO-EVENT-PROGRESS-BRIDGE-P0-008D
+
+### Remaining original audit/check tickets
+
+1. KIVO-VERIFY-RECENT-REMOTE-P0-000 (read-only verification ticket)
+2. KIVO-DECODER-REQUEST-P0-016B-CHECK
+3. KIVO-WAV-DECODER-AUDIT-P0-016D (read-only audit ticket)
+4. KIVO-MANAGER-COMMANDS-AUDIT-P0-021A (read-only audit ticket)
+
+### Next batch execution order (10-ticket acceleration mode)
+
+1. KIVO-PLAN-AUDIT-P0-000F (this documentation baseline ticket)
+2. KIVO-DECODER-REQUEST-CHECK-P0-016B-R1
+3. KIVO-WAV-DECODER-AUDIT-P0-016D-R1
+4. KIVO-MANAGER-COMMANDS-AUDIT-P0-021A-R1
+5. KIVO-AUDIO-EVENTS-P0-008E
+6. KIVO-AUDIO-EVENTS-P0-008F
+7. KIVO-AUDIO-NATIVE-MIN-PLAYBACK-P0-005D
+8. KIVO-AUDIO-NATIVE-MIN-PLAYBACK-P0-005E
+9. KIVO-AUDIO-NATIVE-MIN-PLAYBACK-P0-005F
+10. KIVO-AUDIO-QUEUE-P0-009A
+
 ## Non-negotiable principles
 
 1. Kivo Native Engine is the primary long-term playback target.
