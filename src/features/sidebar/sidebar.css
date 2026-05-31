@@ -2,7 +2,7 @@
   min-height: 0;
   grid-column: 1;
   grid-row: 1 / 4;
-  padding: 22px 14px;
+  padding: var(--km-sidebar-padding-block, 22px) var(--km-sidebar-padding-inline, 14px);
   border-right: 1px solid var(--km-border);
   background: var(--km-sidebar-bg);
   backdrop-filter: blur(26px);
@@ -11,16 +11,16 @@
 .km-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 26px;
+  gap: var(--km-sidebar-brand-gap, 10px);
+  margin-bottom: var(--km-sidebar-brand-bottom, 26px);
 }
 
 .km-brand > span {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
+  width: var(--km-sidebar-brand-mark, 32px);
+  height: var(--km-sidebar-brand-mark, 32px);
+  border-radius: var(--km-sidebar-brand-radius, 10px);
   color: #fff;
   background: linear-gradient(135deg, var(--km-red), var(--km-pink));
   font-weight: 900;
@@ -48,11 +48,11 @@
 
 .km-nav {
   display: grid;
-  gap: 18px;
+  gap: var(--km-sidebar-nav-gap, 18px);
 }
 
 .km-nav p {
-  margin: 0 0 7px;
+  margin: 0 0 var(--km-sidebar-nav-label-bottom, 7px);
   font-size: 10px;
   font-weight: 750;
   letter-spacing: 0.1em;
@@ -61,8 +61,8 @@
 
 .km-nav a {
   margin: 1px 0;
-  padding: 8px 10px;
-  border-radius: 10px;
+  padding: var(--km-sidebar-nav-item-block, 8px) var(--km-sidebar-nav-item-inline, 10px);
+  border-radius: var(--km-sidebar-nav-item-radius, 10px);
   font-size: 13px;
   text-decoration: none;
 }
