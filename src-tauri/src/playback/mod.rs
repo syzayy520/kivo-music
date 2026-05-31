@@ -9,6 +9,7 @@ pub mod clock;
 pub mod commands;
 pub mod core_profile;
 pub mod decoder;
+pub mod decoder_request;
 pub mod engine;
 pub mod errors;
 pub mod events;
