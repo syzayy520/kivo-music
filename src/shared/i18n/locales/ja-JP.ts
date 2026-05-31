@@ -5,6 +5,7 @@ export const jaJP: TranslationDictionary = {
   'common.unknownArtist': '不明なアーティスト',
   'sidebar.brandName': 'Kivo Music',
   'sidebar.brandTagline': 'ローカル音楽プレイヤー',
+  'sidebar.ariaLabel': 'ナビゲーション',
   'sidebar.group.forYou': 'あなたへ',
   'sidebar.group.library': 'ライブラリ',
   'sidebar.group.system': 'システム',
