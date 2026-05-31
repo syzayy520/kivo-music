@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::queue::PlaybackQueue;
+use super::types::RepeatMode;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum QueueStepReason {
@@ -30,7 +31,7 @@ pub fn decide_queue_step(queue: &PlaybackQueue, reason: QueueStepReason) -> Queu
             target_index: Some(current.saturating_sub(1)),
             reached_end: false,
         },
-        QueueStepReason::Next | QueueStepReason::NaturalAdvance => {
+        QueueStepReason::Next => {
             let next = current + 1;
 
             if next < queue.items.len() {
@@ -45,5 +46,39 @@ pub fn decide_queue_step(queue: &PlaybackQueue, reason: QueueStepReason) -> Queu
                 }
             }
         }
+        QueueStepReason::NaturalAdvance => match queue.repeat_mode {
+            RepeatMode::One => QueueStepDecision {
+                target_index: Some(current),
+                reached_end: false,
+            },
+            RepeatMode::All => {
+                let next = current + 1;
+                if next < queue.items.len() {
+                    QueueStepDecision {
+                        target_index: Some(next),
+                        reached_end: false,
+                    }
+                } else {
+                    QueueStepDecision {
+                        target_index: Some(0),
+                        reached_end: false,
+                    }
+                }
+            }
+            RepeatMode::Off => {
+                let next = current + 1;
+                if next < queue.items.len() {
+                    QueueStepDecision {
+                        target_index: Some(next),
+                        reached_end: false,
+                    }
+                } else {
+                    QueueStepDecision {
+                        target_index: None,
+                        reached_end: true,
+                    }
+                }
+            }
+        },
     }
 }

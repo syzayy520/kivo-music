@@ -95,6 +95,9 @@ mod output_frame_tests;
 mod output_sink_tests;
 
 #[cfg(test)]
+mod queue_policy_tests;
+
+#[cfg(test)]
 mod playback_worker_command_tests;
 
 #[cfg(test)]
