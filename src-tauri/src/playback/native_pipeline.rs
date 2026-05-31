@@ -137,6 +137,18 @@ impl NativePipeline {
         (next, runtime)
     }
 
+    pub fn route_worker_command_record_runtime_error(
+        &mut self,
+        state: &PlaybackWorkerState,
+        command: &PlaybackWorkerCommand,
+    ) -> PlaybackWorkerState {
+        let (next, runtime) = self.route_worker_command(state, command);
+        if let Err(error) = runtime {
+            self.state.output_status.last_error = Some(error.to_string());
+        }
+        next
+    }
+
     pub fn start(&mut self) -> PlaybackResult<()> {
         Err(PlaybackError::UnsupportedOperation(
             "native pipeline start is not implemented yet".to_string(),

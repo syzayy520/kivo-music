@@ -55,3 +55,19 @@ fn route_worker_command_keeps_operation_context() {
         Ok(_) => panic!("expected unsupported operation, got success"),
     }
 }
+
+#[test]
+fn route_worker_command_records_runtime_error_context() {
+    let mut pipeline = NativePipeline::new();
+    let state = PlaybackWorkerState::idle();
+    let command = PlaybackWorkerCommand::Seek { position_ms: 88 };
+
+    let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
+    let snapshot = pipeline.state();
+
+    assert_eq!(next.phase, PlaybackWorkerPhase::Idle);
+    assert_eq!(
+        snapshot.output_status.last_error.as_deref(),
+        Some("unsupported operation: native pipeline worker command seek is not implemented yet")
+    );
+}
