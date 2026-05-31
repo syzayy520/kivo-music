@@ -1,5 +1,5 @@
 import { libraryOverviewTokens } from './tokens/libraryOverviewTokens'
-import { libraryStatTokens } from './tokens/libraryStatTokens'
+import { libraryStatsTokens } from './tokens/libraryStatsTokens'
 
 export const libraryTokens = {
   overviewMargin: libraryOverviewTokens.margin,
@@ -14,15 +14,9 @@ export const libraryTokens = {
   titleBottomSpace: libraryOverviewTokens.titleBottomSpace,
   titleFontSize: libraryOverviewTokens.titleFontSize,
   titleTracking: libraryOverviewTokens.titleTracking,
-  statsColumns: libraryStatTokens.columns,
-  statsGap: libraryStatTokens.gap,
-  statsBottomSpace: libraryStatTokens.bottomSpace,
-  statPadding: libraryStatTokens.padding,
-  statBorderColor: libraryStatTokens.borderColor,
-  statRadius: libraryStatTokens.radius,
-  statBackground: libraryStatTokens.background,
-  statValueFontSize: libraryStatTokens.valueFontSize,
-  statValueTracking: libraryStatTokens.valueTracking,
+  statsColumns: libraryStatsTokens.columns,
+  statsGap: libraryStatsTokens.gap,
+  statsBottomSpace: libraryStatsTokens.bottomSpace,
 } as const
 
 export type LibraryTokens = typeof libraryTokens
