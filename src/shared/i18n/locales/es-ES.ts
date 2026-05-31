@@ -29,6 +29,8 @@ export const esES: TranslationDictionary = {
   'home.topPicks.lateNight.description': 'Selecciones locales nocturnas',
   'home.topPicks.focus.description': 'Flujo para trabajar y concentrarse',
   'home.topPicks.unwind.description': 'Escucha tranquila de fin de semana',
+  'home.hero.play': 'Reproducir',
+  'home.hero.viewAlbum': 'Ver álbum',
   'home.shelves.recentlyPlayed.eyebrow': 'Reproducido recientemente',
   'home.shelves.recentlyPlayed.title': 'Seguir escuchando.',
   'home.shelves.recentlyAdded.eyebrow': 'Agregado recientemente',
