@@ -35,3 +35,6 @@ pub mod windows_audio;
 
 #[cfg(test)]
 mod activity_log_tests;
+
+#[cfg(test)]
+mod lifecycle_event_tests;
