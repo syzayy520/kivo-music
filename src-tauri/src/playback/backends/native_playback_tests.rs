@@ -9,7 +9,8 @@ fn assert_unsupported<T>(result: Result<T, PlaybackError>, operation: &str) {
                 format!("kivo core audio native playback {operation} is not implemented yet")
             );
         }
-        other => panic!("expected unsupported operation, got {other:?}"),
+        Err(error) => panic!("expected unsupported operation, got {error:?}"),
+        Ok(_) => panic!("expected unsupported operation, got success"),
     }
 }
 
