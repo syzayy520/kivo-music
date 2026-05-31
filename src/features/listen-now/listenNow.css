@@ -70,18 +70,13 @@
   color: #fff;
 }
 
-.km-top-pick-copy p,
-.km-shelf-head p {
+.km-top-pick-copy p {
   margin: 0;
-  color: var(--km-muted);
+  color: rgba(255, 255, 255, 0.78);
   font-size: 10px;
   font-weight: 780;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-.km-top-pick-copy p {
-  color: rgba(255, 255, 255, 0.78);
 }
 
 .km-top-pick-copy h2 {
@@ -113,29 +108,6 @@
   color: rgba(21, 18, 22, 0.9);
   background: rgba(255, 255, 255, 0.76);
   box-shadow: 0 8px 18px rgba(39, 30, 43, 0.14);
-}
-
-.km-shelf-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--km-listen-shelf-head-gap, 10px);
-  margin-bottom: var(--km-listen-shelf-head-bottom, 10px);
-}
-
-.km-shelf-head h3 {
-  margin: 3px 0 0;
-  font-size: 18px;
-  letter-spacing: -0.035em;
-}
-
-.km-shelf-head button {
-  border: 1px solid var(--km-border);
-  border-radius: 999px;
-  color: var(--km-text);
-  background: var(--km-surface-strong);
-  padding: var(--km-listen-shelf-button-y, 8px) var(--km-listen-shelf-button-x, 14px);
-  box-shadow: none;
 }
 
 .km-album-shelf:last-child {
@@ -209,10 +181,4 @@
   font-size: 11px;
   font-style: normal;
   line-height: 1.3;
-}
-
-@media (prefers-color-scheme: dark) {
-  .km-shelf-head button {
-    background: rgba(255, 255, 255, 0.07);
-  }
 }
