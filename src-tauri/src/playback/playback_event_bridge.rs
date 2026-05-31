@@ -27,6 +27,16 @@ impl PlaybackEventBridge {
         self.flush_into(activity);
     }
 
+    pub fn record_progress_from_state(
+        &mut self,
+        activity: &PlaybackActivityLogState,
+        state: &PlaybackState,
+        now_ms: u64,
+    ) {
+        self.bus.emit_progress_from_state(state, now_ms);
+        self.flush_into(activity);
+    }
+
     fn flush_into(&mut self, activity: &PlaybackActivityLogState) {
         for event in self.bus.drain_events() {
             activity.append(event);

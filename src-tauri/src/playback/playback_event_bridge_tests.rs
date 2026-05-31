@@ -29,3 +29,21 @@ fn track_result_records_error_event() {
     assert_eq!(snapshot.entry_count, 1);
     assert!(matches!(snapshot.entries[0].event, PlaybackEvent::Error(_)));
 }
+
+#[test]
+fn progress_from_state_is_throttled() {
+    let mut bridge = PlaybackEventBridge::default();
+    let activity = PlaybackActivityLogState::default();
+    let mut state = PlaybackState::default();
+    state.timeline.position_ms = 100;
+    state.timeline.duration_ms = Some(1_000);
+
+    bridge.record_progress_from_state(&activity, &state, 1_000);
+    state.timeline.position_ms = 200;
+    bridge.record_progress_from_state(&activity, &state, 1_200);
+    state.timeline.position_ms = 300;
+    bridge.record_progress_from_state(&activity, &state, 1_500);
+
+    let snapshot = activity.snapshot();
+    assert_eq!(snapshot.entry_count, 2);
+}
