@@ -1,0 +1,35 @@
+.km-recently-added {
+  display: grid;
+  grid-auto-columns: clamp(
+    var(--km-recently-added-card-min, 132px),
+    var(--km-recently-added-card-preferred, 16vw),
+    var(--km-recently-added-card-max, 176px)
+  );
+  grid-auto-flow: column;
+  gap: var(--km-recently-added-gap, 14px);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding-bottom: var(--km-recently-added-bottom-padding, 8px);
+}
+
+.km-recently-added-art {
+  aspect-ratio: 1;
+  border-radius: var(--km-recently-added-art-radius, 14px);
+  margin-bottom: var(--km-recently-added-art-bottom, 10px);
+}
+
+.km-recently-added-card strong,
+.km-recently-added-card span {
+  display: block;
+}
+
+.km-recently-added-card strong {
+  font-size: var(--km-recently-added-title-size, 13px);
+}
+
+.km-recently-added-card span {
+  margin-top: var(--km-recently-added-quality-top, 4px);
+  color: var(--km-muted);
+  font-size: var(--km-recently-added-quality-size, 12px);
+  line-height: var(--km-recently-added-quality-line-height, 1.35);
+}
