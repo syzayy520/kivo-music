@@ -1,6 +1,9 @@
 use tauri::State;
 
 use super::activity_log::MediaProbeActivityLogState;
+use super::activity_logger::{
+    record_probe_failed, record_probe_started, record_probe_succeeded,
+};
 use super::errors::MediaProbeError;
 use super::event::MediaProbeEvent;
 use super::service::MediaProbeServiceState;
@@ -39,19 +42,15 @@ pub fn media_probe_file(
 ) -> Result<MediaProbeResult, MediaProbeError> {
     let backend_name = service.backend_name().to_string();
 
-    activity_log.record(MediaProbeEvent::started(path.clone(), backend_name.clone()));
+    record_probe_started(&activity_log, &path, &backend_name);
 
     match service.probe(&path) {
         Ok(result) => {
-            activity_log.record(MediaProbeEvent::succeeded(path, backend_name));
+            record_probe_succeeded(&activity_log, &path, &backend_name);
             Ok(result)
         }
         Err(error) => {
-            activity_log.record(MediaProbeEvent::failed(
-                path,
-                backend_name,
-                error.to_string(),
-            ));
+            record_probe_failed(&activity_log, &path, &backend_name, &error);
             Err(error)
         }
     }
