@@ -1,5 +1,6 @@
 pub mod activity_log;
 pub mod activity_recorder;
+pub mod activity_snapshot;
 pub mod backend_status;
 pub mod backends;
 pub mod capabilities;
