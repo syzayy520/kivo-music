@@ -2,9 +2,9 @@ use std::sync::Mutex;
 
 use super::backends::{backend_types::PlaybackBackendDescriptor, mpv, native::KivoNativeEngine};
 use super::engine::PlaybackEngine;
-use super::errors::{PlaybackError, PlaybackResult};
+use super::errors::PlaybackResult;
+use super::manager_queue;
 use super::queue::PlaybackQueue;
-use super::queue_policy::{decide_queue_step, QueueStepReason};
 use super::state::PlaybackState;
 use super::types::{PlaybackTrack, RepeatMode};
 
@@ -41,53 +41,34 @@ impl PlaybackManager {
     }
 
     pub fn queue_append(&mut self, track: PlaybackTrack) -> PlaybackQueue {
-        self.queue.append(track);
-        self.queue.clone()
+        manager_queue::append(&mut self.queue, track)
     }
 
     pub fn queue_remove(&mut self, index: usize) -> PlaybackResult<PlaybackQueue> {
-        self.queue.remove(index)?;
-        Ok(self.queue.clone())
+        manager_queue::remove(&mut self.queue, index)
     }
 
     pub fn queue_set_repeat_mode(&mut self, repeat_mode: RepeatMode) -> PlaybackQueue {
-        self.queue.repeat_mode = repeat_mode;
-        self.queue.clone()
+        manager_queue::set_repeat_mode(&mut self.queue, repeat_mode)
     }
 
     pub fn queue_set_shuffle(&mut self, shuffle: bool) -> PlaybackQueue {
-        self.queue.shuffle = shuffle;
-        self.queue.clone()
+        manager_queue::set_shuffle(&mut self.queue, shuffle)
     }
 
     pub fn queue_set_current(&mut self, index: usize) -> PlaybackResult<PlaybackState> {
-        self.queue.set_current_index(index)?;
-        let track = self
-            .queue
-            .current_track()
-            .ok_or_else(|| PlaybackError::Queue("queue has no current track".to_string()))?;
-
+        let track = manager_queue::select_track(&mut self.queue, index)?;
         self.load(track)
     }
 
     pub fn queue_next(&mut self) -> PlaybackResult<PlaybackState> {
-        let decision = decide_queue_step(&self.queue, QueueStepReason::Next);
-
-        let index = decision
-            .target_index
-            .ok_or_else(|| PlaybackError::Queue("queue reached end".to_string()))?;
-
-        self.queue_set_current(index)
+        let track = manager_queue::select_next_track(&mut self.queue)?;
+        self.load(track)
     }
 
     pub fn queue_previous(&mut self) -> PlaybackResult<PlaybackState> {
-        let decision = decide_queue_step(&self.queue, QueueStepReason::Previous);
-
-        let index = decision
-            .target_index
-            .ok_or_else(|| PlaybackError::Queue("queue has no previous track".to_string()))?;
-
-        self.queue_set_current(index)
+        let track = manager_queue::select_previous_track(&mut self.queue)?;
+        self.load(track)
     }
 
     pub fn load(&mut self, track: PlaybackTrack) -> PlaybackResult<PlaybackState> {

@@ -26,6 +26,7 @@ pub mod lifecycle_event;
 pub mod lifecycle_recorder;
 pub mod lyrics_clock;
 pub mod manager;
+pub mod manager_queue;
 pub mod metadata;
 pub mod native_output;
 pub mod native_pipeline;
