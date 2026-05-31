@@ -36,6 +36,14 @@ impl PlaybackEventBus {
             .emit_progress_at(position_ms, duration_ms, now_ms);
     }
 
+    pub fn emit_progress_from_state(&mut self, state: &PlaybackState, now_ms: u64) {
+        self.emit_progress_at(
+            state.timeline.position_ms,
+            state.timeline.duration_ms,
+            now_ms,
+        );
+    }
+
     pub fn emit_state_result(&mut self, result: &PlaybackResult<PlaybackState>) {
         match result {
             Ok(state) => self.emit_state_changed(state.clone()),

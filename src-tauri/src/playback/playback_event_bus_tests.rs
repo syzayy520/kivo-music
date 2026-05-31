@@ -57,3 +57,23 @@ fn track_result_maps_error_to_error_event() {
     assert_eq!(emitted.len(), 1);
     assert!(matches!(emitted[0], super::events::PlaybackEvent::Error(_)));
 }
+
+#[test]
+fn progress_can_be_emitted_from_state() {
+    let mut bus = PlaybackEventBus::default();
+    let mut state = PlaybackState::default();
+    state.timeline.position_ms = 640;
+    state.timeline.duration_ms = Some(2_400);
+
+    bus.emit_progress_from_state(&state, 1_000);
+    let emitted = bus.flush_to_activity();
+
+    assert_eq!(emitted.len(), 1);
+    assert!(matches!(
+        emitted[0],
+        super::events::PlaybackEvent::Progress {
+            position_ms: 640,
+            duration_ms: Some(2_400)
+        }
+    ));
+}
