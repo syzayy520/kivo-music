@@ -1,3 +1,5 @@
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -13,6 +15,7 @@ pub struct MediaProbeEvent {
     pub path: String,
     pub backend_name: String,
     pub message: Option<String>,
+    pub timestamp_ms: u64,
 }
 
 impl MediaProbeEvent {
@@ -22,6 +25,7 @@ impl MediaProbeEvent {
             path: path.into(),
             backend_name: backend_name.into(),
             message: None,
+            timestamp_ms: current_timestamp_ms(),
         }
     }
 
@@ -31,6 +35,7 @@ impl MediaProbeEvent {
             path: path.into(),
             backend_name: backend_name.into(),
             message: None,
+            timestamp_ms: current_timestamp_ms(),
         }
     }
 
@@ -44,6 +49,14 @@ impl MediaProbeEvent {
             path: path.into(),
             backend_name: backend_name.into(),
             message: Some(message.into()),
+            timestamp_ms: current_timestamp_ms(),
         }
     }
+}
+
+fn current_timestamp_ms() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_millis().min(u128::from(u64::MAX)) as u64)
+        .unwrap_or(0)
 }
