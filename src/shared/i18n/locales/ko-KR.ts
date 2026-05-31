@@ -5,6 +5,7 @@ export const koKR: TranslationDictionary = {
   'common.unknownArtist': '알 수 없는 아티스트',
   'sidebar.brandName': 'Kivo Music',
   'sidebar.brandTagline': '로컬 음악 플레이어',
+  'sidebar.ariaLabel': '탐색',
   'sidebar.group.forYou': '추천',
   'sidebar.group.library': '라이브러리',
   'sidebar.group.system': '시스템',
