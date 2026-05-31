@@ -1,6 +1,9 @@
 use super::super::capabilities::PlaybackCapabilities;
+use super::super::decoder::AudioStreamInfo;
+use super::super::decoder_runtime_state::DecoderRuntimeState;
 use super::super::engine::PlaybackEngine;
 use super::super::errors::{PlaybackError, PlaybackResult};
+use super::super::native_pipeline::NativePipeline;
 use super::super::state::PlaybackState;
 use super::super::types::PlaybackTrack;
 use super::backend_types::{PlaybackBackendDescriptor, PlaybackBackendKind};
@@ -20,6 +23,7 @@ pub fn descriptor() -> PlaybackBackendDescriptor {
 pub struct KivoNativeEngine {
     descriptor: PlaybackBackendDescriptor,
     playback: KivoNativePlayback,
+    pipeline: NativePipeline,
     state: PlaybackState,
 }
 
@@ -28,6 +32,7 @@ impl KivoNativeEngine {
         Self {
             descriptor: descriptor(),
             playback: KivoNativePlayback::new(),
+            pipeline: NativePipeline::new(),
             state: PlaybackState::default(),
         }
     }
@@ -56,6 +61,14 @@ impl PlaybackEngine for KivoNativeEngine {
     }
 
     fn load(&mut self, track: PlaybackTrack) -> PlaybackResult<PlaybackState> {
+        let request = super::super::decoder_request::AudioDecoderOpenRequest::from_track(&track);
+        let stream_info = AudioStreamInfo {
+            sample_rate_hz: 0,
+            channels: 0,
+            sample_format: super::super::decoder::AudioSampleFormat::Float32,
+        };
+        self.pipeline
+            .configure_decoder_open(request, stream_info, 0);
         self.playback.load_track(track);
         self.state.current_track = self.playback.current_track();
         self.state.status = self.playback.current_status();
@@ -103,6 +116,7 @@ impl PlaybackEngine for KivoNativeEngine {
     }
 
     fn seek(&mut self, position_ms: u64) -> PlaybackResult<PlaybackState> {
+        self.pipeline.update_decoder_position(position_ms);
         match self.playback.seek(position_ms) {
             Ok(status) => {
                 self.state.status = status;
@@ -127,6 +141,7 @@ impl PlaybackEngine for KivoNativeEngine {
     }
 
     fn shutdown(&mut self) -> PlaybackResult<()> {
+        self.pipeline.set_decoder_state(DecoderRuntimeState::idle());
         let _ = self.playback.stop();
         Ok(())
     }

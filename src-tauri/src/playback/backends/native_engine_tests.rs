@@ -126,3 +126,23 @@ fn set_muted_updates_state_and_returns_typed_unsupported() {
         Some("kivo core audio set muted is not implemented yet")
     );
 }
+
+#[test]
+fn load_with_track_without_source_path_extension_is_still_typed_unsupported() {
+    let mut engine = KivoNativeEngine::new();
+    let track = PlaybackTrack {
+        id: TrackId("track-no-ext".to_string()),
+        title: "No Ext".to_string(),
+        artist: "Artist".to_string(),
+        source_path: "C:/Music/no_extension".to_string(),
+    };
+
+    let result = engine.load(track);
+
+    match result {
+        Err(PlaybackError::UnsupportedOperation(message)) => {
+            assert_eq!(message, "kivo core audio load is not implemented yet");
+        }
+        other => panic!("expected unsupported operation, got {other:?}"),
+    }
+}
