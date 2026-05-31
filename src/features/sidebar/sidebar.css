@@ -23,7 +23,7 @@
   border-radius: var(--km-sidebar-brand-radius, 10px);
   color: var(--km-sidebar-brand-color);
   background: var(--km-sidebar-brand-bg);
-  font-weight: 900;
+  font-weight: var(--km-sidebar-brand-weight, 900);
 }
 
 .km-brand strong,
@@ -54,8 +54,8 @@
 .km-nav p {
   margin: 0 0 var(--km-sidebar-nav-label-bottom, 7px);
   font-size: var(--km-sidebar-nav-label-size, 10px);
-  font-weight: 750;
-  letter-spacing: 0.1em;
+  font-weight: var(--km-sidebar-nav-label-weight, 750);
+  letter-spacing: var(--km-sidebar-nav-label-letter-spacing, 0.1em);
   text-transform: uppercase;
 }
 
