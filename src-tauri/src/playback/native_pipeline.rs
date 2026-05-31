@@ -1,13 +1,16 @@
 use serde::{Deserialize, Serialize};
 
+use super::decoder::AudioStreamInfo;
 use super::decoder_request::AudioDecoderOpenRequest;
 use super::decoder_runtime_state::DecoderRuntimeState;
+use super::decoder_session::DecoderSession;
 use super::errors::{PlaybackError, PlaybackResult};
 use super::output::{OutputRuntimeStatus, OutputSettings};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct NativePipelineState {
     pub decoder_request: Option<AudioDecoderOpenRequest>,
+    pub decoder_session: Option<DecoderSession>,
     pub decoder_state: DecoderRuntimeState,
     pub output_settings: OutputSettings,
     pub output_status: OutputRuntimeStatus,
@@ -22,6 +25,7 @@ impl Default for NativePipelineState {
     fn default() -> Self {
         Self {
             decoder_request: None,
+            decoder_session: None,
             decoder_state: DecoderRuntimeState::idle(),
             output_settings: OutputSettings::default(),
             output_status: OutputRuntimeStatus::default(),
@@ -40,6 +44,34 @@ impl NativePipeline {
 
     pub fn set_decoder_request(&mut self, request: AudioDecoderOpenRequest) {
         self.state.decoder_request = Some(request);
+    }
+
+    pub fn configure_decoder_open(
+        &mut self,
+        request: AudioDecoderOpenRequest,
+        stream_info: AudioStreamInfo,
+        opened_at_ms: u64,
+    ) {
+        self.state.decoder_state.begin_opening();
+        self.state.decoder_request = Some(request.clone());
+        self.state.decoder_session = Some(DecoderSession::from_open_request(
+            &request,
+            stream_info,
+            opened_at_ms,
+        ));
+        self.state.decoder_state.mark_open();
+    }
+
+    pub fn update_decoder_position(&mut self, position_ms: u64) {
+        if let Some(session) = self.state.decoder_session.as_mut() {
+            session.update_position(position_ms);
+        }
+    }
+
+    pub fn count_decoded_frame(&mut self) {
+        if let Some(session) = self.state.decoder_session.as_mut() {
+            session.count_frame();
+        }
     }
 
     pub fn set_decoder_state(&mut self, state: DecoderRuntimeState) {
