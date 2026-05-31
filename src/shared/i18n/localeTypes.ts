@@ -38,6 +38,8 @@ export type TranslationKey =
   | 'home.topPicks.lateNight.description'
   | 'home.topPicks.focus.description'
   | 'home.topPicks.unwind.description'
+  | 'home.hero.play'
+  | 'home.hero.viewAlbum'
   | 'home.shelves.recentlyPlayed.eyebrow'
   | 'home.shelves.recentlyPlayed.title'
   | 'home.shelves.recentlyAdded.eyebrow'
