@@ -75,7 +75,7 @@ mod platform {
 
     fn format_from_wave_format(format: &WAVEFORMATEX) -> WindowsAudioMixFormat {
         WindowsAudioMixFormat {
-            format_tag: format.wFormatTag.0,
+            format_tag: format.wFormatTag,
             channels: format.nChannels,
             sample_rate: format.nSamplesPerSec,
             bits_per_sample: format.wBitsPerSample,
