@@ -56,6 +56,7 @@ pub mod windows_audio_mix_format;
 pub mod windows_audio_render_client;
 pub mod windows_audio_render_padding;
 pub mod windows_audio_render_session;
+pub mod windows_audio_render_write_plan;
 
 #[cfg(test)]
 mod activity_log_tests;
@@ -143,3 +144,6 @@ mod windows_audio_render_client_tests;
 
 #[cfg(test)]
 mod windows_audio_render_session_tests;
+
+#[cfg(test)]
+mod windows_audio_render_write_plan_tests;
