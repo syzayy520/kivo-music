@@ -36,13 +36,13 @@ mod platform {
     };
     use super::WindowsAudioMixFormat;
     use windows::Win32::Media::Audio::{IAudioClient, WAVEFORMATEX};
-    use windows::Win32::System::Com::CoTaskMemFree;
+    use windows::Win32::System::Com::{CoTaskMemFree, CLSCTX_ALL};
 
     pub fn query_default_windows_mix_format() -> PlaybackResult<Option<WindowsAudioMixFormat>> {
         let _com = WindowsComScope::initialize()?;
         let enumerator = create_device_enumerator()?;
         let device = default_render_endpoint(&enumerator)?;
-        let audio_client: IAudioClient = unsafe { device.Activate(Default::default(), None) }
+        let audio_client: IAudioClient = unsafe { device.Activate(CLSCTX_ALL, None) }
             .map_err(|error| windows_audio_error("activate audio client", error))?;
         let raw_format = unsafe { audio_client.GetMixFormat() }
             .map_err(|error| windows_audio_error("read mix format", error))?;
