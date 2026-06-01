@@ -1,4 +1,4 @@
-import { ListenNow } from '../features/listen-now/ListenNow'
+import { HomeExperienceHost } from '../features/home/HomeExperienceHost'
 import { PlayerBar } from '../features/player/PlayerBar'
 import { Sidebar } from '../features/sidebar/Sidebar'
 import { TopBar } from '../features/top-bar/TopBar'
@@ -13,7 +13,7 @@ export function App() {
       <Sidebar />
       <section className="km-stage">
         <TopBar />
-        <ListenNow />
+        <HomeExperienceHost />
       </section>
       <PlayerBar />
     </main>
