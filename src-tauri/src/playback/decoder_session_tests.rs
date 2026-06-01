@@ -22,6 +22,12 @@ fn stream_info() -> AudioStreamInfo {
     }
 }
 
+fn assert_stream_info(stream: &AudioStreamInfo) {
+    assert_eq!(stream.sample_rate_hz, 44_100);
+    assert_eq!(stream.channels, 2);
+    assert!(matches!(stream.sample_format, AudioSampleFormat::Signed16));
+}
+
 #[test]
 fn from_open_request_builds_session_with_initial_counters() {
     let session = DecoderSession::from_open_request(&open_request(), stream_info(), 1_000);
@@ -31,6 +37,19 @@ fn from_open_request_builds_session_with_initial_counters() {
     assert_eq!(session.opened_at_ms, 1_000);
     assert_eq!(session.last_position_ms, 0);
     assert_eq!(session.decoded_frame_count, 0);
+    assert_stream_info(&session.stream_info);
+}
+
+#[test]
+fn session_keeps_owned_request_values_after_request_changes() {
+    let mut request = open_request();
+    let session = DecoderSession::from_open_request(&request, stream_info(), 1_000);
+
+    request.track_id = "track-10".to_string();
+    request.source_path = "C:/Music/track-10.wav".to_string();
+
+    assert_eq!(session.track_id, "track-9");
+    assert_eq!(session.source_path, "C:/Music/track-9.wav");
 }
 
 #[test]
@@ -38,8 +57,9 @@ fn update_position_replaces_last_position() {
     let mut session = DecoderSession::from_open_request(&open_request(), stream_info(), 2_000);
 
     session.update_position(8_500);
+    session.update_position(4_250);
 
-    assert_eq!(session.last_position_ms, 8_500);
+    assert_eq!(session.last_position_ms, 4_250);
 }
 
 #[test]
@@ -57,6 +77,17 @@ fn count_frame_saturates_at_u64_max() {
     let mut session = DecoderSession::from_open_request(&open_request(), stream_info(), 3_000);
     session.decoded_frame_count = u64::MAX;
 
+    session.count_frame();
+
+    assert_eq!(session.decoded_frame_count, u64::MAX);
+}
+
+#[test]
+fn count_frame_saturates_from_max_minus_one() {
+    let mut session = DecoderSession::from_open_request(&open_request(), stream_info(), 3_000);
+    session.decoded_frame_count = u64::MAX - 1;
+
+    session.count_frame();
     session.count_frame();
 
     assert_eq!(session.decoded_frame_count, u64::MAX);
