@@ -47,6 +47,18 @@ fn state_result_maps_success_to_state_changed() {
 }
 
 #[test]
+fn state_result_maps_error_to_error_event() {
+    let mut bus = PlaybackEventBus::default();
+    let result = Err(PlaybackError::Playback("state failed".to_string()));
+
+    bus.emit_state_result(&result);
+    let emitted = bus.flush_to_activity();
+
+    assert_eq!(emitted.len(), 1);
+    assert!(matches!(emitted[0], super::events::PlaybackEvent::Error(_)));
+}
+
+#[test]
 fn track_result_maps_error_to_error_event() {
     let mut bus = PlaybackEventBus::default();
     let result = Err(PlaybackError::Playback("track failed".to_string()));
@@ -56,6 +68,21 @@ fn track_result_maps_error_to_error_event() {
 
     assert_eq!(emitted.len(), 1);
     assert!(matches!(emitted[0], super::events::PlaybackEvent::Error(_)));
+}
+
+#[test]
+fn track_result_maps_success_to_track_changed() {
+    let mut bus = PlaybackEventBus::default();
+    let result = Ok(PlaybackState::default());
+
+    bus.emit_track_result(&result);
+    let emitted = bus.flush_to_activity();
+
+    assert_eq!(emitted.len(), 1);
+    assert!(matches!(
+        emitted[0],
+        super::events::PlaybackEvent::TrackChanged(_)
+    ));
 }
 
 #[test]

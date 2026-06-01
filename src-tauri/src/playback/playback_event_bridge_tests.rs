@@ -14,7 +14,23 @@ fn state_result_records_state_changed_event() {
 
     let snapshot = activity.snapshot();
     assert_eq!(snapshot.entry_count, 1);
-    assert!(matches!(snapshot.entries[0].event, PlaybackEvent::StateChanged(_)));
+    assert!(matches!(
+        snapshot.entries[0].event,
+        PlaybackEvent::StateChanged(_)
+    ));
+}
+
+#[test]
+fn state_result_records_error_event() {
+    let mut bridge = PlaybackEventBridge::default();
+    let activity = PlaybackActivityLogState::default();
+    let result = Err(PlaybackError::Playback("state failed".to_string()));
+
+    bridge.record_state_result(&activity, &result);
+
+    let snapshot = activity.snapshot();
+    assert_eq!(snapshot.entry_count, 1);
+    assert!(matches!(snapshot.entries[0].event, PlaybackEvent::Error(_)));
 }
 
 #[test]
@@ -28,6 +44,22 @@ fn track_result_records_error_event() {
     let snapshot = activity.snapshot();
     assert_eq!(snapshot.entry_count, 1);
     assert!(matches!(snapshot.entries[0].event, PlaybackEvent::Error(_)));
+}
+
+#[test]
+fn track_result_records_track_changed_event() {
+    let mut bridge = PlaybackEventBridge::default();
+    let activity = PlaybackActivityLogState::default();
+    let result = Ok(PlaybackState::default());
+
+    bridge.record_track_result(&activity, &result);
+
+    let snapshot = activity.snapshot();
+    assert_eq!(snapshot.entry_count, 1);
+    assert!(matches!(
+        snapshot.entries[0].event,
+        PlaybackEvent::TrackChanged(_)
+    ));
 }
 
 #[test]
