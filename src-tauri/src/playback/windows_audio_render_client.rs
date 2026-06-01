@@ -10,6 +10,28 @@ pub struct WindowsAudioRenderClientSnapshot {
     pub note: Option<String>,
 }
 
+impl WindowsAudioRenderClientSnapshot {
+    pub fn unavailable(note: impl Into<String>) -> Self {
+        let note = note.into();
+        Self {
+            render_client_available: false,
+            buffer_frame_count: None,
+            session: WindowsAudioRenderSessionState::unavailable(note.clone()),
+            note: Some(note),
+        }
+    }
+
+    pub fn ready(buffer_frame_count: u32, queued_padding_frames: u32) -> Self {
+        Self {
+            render_client_available: true,
+            buffer_frame_count: Some(buffer_frame_count),
+            session: WindowsAudioRenderSessionState::ready(buffer_frame_count)
+                .with_padding(queued_padding_frames),
+            note: None,
+        }
+    }
+}
+
 pub fn query_default_windows_render_client_boundary(
 ) -> super::errors::PlaybackResult<WindowsAudioRenderClientSnapshot> {
     platform::query_default_windows_render_client_boundary()
@@ -17,17 +39,13 @@ pub fn query_default_windows_render_client_boundary(
 
 #[cfg(not(windows))]
 mod platform {
-    use super::{WindowsAudioRenderClientSnapshot, WindowsAudioRenderSessionState};
+    use super::WindowsAudioRenderClientSnapshot;
 
     pub fn query_default_windows_render_client_boundary(
     ) -> super::super::errors::PlaybackResult<WindowsAudioRenderClientSnapshot> {
-        let note = "windows audio render client is only available on Windows";
-        Ok(WindowsAudioRenderClientSnapshot {
-            render_client_available: false,
-            buffer_frame_count: None,
-            session: WindowsAudioRenderSessionState::unavailable(note),
-            note: Some(note.to_string()),
-        })
+        Ok(WindowsAudioRenderClientSnapshot::unavailable(
+            "windows audio render client is only available on Windows",
+        ))
     }
 }
 
@@ -42,7 +60,7 @@ mod platform {
         create_device_enumerator, default_render_endpoint,
     };
     use super::super::windows_audio_render_padding::platform::current_padding_frames;
-    use super::{WindowsAudioRenderClientSnapshot, WindowsAudioRenderSessionState};
+    use super::WindowsAudioRenderClientSnapshot;
     use windows::Win32::Media::Audio::{IAudioRenderClient, AUDCLNT_SHAREMODE_SHARED};
     use windows::Win32::System::Com::CoTaskMemFree;
 
@@ -76,12 +94,9 @@ mod platform {
             .map_err(|error| windows_audio_error("get render client service", error))?;
         unsafe { CoTaskMemFree(Some(raw_format.cast::<c_void>())) };
 
-        Ok(WindowsAudioRenderClientSnapshot {
-            render_client_available: true,
-            buffer_frame_count: Some(buffer_frame_count),
-            session: WindowsAudioRenderSessionState::ready(buffer_frame_count)
-                .with_padding(queued_padding_frames),
-            note: None,
-        })
+        Ok(WindowsAudioRenderClientSnapshot::ready(
+            buffer_frame_count,
+            queued_padding_frames,
+        ))
     }
 }
