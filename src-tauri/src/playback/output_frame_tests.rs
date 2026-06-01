@@ -35,7 +35,10 @@ fn output_frame_preserves_sample_format() {
 
     let output = OutputAudioFrame::from_decoded_frame(decoded);
 
-    assert!(matches!(output.stream.sample_format, AudioSampleFormat::Signed24));
+    assert!(matches!(
+        output.stream.sample_format,
+        AudioSampleFormat::Signed24
+    ));
 }
 
 #[test]
