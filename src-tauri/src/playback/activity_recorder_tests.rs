@@ -69,7 +69,8 @@ fn record_track_result_appends_track_changed_payload() {
 #[test]
 fn record_state_result_appends_error_payload_on_failure() {
     let activity = PlaybackActivityLogState::default();
-    let result: PlaybackResult<PlaybackState> = Err(PlaybackError::Playback("state failed".to_string()));
+    let result: PlaybackResult<PlaybackState> =
+        Err(PlaybackError::Playback("state failed".to_string()));
 
     record_state_result(&activity, &result);
 
@@ -82,7 +83,8 @@ fn record_state_result_appends_error_payload_on_failure() {
 #[test]
 fn record_track_result_appends_error_payload_on_failure() {
     let activity = PlaybackActivityLogState::default();
-    let result: PlaybackResult<PlaybackState> = Err(PlaybackError::Playback("track failed".to_string()));
+    let result: PlaybackResult<PlaybackState> =
+        Err(PlaybackError::Playback("track failed".to_string()));
 
     record_track_result(&activity, &result);
 
@@ -97,7 +99,8 @@ fn recorder_appends_multiple_results_in_call_order() {
     let activity = PlaybackActivityLogState::default();
     let state_result: PlaybackResult<PlaybackState> = Ok(state_with_error_marker("state-ok"));
     let track_result: PlaybackResult<PlaybackState> = Ok(state_with_error_marker("track-ok"));
-    let error_result: PlaybackResult<PlaybackState> = Err(PlaybackError::Playback("failed".to_string()));
+    let error_result: PlaybackResult<PlaybackState> =
+        Err(PlaybackError::Playback("failed".to_string()));
 
     record_state_result(&activity, &state_result);
     record_track_result(&activity, &track_result);

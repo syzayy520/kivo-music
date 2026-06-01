@@ -13,19 +13,19 @@ fn assert_lifecycle_event(
 ) {
     assert!(matches!(
         (&event.kind, expected_kind),
-        (PlaybackLifecycleEventKind::Initialized, PlaybackLifecycleEventKind::Initialized)
-            | (
-                PlaybackLifecycleEventKind::ShutdownStarted,
-                PlaybackLifecycleEventKind::ShutdownStarted
-            )
-            | (
-                PlaybackLifecycleEventKind::ShutdownSucceeded,
-                PlaybackLifecycleEventKind::ShutdownSucceeded
-            )
-            | (
-                PlaybackLifecycleEventKind::ShutdownFailed,
-                PlaybackLifecycleEventKind::ShutdownFailed
-            )
+        (
+            PlaybackLifecycleEventKind::Initialized,
+            PlaybackLifecycleEventKind::Initialized
+        ) | (
+            PlaybackLifecycleEventKind::ShutdownStarted,
+            PlaybackLifecycleEventKind::ShutdownStarted
+        ) | (
+            PlaybackLifecycleEventKind::ShutdownSucceeded,
+            PlaybackLifecycleEventKind::ShutdownSucceeded
+        ) | (
+            PlaybackLifecycleEventKind::ShutdownFailed,
+            PlaybackLifecycleEventKind::ShutdownFailed
+        )
     ));
     assert_eq!(event.backend_name, expected_backend_name);
     assert_eq!(event.message.as_deref(), expected_message);

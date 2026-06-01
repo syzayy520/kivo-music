@@ -42,16 +42,31 @@ fn play_pause_resume_stop_flow_is_modeled() {
 
     apply_command(&mut state, &PlaybackWorkerCommand::Load { track: track() });
     apply_command(&mut state, &PlaybackWorkerCommand::Play);
-    assert_state(&state, PlaybackWorkerPhase::Playing, Some("track-101"), None);
+    assert_state(
+        &state,
+        PlaybackWorkerPhase::Playing,
+        Some("track-101"),
+        None,
+    );
 
     apply_command(&mut state, &PlaybackWorkerCommand::Pause);
     assert_state(&state, PlaybackWorkerPhase::Paused, Some("track-101"), None);
 
     apply_command(&mut state, &PlaybackWorkerCommand::Resume);
-    assert_state(&state, PlaybackWorkerPhase::Playing, Some("track-101"), None);
+    assert_state(
+        &state,
+        PlaybackWorkerPhase::Playing,
+        Some("track-101"),
+        None,
+    );
 
     apply_command(&mut state, &PlaybackWorkerCommand::Stop);
-    assert_state(&state, PlaybackWorkerPhase::Stopped, Some("track-101"), None);
+    assert_state(
+        &state,
+        PlaybackWorkerPhase::Stopped,
+        Some("track-101"),
+        None,
+    );
 }
 
 #[test]
@@ -77,7 +92,12 @@ fn shutdown_command_moves_state_to_stopped() {
 
     apply_command(&mut state, &PlaybackWorkerCommand::Shutdown);
 
-    assert_state(&state, PlaybackWorkerPhase::Stopped, Some("track-101"), None);
+    assert_state(
+        &state,
+        PlaybackWorkerPhase::Stopped,
+        Some("track-101"),
+        None,
+    );
 }
 
 #[test]

@@ -44,7 +44,9 @@ fn run_state_command_returns_and_records_state_changed_payload() {
     let manager = PlaybackManagerState::default();
     let activity = PlaybackActivityLogState::default();
 
-    let result = run_state_command(&manager, &activity, |_| Ok(state_with_error_marker("state-ok")));
+    let result = run_state_command(&manager, &activity, |_| {
+        Ok(state_with_error_marker("state-ok"))
+    });
 
     assert_eq!(result.unwrap().error.as_deref(), Some("state-ok"));
     let snapshot = activity.snapshot();
@@ -93,7 +95,9 @@ fn run_track_command_returns_and_records_track_changed_payload() {
     let manager = PlaybackManagerState::default();
     let activity = PlaybackActivityLogState::default();
 
-    let result = run_track_command(&manager, &activity, |_| Ok(state_with_error_marker("track-ok")));
+    let result = run_track_command(&manager, &activity, |_| {
+        Ok(state_with_error_marker("track-ok"))
+    });
 
     assert_eq!(result.unwrap().error.as_deref(), Some("track-ok"));
     let snapshot = activity.snapshot();
