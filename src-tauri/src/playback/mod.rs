@@ -49,6 +49,7 @@ pub mod types;
 pub mod volume;
 pub mod windows_audio;
 pub mod windows_audio_client_init;
+pub mod windows_audio_com;
 pub mod windows_audio_mix_format;
 
 #[cfg(test)]
