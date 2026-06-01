@@ -22,7 +22,10 @@ pub(crate) mod platform {
         }
     }
 
-    pub(crate) fn windows_audio_error(operation: &str, error: windows::core::Error) -> PlaybackError {
+    pub(crate) fn windows_audio_error(
+        operation: &str,
+        error: windows::core::Error,
+    ) -> PlaybackError {
         PlaybackError::Output(format!("windows audio {operation} failed: {error}"))
     }
 }
