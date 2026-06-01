@@ -1,9 +1,7 @@
 #[cfg(windows)]
 pub(crate) mod platform {
     use super::super::errors::{PlaybackError, PlaybackResult};
-    use windows::Win32::System::Com::{
-        CoInitializeEx, CoUninitialize, COINIT_MULTITHREADED,
-    };
+    use windows::Win32::System::Com::{CoInitializeEx, CoUninitialize, COINIT_MULTITHREADED};
 
     pub(crate) struct WindowsComScope;
 
