@@ -28,6 +28,12 @@ fn assert_unsupported(result: Result<OutputRuntimeStatus, PlaybackError>, op: &s
     }
 }
 
+fn assert_last_error(status: OutputRuntimeStatus, op: &str) {
+    let expected = format!("output sink operation is not implemented: {op}");
+
+    assert_eq!(status.last_error.as_deref(), Some(expected.as_str()));
+}
+
 #[test]
 fn open_is_typed_unsupported() {
     let mut sink = UnsupportedOutputSink::new();
@@ -41,10 +47,30 @@ fn open_is_typed_unsupported() {
 }
 
 #[test]
+fn open_records_last_error_message() {
+    let mut sink = UnsupportedOutputSink::new();
+
+    let result = sink.open(&OutputSettings::default());
+
+    assert_unsupported(result, "open");
+    assert_last_error(sink.status(), "open");
+}
+
+#[test]
 fn submit_frame_is_typed_unsupported() {
     let mut sink = UnsupportedOutputSink::new();
 
     assert_unsupported(sink.submit_frame(frame()), "submit_frame");
+}
+
+#[test]
+fn submit_frame_records_last_error_message() {
+    let mut sink = UnsupportedOutputSink::new();
+
+    let result = sink.submit_frame(frame());
+
+    assert_unsupported(result, "submit_frame");
+    assert_last_error(sink.status(), "submit_frame");
 }
 
 #[test]
