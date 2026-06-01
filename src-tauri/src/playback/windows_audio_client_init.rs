@@ -38,24 +38,23 @@ mod platform {
 
     use super::super::errors::PlaybackResult;
     use super::super::windows_audio_com::platform::{windows_audio_error, WindowsComScope};
+    use super::super::windows_audio_endpoint::platform::{
+        create_device_enumerator, default_render_endpoint,
+    };
     use super::super::windows_audio_mix_format::WindowsAudioMixFormat;
     use super::WindowsAudioClientInitSnapshot;
     use windows::Win32::Media::Audio::{
-        eConsole, eRender, IAudioClient, IMMDeviceEnumerator, MMDeviceEnumerator,
-        AUDCLNT_SHAREMODE_SHARED, WAVEFORMATEX,
+        IAudioClient, AUDCLNT_SHAREMODE_SHARED, WAVEFORMATEX,
     };
-    use windows::Win32::System::Com::{CoCreateInstance, CoTaskMemFree, CLSCTX_ALL};
+    use windows::Win32::System::Com::{CoTaskMemFree, CLSCTX_ALL};
 
     const DEFAULT_SHARED_BUFFER_DURATION_100NS: i64 = 10_000_000;
 
     pub fn initialize_default_windows_audio_client(
     ) -> PlaybackResult<WindowsAudioClientInitSnapshot> {
         let _com = WindowsComScope::initialize()?;
-        let enumerator: IMMDeviceEnumerator =
-            unsafe { CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL) }
-                .map_err(|error| windows_audio_error("create device enumerator", error))?;
-        let device = unsafe { enumerator.GetDefaultAudioEndpoint(eRender, eConsole) }
-            .map_err(|error| windows_audio_error("read default render endpoint", error))?;
+        let enumerator = create_device_enumerator()?;
+        let device = default_render_endpoint(&enumerator)?;
         let audio_client: IAudioClient = unsafe { device.Activate(CLSCTX_ALL, None) }
             .map_err(|error| windows_audio_error("activate audio client", error))?;
         let raw_format = unsafe { audio_client.GetMixFormat() }
