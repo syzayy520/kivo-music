@@ -53,6 +53,7 @@ pub mod windows_audio_client_init;
 pub mod windows_audio_com;
 pub mod windows_audio_endpoint;
 pub mod windows_audio_mix_format;
+pub mod windows_audio_render_client;
 
 #[cfg(test)]
 mod activity_log_tests;
