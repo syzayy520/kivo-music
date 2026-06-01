@@ -14,6 +14,23 @@ fn frame(position_ms: u64) -> DecodedAudioFrame {
 }
 
 #[test]
+fn new_buffer_reports_capacity_and_empty_state() {
+    let buffer = AudioFrameBuffer::new(3);
+
+    assert_eq!(buffer.capacity_frames(), 3);
+    assert_eq!(buffer.len(), 0);
+    assert!(buffer.is_empty());
+}
+
+#[test]
+fn pop_from_empty_buffer_returns_none() {
+    let mut buffer = AudioFrameBuffer::new(2);
+
+    assert!(buffer.pop().is_none());
+    assert!(buffer.is_empty());
+}
+
+#[test]
 fn push_and_pop_follow_fifo_order() {
     let mut buffer = AudioFrameBuffer::new(4);
     assert!(buffer.push(frame(10)).is_none());
