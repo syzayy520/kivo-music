@@ -91,9 +91,5 @@ fn mark_failed_replaces_previous_error_message() {
     state.mark_failed("first failure");
     state.mark_failed("second failure");
 
-    assert_state(
-        &state,
-        DecoderRuntimePhase::Failed,
-        Some("second failure"),
-    );
+    assert_state(&state, DecoderRuntimePhase::Failed, Some("second failure"));
 }
