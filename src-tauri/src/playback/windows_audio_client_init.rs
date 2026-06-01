@@ -25,7 +25,9 @@ mod platform {
             initialized: false,
             buffer_frame_count: None,
             mix_format: None,
-            note: Some("windows audio client initialization is only available on Windows".to_string()),
+            note: Some(
+                "windows audio client initialization is only available on Windows".to_string(),
+            ),
         })
     }
 }
@@ -38,8 +40,8 @@ mod platform {
     use super::super::windows_audio_mix_format::WindowsAudioMixFormat;
     use super::WindowsAudioClientInitSnapshot;
     use windows::Win32::Media::Audio::{
-        eConsole, eRender, AUDCLNT_SHAREMODE_SHARED, IAudioClient, IMMDeviceEnumerator,
-        MMDeviceEnumerator, WAVEFORMATEX,
+        eConsole, eRender, IAudioClient, IMMDeviceEnumerator, MMDeviceEnumerator,
+        AUDCLNT_SHAREMODE_SHARED, WAVEFORMATEX,
     };
     use windows::Win32::System::Com::{
         CoCreateInstance, CoInitializeEx, CoTaskMemFree, CoUninitialize, CLSCTX_ALL,
