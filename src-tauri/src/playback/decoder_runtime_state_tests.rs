@@ -33,3 +33,14 @@ fn close_transition_is_modeled() {
 
     assert_eq!(state.phase, DecoderRuntimePhase::Closed);
 }
+
+#[test]
+fn begin_opening_after_failed_clears_error() {
+    let mut state = DecoderRuntimeState::idle();
+
+    state.mark_failed("decoder open failed");
+    state.begin_opening();
+
+    assert_eq!(state.phase, DecoderRuntimePhase::Opening);
+    assert!(state.last_error.is_none());
+}

@@ -51,3 +51,13 @@ fn count_frame_increments_decoded_frame_count() {
 
     assert_eq!(session.decoded_frame_count, 2);
 }
+
+#[test]
+fn count_frame_saturates_at_u64_max() {
+    let mut session = DecoderSession::from_open_request(&open_request(), stream_info(), 3_000);
+    session.decoded_frame_count = u64::MAX;
+
+    session.count_frame();
+
+    assert_eq!(session.decoded_frame_count, u64::MAX);
+}
