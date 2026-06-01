@@ -58,6 +58,7 @@ pub mod windows_audio_render_padding;
 pub mod windows_audio_render_session;
 pub mod windows_audio_render_write_cycle;
 pub mod windows_audio_render_write_cycle_summary;
+pub mod windows_audio_render_write_diagnostic_snapshot;
 pub mod windows_audio_render_write_intent;
 pub mod windows_audio_render_write_outcome;
 pub mod windows_audio_render_write_plan;
@@ -148,6 +149,9 @@ mod windows_audio_render_client_tests;
 
 #[cfg(test)]
 mod windows_audio_render_write_cycle_tests;
+
+#[cfg(test)]
+mod windows_audio_render_write_diagnostic_snapshot_tests;
 
 #[cfg(test)]
 mod windows_audio_render_write_cycle_summary_tests;
