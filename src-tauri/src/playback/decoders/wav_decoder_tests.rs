@@ -93,6 +93,26 @@ fn wav_decoder_next_frame_after_close_returns_backend_error() {
 }
 
 #[test]
+fn decoder_factory_accepts_uppercase_wav_extension() {
+    let result = create_decoder_for_path("C:/Music/song.WAV");
+
+    assert!(result.is_ok());
+}
+
+#[test]
+fn decoder_factory_rejects_missing_extension() {
+    let result = create_decoder_for_path("C:/Music/song");
+
+    match result {
+        Err(PlaybackError::UnsupportedFormat(format)) => {
+            assert_eq!(format, "missing file extension")
+        }
+        Err(other) => panic!("expected unsupported format, got {other}"),
+        Ok(_) => panic!("expected unsupported format, got decoder"),
+    }
+}
+
+#[test]
 fn decoder_factory_rejects_unsupported_extension() {
     let result = create_decoder_for_path("C:/Music/song.flac");
 
