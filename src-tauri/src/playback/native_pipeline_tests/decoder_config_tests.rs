@@ -21,3 +21,23 @@ fn configure_decoder_open_creates_session_and_marks_open() {
     assert_eq!(session.last_position_ms, 4_500);
     assert_eq!(session.decoded_frame_count, 1);
 }
+
+#[test]
+fn update_decoder_position_without_session_is_noop() {
+    let mut pipeline = NativePipeline::new();
+
+    pipeline.update_decoder_position(9_000);
+
+    let state = pipeline.state();
+    assert!(state.decoder_session.is_none());
+}
+
+#[test]
+fn count_decoded_frame_without_session_is_noop() {
+    let mut pipeline = NativePipeline::new();
+
+    pipeline.count_decoded_frame();
+
+    let state = pipeline.state();
+    assert!(state.decoder_session.is_none());
+}

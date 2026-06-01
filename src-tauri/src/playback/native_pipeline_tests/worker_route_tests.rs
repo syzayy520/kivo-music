@@ -38,3 +38,22 @@ fn map_worker_state_does_not_mutate_pipeline_snapshot() {
     );
     assert_eq!(before.decoder_state.phase, after.decoder_state.phase);
 }
+
+#[test]
+fn route_runtime_error_context_is_overwritten_by_latest_operation() {
+    let mut pipeline = NativePipeline::new();
+    let state = PlaybackWorkerState::idle();
+
+    let _ = pipeline
+        .route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Seek { position_ms: 10 });
+    let _ = pipeline.route_worker_command_record_runtime_error(
+        &state,
+        &PlaybackWorkerCommand::SetMuted { muted: true },
+    );
+
+    let after = pipeline.state();
+    assert_eq!(
+        after.output_status.last_error.as_deref(),
+        Some("unsupported operation: native pipeline worker command set_muted is not implemented yet")
+    );
+}
