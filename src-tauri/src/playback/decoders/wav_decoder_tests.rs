@@ -133,13 +133,13 @@ fn wav_sample_kind_maps_supported_formats() {
         map_sample_kind(SampleFormat::Float, 32).expect("map float32");
 
     assert!(matches!(int16_kind, WavSampleKind::Int16));
-    assert_eq!(int16_format, AudioSampleFormat::Signed16);
+    assert!(matches!(int16_format, AudioSampleFormat::Signed16));
     assert!(matches!(int24_kind, WavSampleKind::Int24));
-    assert_eq!(int24_format, AudioSampleFormat::Signed24);
+    assert!(matches!(int24_format, AudioSampleFormat::Signed24));
     assert!(matches!(int32_kind, WavSampleKind::Int32));
-    assert_eq!(int32_format, AudioSampleFormat::Signed32);
+    assert!(matches!(int32_format, AudioSampleFormat::Signed32));
     assert!(matches!(float32_kind, WavSampleKind::Float32));
-    assert_eq!(float32_format, AudioSampleFormat::Float32);
+    assert!(matches!(float32_format, AudioSampleFormat::Float32));
 }
 
 #[test]
