@@ -139,4 +139,7 @@ mod windows_audio_client_init_tests;
 mod windows_audio_mix_format_tests;
 
 #[cfg(test)]
+mod windows_audio_render_client_tests;
+
+#[cfg(test)]
 mod windows_audio_render_session_tests;
