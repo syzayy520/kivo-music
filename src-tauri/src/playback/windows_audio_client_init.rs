@@ -37,16 +37,15 @@ mod platform {
     use std::ffi::c_void;
 
     use super::super::errors::PlaybackResult;
+    use super::super::windows_audio_client::platform::activate_audio_client;
     use super::super::windows_audio_com::platform::{windows_audio_error, WindowsComScope};
     use super::super::windows_audio_endpoint::platform::{
         create_device_enumerator, default_render_endpoint,
     };
     use super::super::windows_audio_mix_format::WindowsAudioMixFormat;
     use super::WindowsAudioClientInitSnapshot;
-    use windows::Win32::Media::Audio::{
-        IAudioClient, AUDCLNT_SHAREMODE_SHARED, WAVEFORMATEX,
-    };
-    use windows::Win32::System::Com::{CoTaskMemFree, CLSCTX_ALL};
+    use windows::Win32::Media::Audio::{AUDCLNT_SHAREMODE_SHARED, WAVEFORMATEX};
+    use windows::Win32::System::Com::CoTaskMemFree;
 
     const DEFAULT_SHARED_BUFFER_DURATION_100NS: i64 = 10_000_000;
 
@@ -55,8 +54,7 @@ mod platform {
         let _com = WindowsComScope::initialize()?;
         let enumerator = create_device_enumerator()?;
         let device = default_render_endpoint(&enumerator)?;
-        let audio_client: IAudioClient = unsafe { device.Activate(CLSCTX_ALL, None) }
-            .map_err(|error| windows_audio_error("activate audio client", error))?;
+        let audio_client = activate_audio_client(&device)?;
         let raw_format = unsafe { audio_client.GetMixFormat() }
             .map_err(|error| windows_audio_error("read mix format", error))?;
         let mix_format = unsafe { *raw_format };
