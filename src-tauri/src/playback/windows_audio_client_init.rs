@@ -36,40 +36,21 @@ mod platform {
 mod platform {
     use std::ffi::c_void;
 
-    use super::super::errors::{PlaybackError, PlaybackResult};
+    use super::super::errors::PlaybackResult;
+    use super::super::windows_audio_com::platform::{windows_audio_error, WindowsComScope};
     use super::super::windows_audio_mix_format::WindowsAudioMixFormat;
     use super::WindowsAudioClientInitSnapshot;
     use windows::Win32::Media::Audio::{
         eConsole, eRender, IAudioClient, IMMDeviceEnumerator, MMDeviceEnumerator,
         AUDCLNT_SHAREMODE_SHARED, WAVEFORMATEX,
     };
-    use windows::Win32::System::Com::{
-        CoCreateInstance, CoInitializeEx, CoTaskMemFree, CoUninitialize, CLSCTX_ALL,
-        COINIT_MULTITHREADED,
-    };
+    use windows::Win32::System::Com::{CoCreateInstance, CoTaskMemFree, CLSCTX_ALL};
 
     const DEFAULT_SHARED_BUFFER_DURATION_100NS: i64 = 10_000_000;
 
-    struct ComScope;
-
-    impl ComScope {
-        fn initialize() -> PlaybackResult<Self> {
-            unsafe { CoInitializeEx(None, COINIT_MULTITHREADED) }
-                .ok()
-                .map_err(|error| windows_audio_error("initialize COM", error))?;
-            Ok(Self)
-        }
-    }
-
-    impl Drop for ComScope {
-        fn drop(&mut self) {
-            unsafe { CoUninitialize() };
-        }
-    }
-
     pub fn initialize_default_windows_audio_client(
     ) -> PlaybackResult<WindowsAudioClientInitSnapshot> {
-        let _com = ComScope::initialize()?;
+        let _com = WindowsComScope::initialize()?;
         let enumerator: IMMDeviceEnumerator =
             unsafe { CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL) }
                 .map_err(|error| windows_audio_error("create device enumerator", error))?;
@@ -114,9 +95,5 @@ mod platform {
             block_align: format.nBlockAlign,
             avg_bytes_per_sec: format.nAvgBytesPerSec,
         }
-    }
-
-    fn windows_audio_error(operation: &str, error: windows::core::Error) -> PlaybackError {
-        PlaybackError::Output(format!("windows audio {operation} failed: {error}"))
     }
 }
