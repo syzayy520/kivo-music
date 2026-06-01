@@ -85,6 +85,24 @@ fn pause_resume_flush_stop_are_typed_unsupported() {
 }
 
 #[test]
+fn pause_resume_flush_stop_record_latest_last_error_message() {
+    let mut sink = UnsupportedOutputSink::new();
+
+    assert_unsupported(sink.pause(), "pause");
+    assert_last_error(sink.status(), "pause");
+
+    assert_unsupported(sink.resume(), "resume");
+    assert_last_error(sink.status(), "resume");
+
+    assert_unsupported(sink.flush(), "flush");
+    assert_last_error(sink.status(), "flush");
+
+    assert_unsupported(sink.stop(), "stop");
+    assert_last_error(sink.status(), "stop");
+    assert!(!sink.status().is_active);
+}
+
+#[test]
 fn close_resets_runtime_status() {
     let mut sink = UnsupportedOutputSink::new();
     let mut settings = OutputSettings::default();
