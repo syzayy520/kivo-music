@@ -2,9 +2,10 @@ use std::path::PathBuf;
 
 use hound::{SampleFormat, WavSpec, WavWriter};
 
-use crate::playback::decoder::AudioDecoder;
+use crate::playback::decoder::{AudioDecoder, AudioSampleFormat};
 use crate::playback::decoders::factory::create_decoder_for_path;
 use crate::playback::decoders::wav_decoder::WavDecoder;
+use crate::playback::decoders::wav_format::{map_sample_kind, WavSampleKind};
 use crate::playback::errors::PlaybackError;
 
 fn create_test_wav() -> PathBuf {
@@ -120,5 +121,34 @@ fn decoder_factory_rejects_unsupported_extension() {
         Err(PlaybackError::UnsupportedFormat(format)) => assert_eq!(format, "flac"),
         Err(other) => panic!("expected unsupported format, got {other}"),
         Ok(_) => panic!("expected unsupported format, got decoder"),
+    }
+}
+
+#[test]
+fn wav_sample_kind_maps_supported_formats() {
+    let (int16_kind, int16_format) = map_sample_kind(SampleFormat::Int, 16).expect("map int16");
+    let (int24_kind, int24_format) = map_sample_kind(SampleFormat::Int, 24).expect("map int24");
+    let (int32_kind, int32_format) = map_sample_kind(SampleFormat::Int, 32).expect("map int32");
+    let (float32_kind, float32_format) =
+        map_sample_kind(SampleFormat::Float, 32).expect("map float32");
+
+    assert!(matches!(int16_kind, WavSampleKind::Int16));
+    assert_eq!(int16_format, AudioSampleFormat::Signed16);
+    assert!(matches!(int24_kind, WavSampleKind::Int24));
+    assert_eq!(int24_format, AudioSampleFormat::Signed24);
+    assert!(matches!(int32_kind, WavSampleKind::Int32));
+    assert_eq!(int32_format, AudioSampleFormat::Signed32);
+    assert!(matches!(float32_kind, WavSampleKind::Float32));
+    assert_eq!(float32_format, AudioSampleFormat::Float32);
+}
+
+#[test]
+fn wav_sample_kind_rejects_unsupported_bit_depth() {
+    let result = map_sample_kind(SampleFormat::Int, 20);
+
+    match result {
+        Err(PlaybackError::UnsupportedFormat(format)) => assert_eq!(format, "wav Int 20-bit"),
+        Err(other) => panic!("expected unsupported format, got {other}"),
+        Ok(_) => panic!("expected unsupported format, got sample kind"),
     }
 }
