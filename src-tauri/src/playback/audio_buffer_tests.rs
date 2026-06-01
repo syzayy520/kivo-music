@@ -54,6 +54,17 @@ fn clear_removes_all_frames() {
 }
 
 #[test]
+fn clear_on_empty_buffer_keeps_empty_state() {
+    let mut buffer = AudioFrameBuffer::new(2);
+
+    buffer.clear();
+
+    assert!(buffer.is_empty());
+    assert_eq!(buffer.len(), 0);
+    assert!(buffer.pop().is_none());
+}
+
+#[test]
 fn push_drops_oldest_frame_when_capacity_is_exceeded() {
     let mut buffer = AudioFrameBuffer::new(2);
     let _ = buffer.push(frame(100));
