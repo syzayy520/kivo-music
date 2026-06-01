@@ -12,7 +12,10 @@ pub struct WindowsAudioRenderWriteOutcome {
 }
 
 impl WindowsAudioRenderWriteOutcome {
-    pub fn from_intent(intent: &WindowsAudioRenderWriteIntent, previous_written_frames: u64) -> Self {
+    pub fn from_intent(
+        intent: &WindowsAudioRenderWriteIntent,
+        previous_written_frames: u64,
+    ) -> Self {
         let submitted_frame_count = intent.plan.writable_frame_count;
         let deferred_frame_count = intent.plan.deferred_frame_count;
         let total_written_frames =
