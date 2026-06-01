@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kivo Music · Premium Local Home</title>
+    <link rel="stylesheet" href="src/styles/premium-local.css" />
+  </head>
+  <body>
+    <main class="km-premium-shell" aria-label="Kivo Music premium local home preview">
+      <aside class="km-premium-sidebar" aria-label="侧边栏导航">
+        <div class="km-premium-window-dots" aria-hidden="true">
+          <span class="km-premium-dot km-premium-dot-red"></span>
+          <span class="km-premium-dot km-premium-dot-yellow"></span>
+          <span class="km-premium-dot km-premium-dot-green"></span>
+        </div>
+
+        <section class="km-premium-brand" aria-label="Kivo Music">
+          <div class="km-premium-logo">K</div>
+          <div>
+            <strong>Kivo Music</strong>
+            <span>本地音乐播放器</span>
+          </div>
+        </section>
+
+        <nav class="km-premium-nav" aria-label="主导航">
+          <section class="km-premium-nav-group" aria-label="资料库导航">
+            <p>为你推荐</p>
+            <a class="km-premium-nav-item km-premium-nav-item-active" href="#premium-home"><span>⌂</span>首页</a>
+          </section>
+          <section class="km-premium-nav-group" aria-label="本地资料库">
+            <p>资料库</p>
+            <a class="km-premium-nav-item" href="#premium-albums"><span>◎</span>专辑</a>
+            <a class="km-premium-nav-item" href="#premium-artists"><span>♙</span>艺人</a>
+            <a class="km-premium-nav-item" href="#premium-songs"><span>♪</span>歌曲</a>
+            <a class="km-premium-nav-item" href="#premium-playlists"><span>☰</span>播放列表</a>
+          </section>
+          <section class="km-premium-nav-group" aria-label="播放系统">
+            <p>播放</p>
+            <a class="km-premium-nav-item" href="#premium-now"><span>▥</span>正在播放</a>
+            <a class="km-premium-nav-item" href="#premium-queue"><span>☷</span>队列</a>
+          </section>
+          <section class="km-premium-nav-group" aria-label="系统">
+            <p>系统</p>
+            <a class="km-premium-nav-item" href="#premium-settings"><span>⚙</span>设置</a>
+          </section>
+        </nav>
+
+        <section class="km-premium-user-card" aria-label="当前用户">
+          <div class="km-premium-avatar" aria-hidden="true"></div>
+          <div><strong>Danny Rico</strong><span>本地资料库</span></div>
+          <span>⌄</span>
+        </section>
+      </aside>
+
+      <section class="km-premium-main" id="premium-home">
+        <header class="km-premium-topbar">
+          <section class="km-premium-heading" aria-label="首页标题">
+            <h1>首页</h1>
+            <p>来自你的资料库。</p>
+          </section>
+          <section class="km-premium-top-actions" aria-label="顶部操作">
+            <label class="km-premium-search"><span aria-hidden="true">⌕</span><input aria-label="搜索本地资料库" placeholder="搜索专辑、艺人、歌曲" /></label>
+            <div class="km-premium-status" aria-label="本地资料库状态"><span aria-hidden="true"></span>本地资料库 · 1,286 首</div>
+            <button class="km-premium-more" type="button" aria-label="更多操作">•••</button>
+          </section>
+        </header>
+
+        <section class="km-premium-spotlight" aria-label="首页焦点内容">
+          <article class="km-premium-hero" aria-label="继续听 Midnight Archive">
+            <section class="km-premium-hero-copy">
+              <span>继续听</span>
+              <h2>Midnight Archive</h2>
+              <p>Luna Vale</p>
+              <div class="km-premium-hero-progress" aria-label="播放进度"><i style="width:46%"></i></div>
+              <strong>上次播放到 2:37 / 5:48</strong>
+              <div class="km-premium-hero-actions">
+                <button type="button">▶ 继续播放</button>
+                <button type="button">☷ 加入队列</button>
+                <button type="button" aria-label="更多">•••</button>
+              </div>
+            </section>
+          </article>
+
+          <section class="km-premium-feature-stack" aria-label="辅助卡片">
+            <article class="km-premium-feature-card km-premium-feature-dark">
+              <section><span>高品质收藏</span><h3>Hi-Res Collection</h3><p>1,286 首 · FLAC / ALAC</p></section>
+              <button type="button" aria-label="查看高品质收藏">›</button>
+            </article>
+            <article class="km-premium-feature-card km-premium-feature-soft">
+              <section><span>最近完整专辑</span><h3>Echo Bloom</h3><p>Nova District</p><em>12 首 · 42 分钟</em></section>
+              <button type="button" aria-label="查看最近完整专辑">›</button>
+            </article>
+          </section>
+        </section>
+
+        <section class="km-premium-shelf" id="premium-albums" aria-label="最近播放">
+          <div class="km-premium-section-head"><div><span>最近播放</span><h2>继续聆听。</h2></div><a href="#premium-albums-all">查看全部</a></div>
+          <div class="km-premium-album-row">
+            <article class="km-premium-album-card"><div class="km-premium-cover km-premium-cover-night"></div><strong>Midnight Archive</strong><span>Luna Vale</span><p>Lossless · FLAC · 24-bit</p></article>
+            <article class="km-premium-album-card"><div class="km-premium-cover km-premium-cover-lake"></div><strong>Static Gardens</strong><span>Nova District</span><p>Local · AAC</p></article>
+            <article class="km-premium-album-card"><div class="km-premium-cover km-premium-cover-forest"></div><strong>Golden Hour</strong><span>Solstice</span><p>Local · ALAC</p></article>
+            <article class="km-premium-album-card"><div class="km-premium-cover km-premium-cover-wave"></div><strong>Afterglow</strong><span>Luna Vale</span><p>Local · AAC</p></article>
+            <article class="km-premium-album-card"><div class="km-premium-cover km-premium-cover-canyon"></div><strong>Velvet Lights</strong><span>Orbit Room</span><p>Lossless · FLAC</p></article>
+            <article class="km-premium-album-card"><div class="km-premium-cover km-premium-cover-paper"></div><strong>Paper Planes</strong><span>Yuno</span><p>Local · AAC</p></article>
+          </div>
+        </section>
+
+        <section class="km-premium-shelf" aria-label="最近加入">
+          <div class="km-premium-section-head"><div><span>最近加入</span><h2>资料库新加入。</h2></div><a href="#premium-recent-all">查看全部</a></div>
+          <div class="km-premium-album-row">
+            <article class="km-premium-album-card"><div class="km-premium-cover km-premium-cover-sun"></div><strong>Dawn Signals</strong><span>Orbit Room</span><p>Local · ALAC</p></article>
+            <article class="km-premium-album-card"><div class="km-premium-cover km-premium-cover-portrait"></div><strong>What Not To</strong><span>Tucker Wetmore</span><p>Local · AAC</p></article>
+            <article class="km-premium-album-card"><div class="km-premium-cover km-premium-cover-sea"></div><strong>River Run</strong><span>The Vernon Spring</span><p>Lossless · FLAC</p></article>
+            <article class="km-premium-album-card"><div class="km-premium-cover km-premium-cover-blossom"></div><strong>Blest</strong><span>Yuno</span><p>Local · AAC</p></article>
+            <article class="km-premium-album-card"><div class="km-premium-cover km-premium-cover-lines"></div><strong>Ultrablur Nights</strong><span>Local Natives</span><p>Hi-Res · 96 kHz</p></article>
+            <article class="km-premium-album-card"><div class="km-premium-cover km-premium-cover-jupiter"></div><strong>Jupiter</strong><span>Nao</span><p>Local · AAC</p></article>
+          </div>
+        </section>
+      </section>
+
+      <footer class="km-premium-player" id="premium-now" aria-label="底部播放器预览">
+        <section class="km-premium-player-track" aria-label="当前曲目"><div></div><div><strong>Midnight Archive</strong><span>Luna Vale</span></div><button type="button" aria-label="喜欢">♡</button><button type="button" aria-label="更多">•••</button></section>
+        <section class="km-premium-player-center" aria-label="播放控制"><div class="km-premium-player-controls"><button type="button">⇄</button><button type="button">◀</button><button class="km-premium-player-play" type="button">Ⅱ</button><button type="button">▶</button><button type="button">↻</button></div><div class="km-premium-player-progress"><span>2:37</span><div><i style="width:46%"></i></div><span>5:48</span></div></section>
+        <section class="km-premium-player-tools" aria-label="播放器工具"><span>FLAC 24-bit / 96kHz</span><button type="button">▰</button><div class="km-premium-volume"><i style="width:68%"></i></div><button type="button" id="premium-queue">☷</button></section>
+      </footer>
+    </main>
+  </body>
+</html>
