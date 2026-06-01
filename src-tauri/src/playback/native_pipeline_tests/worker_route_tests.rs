@@ -44,8 +44,10 @@ fn route_runtime_error_context_is_overwritten_by_latest_operation() {
     let mut pipeline = NativePipeline::new();
     let state = PlaybackWorkerState::idle();
 
-    let _ = pipeline
-        .route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Seek { position_ms: 10 });
+    let _ = pipeline.route_worker_command_record_runtime_error(
+        &state,
+        &PlaybackWorkerCommand::Seek { position_ms: 10 },
+    );
     let _ = pipeline.route_worker_command_record_runtime_error(
         &state,
         &PlaybackWorkerCommand::SetMuted { muted: true },
