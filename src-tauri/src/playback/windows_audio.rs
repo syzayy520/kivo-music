@@ -45,7 +45,9 @@ mod platform {
             status: WindowsAudioStatus {
                 available: false,
                 active_device_id: None,
-                note: Some("windows audio device enumeration is only available on Windows".to_string()),
+                note: Some(
+                    "windows audio device enumeration is only available on Windows".to_string(),
+                ),
             },
         })
     }
@@ -55,8 +57,10 @@ mod platform {
 mod platform {
     use std::ffi::c_void;
 
-    use super::{WindowsAudioDevice, WindowsAudioDeviceSnapshot, WindowsAudioPlan, WindowsAudioStatus};
     use super::super::errors::{PlaybackError, PlaybackResult};
+    use super::{
+        WindowsAudioDevice, WindowsAudioDeviceSnapshot, WindowsAudioPlan, WindowsAudioStatus,
+    };
     use windows::Win32::Media::Audio::{
         eConsole, eRender, IMMDevice, IMMDeviceEnumerator, MMDeviceEnumerator, DEVICE_STATE_ACTIVE,
     };
@@ -70,6 +74,7 @@ mod platform {
     impl ComScope {
         fn initialize() -> PlaybackResult<Self> {
             unsafe { CoInitializeEx(None, COINIT_MULTITHREADED) }
+                .ok()
                 .map_err(|error| windows_audio_error("initialize COM", error))?;
             Ok(Self)
         }
@@ -85,10 +90,9 @@ mod platform {
         plan: &WindowsAudioPlan,
     ) -> PlaybackResult<WindowsAudioDeviceSnapshot> {
         let _com = ComScope::initialize()?;
-        let enumerator: IMMDeviceEnumerator = unsafe {
-            CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL)
-        }
-        .map_err(|error| windows_audio_error("create device enumerator", error))?;
+        let enumerator: IMMDeviceEnumerator =
+            unsafe { CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL) }
+                .map_err(|error| windows_audio_error("create device enumerator", error))?;
 
         let default_device_id = default_render_device_id(&enumerator).ok();
         let collection = unsafe { enumerator.EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE) }
@@ -142,7 +146,7 @@ mod platform {
         let raw_id = unsafe { device.GetId() }
             .map_err(|error| windows_audio_error("read endpoint id", error))?;
         let text = unsafe { raw_id.to_string() }
-            .map_err(|error| windows_audio_error("convert endpoint id", error))?;
+            .map_err(|error| windows_audio_error("convert endpoint id", error.into()))?;
         unsafe { CoTaskMemFree(Some(raw_id.0.cast::<c_void>())) };
         Ok(text)
     }
