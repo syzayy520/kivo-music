@@ -49,3 +49,72 @@ fn zero_limit_drops_new_entries() {
     assert_eq!(snapshot.limit, 0);
     assert!(snapshot.entries.is_empty());
 }
+
+#[test]
+fn clear_after_append_returns_empty_snapshot() {
+    let mut log = PlaybackActivityLog::new(4);
+
+    log.append(progress_event(100));
+    log.append(progress_event(200));
+    log.clear();
+
+    let snapshot = log.snapshot();
+
+    assert_eq!(snapshot.entry_count, 0);
+    assert!(snapshot.entries.is_empty());
+    assert_eq!(snapshot.limit, 4);
+}
+
+#[test]
+fn append_maintains_insertion_order() {
+    let mut log = PlaybackActivityLog::new(4);
+
+    log.append(progress_event(100));
+    log.append(progress_event(200));
+    log.append(progress_event(300));
+
+    let snapshot = log.snapshot();
+
+    assert_eq!(snapshot.entry_count, 3);
+    assert!(matches!(
+        &snapshot.entries[0].event,
+        PlaybackEvent::Progress {
+            position_ms: 100,
+            ..
+        }
+    ));
+    assert!(matches!(
+        &snapshot.entries[1].event,
+        PlaybackEvent::Progress {
+            position_ms: 200,
+            ..
+        }
+    ));
+    assert!(matches!(
+        &snapshot.entries[2].event,
+        PlaybackEvent::Progress {
+            position_ms: 300,
+            ..
+        }
+    ));
+}
+
+#[test]
+fn limit_one_keeps_only_latest() {
+    let mut log = PlaybackActivityLog::new(1);
+
+    log.append(progress_event(100));
+    log.append(progress_event(200));
+
+    let snapshot = log.snapshot();
+
+    assert_eq!(snapshot.entry_count, 1);
+    assert_eq!(snapshot.limit, 1);
+    assert!(matches!(
+        &snapshot.entries[0].event,
+        PlaybackEvent::Progress {
+            position_ms: 200,
+            ..
+        }
+    ));
+}

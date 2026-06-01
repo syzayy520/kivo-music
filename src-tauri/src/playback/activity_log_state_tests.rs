@@ -1,3 +1,6 @@
+use std::sync::Arc;
+use std::thread;
+
 use super::activity_log::PlaybackActivityLogState;
 use super::events::PlaybackEvent;
 
@@ -39,4 +42,22 @@ fn state_clear_removes_entries() {
 
     assert_eq!(snapshot.entry_count, 0);
     assert!(snapshot.entries.is_empty());
+}
+
+#[test]
+fn state_snapshot_returns_empty_on_lock_poison() {
+    let activity = Arc::new(PlaybackActivityLogState::default());
+    let activity_clone = Arc::clone(&activity);
+
+    let handle = thread::spawn(move || {
+        activity_clone.poison_for_test();
+    });
+
+    let _ = handle.join();
+
+    let snapshot = activity.snapshot();
+
+    assert_eq!(snapshot.entry_count, 0);
+    assert!(snapshot.entries.is_empty());
+    assert_eq!(snapshot.limit, 0);
 }

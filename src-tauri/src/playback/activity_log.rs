@@ -71,4 +71,10 @@ impl PlaybackActivityLogState {
             Err(_) => PlaybackActivityLogSnapshot::new(Vec::new(), 0),
         }
     }
+
+    #[cfg(test)]
+    pub fn poison_for_test(&self) {
+        let _guard = self.log.lock().unwrap();
+        panic!("intentional poison");
+    }
 }
