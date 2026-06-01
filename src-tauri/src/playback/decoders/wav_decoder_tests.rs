@@ -34,6 +34,14 @@ fn create_test_wav() -> PathBuf {
     path
 }
 
+fn assert_backend_error<T>(result: Result<T, PlaybackError>, expected_message: &str) {
+    match result {
+        Err(PlaybackError::Backend(message)) => assert_eq!(message, expected_message),
+        Err(other) => panic!("expected backend error, got {other}"),
+        Ok(_) => panic!("expected backend error, got ok"),
+    }
+}
+
 #[test]
 fn wav_decoder_open_reads_stream_info() {
     let path = create_test_wav();
@@ -63,6 +71,25 @@ fn wav_decoder_next_frame_reads_pcm_samples() {
     assert!(!frame.samples.is_empty());
     assert!(frame.samples[0] > 0.0);
     assert!(frame.samples[1] < 0.0);
+}
+
+#[test]
+fn wav_decoder_next_frame_before_open_returns_backend_error() {
+    let mut decoder = WavDecoder::default();
+
+    let result = decoder.next_frame();
+
+    assert_backend_error(result, "decoder is not open");
+}
+
+#[test]
+fn wav_decoder_next_frame_after_close_returns_backend_error() {
+    let mut decoder = WavDecoder::default();
+
+    decoder.close().expect("close unopened decoder");
+    let result = decoder.next_frame();
+
+    assert_backend_error(result, "decoder is not open");
 }
 
 #[test]
