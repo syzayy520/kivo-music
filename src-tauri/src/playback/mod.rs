@@ -57,6 +57,7 @@ pub mod windows_audio_render_client;
 pub mod windows_audio_render_padding;
 pub mod windows_audio_render_session;
 pub mod windows_audio_render_write_intent;
+pub mod windows_audio_render_write_outcome;
 pub mod windows_audio_render_write_plan;
 
 #[cfg(test)]
@@ -148,6 +149,9 @@ mod windows_audio_render_session_tests;
 
 #[cfg(test)]
 mod windows_audio_render_write_intent_tests;
+
+#[cfg(test)]
+mod windows_audio_render_write_outcome_tests;
 
 #[cfg(test)]
 mod windows_audio_render_write_plan_tests;
