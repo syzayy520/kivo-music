@@ -1,3 +1,4 @@
+import { t } from '../../shared/i18n'
 import { queueData } from './queueData'
 import './queue.css'
 
@@ -5,8 +6,8 @@ export function QueuePreview() {
   return (
     <section className="km-queue">
       <div className="km-queue-head">
-        <p>Up Next</p>
-        <button type="button">Queue</button>
+        <p>{t('queue.upNext')}</p>
+        <button type="button">{t('player.queue')}</button>
       </div>
       {queueData.tracks.map((track) => (
         <article key={track.id}>

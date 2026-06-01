@@ -1,6 +1,8 @@
+import type { TranslationKey } from '../../shared/i18n'
+
 export const libraryCopy = {
-  eyebrow: 'Library',
-  title: 'Recently added to your local collection.',
-  statsTitle: 'Library Snapshot',
-  recentlyAddedTitle: 'Recently Added',
-}
+  eyebrow: 'library.eyebrow',
+  title: 'library.title',
+  statsTitle: 'library.statsTitle',
+  recentlyAddedTitle: 'home.shelves.recentlyAdded.eyebrow',
+} satisfies Record<string, TranslationKey>

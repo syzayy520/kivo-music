@@ -12,10 +12,10 @@ export function PlayerTrackInfo() {
       </section>
       <div className="km-player-track-actions" aria-label={t('player.trackActions.ariaLabel')}>
         <button type="button" aria-label={t('player.favoriteTrack.ariaLabel')} className="km-player-action">
-          Favorite
+          {t('common.favorite')}
         </button>
         <button type="button" aria-label={t('player.moreTrackActions.ariaLabel')} className="km-player-action">
-          More
+          {t('common.more')}
         </button>
       </div>
     </div>

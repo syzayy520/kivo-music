@@ -1,7 +1,9 @@
+import type { TranslationKey } from '../../shared/i18n'
+
 export const albumDetailCopy = {
-  eyebrow: 'Collected Album',
-  playLabel: 'Play Album',
-  shuffleLabel: 'Shuffle',
-  favoriteLabel: 'Favorite',
-  tracksLabel: 'Songs',
-}
+  eyebrow: 'albumDetail.collectedAlbum',
+  playLabel: 'albumDetail.playAlbum',
+  shuffleLabel: 'player.controls.shuffle',
+  favoriteLabel: 'common.favorite',
+  tracksLabel: 'albumDetail.songs',
+} satisfies Record<string, TranslationKey>
