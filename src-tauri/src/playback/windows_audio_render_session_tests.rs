@@ -51,3 +51,27 @@ fn available_frame_count_saturates_when_padding_exceeds_buffer() {
     assert_eq!(session.queued_padding_frames, 256);
     assert_eq!(session.available_frame_count, 0);
 }
+
+#[test]
+fn session_write_plan_uses_available_frame_count() {
+    let session = WindowsAudioRenderSessionState::ready(960).with_padding(300);
+    let plan = session.write_plan(800);
+
+    assert_eq!(plan.requested_frame_count, 800);
+    assert_eq!(plan.available_frame_count, 660);
+    assert_eq!(plan.writable_frame_count, 660);
+    assert_eq!(plan.deferred_frame_count, 140);
+    assert!(plan.can_write);
+}
+
+#[test]
+fn unavailable_session_write_plan_is_blocked() {
+    let session = WindowsAudioRenderSessionState::unavailable("not available");
+    let plan = session.write_plan(128);
+
+    assert_eq!(plan.requested_frame_count, 128);
+    assert_eq!(plan.available_frame_count, 0);
+    assert_eq!(plan.writable_frame_count, 0);
+    assert_eq!(plan.deferred_frame_count, 128);
+    assert!(!plan.can_write);
+}
