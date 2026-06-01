@@ -49,3 +49,23 @@ fn simple_control_commands_are_constructible() {
 
     assert_eq!(commands.len(), 7);
 }
+
+#[test]
+fn set_volume_command_keeps_level_payload() {
+    let command = PlaybackWorkerCommand::SetVolume { level: 0.8 };
+
+    match command {
+        PlaybackWorkerCommand::SetVolume { level } => assert_eq!(level, 0.8),
+        _ => panic!("expected set volume command"),
+    }
+}
+
+#[test]
+fn set_muted_command_keeps_flag_payload() {
+    let command = PlaybackWorkerCommand::SetMuted { muted: true };
+
+    match command {
+        PlaybackWorkerCommand::SetMuted { muted } => assert!(muted),
+        _ => panic!("expected set muted command"),
+    }
+}

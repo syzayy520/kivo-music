@@ -33,3 +33,15 @@ fn failed_transition_keeps_error_message() {
     assert_eq!(state.phase, PlaybackWorkerPhase::Failed);
     assert_eq!(state.last_error.as_deref(), Some("worker failed"));
 }
+
+#[test]
+fn mark_loaded_after_failed_clears_error() {
+    let mut state = PlaybackWorkerState::idle();
+
+    state.mark_failed("worker failed");
+    state.mark_loaded("track-3");
+
+    assert_eq!(state.phase, PlaybackWorkerPhase::Loaded);
+    assert_eq!(state.active_track_id.as_deref(), Some("track-3"));
+    assert!(state.last_error.is_none());
+}

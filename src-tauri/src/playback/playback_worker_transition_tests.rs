@@ -49,3 +49,26 @@ fn seek_volume_and_mute_do_not_change_phase() {
 
     assert_eq!(state.phase, PlaybackWorkerPhase::Loaded);
 }
+
+#[test]
+fn shutdown_command_moves_state_to_stopped() {
+    let mut state = PlaybackWorkerState::idle();
+    apply_command(&mut state, &PlaybackWorkerCommand::Load { track: track() });
+    apply_command(&mut state, &PlaybackWorkerCommand::Play);
+
+    apply_command(&mut state, &PlaybackWorkerCommand::Shutdown);
+
+    assert_eq!(state.phase, PlaybackWorkerPhase::Stopped);
+}
+
+#[test]
+fn load_after_failed_replaces_error_and_track() {
+    let mut state = PlaybackWorkerState::idle();
+    state.mark_failed("failed-before-reload");
+
+    apply_command(&mut state, &PlaybackWorkerCommand::Load { track: track() });
+
+    assert_eq!(state.phase, PlaybackWorkerPhase::Loaded);
+    assert_eq!(state.active_track_id.as_deref(), Some("track-101"));
+    assert!(state.last_error.is_none());
+}

@@ -32,7 +32,12 @@ fn assert_unsupported(result: Result<OutputRuntimeStatus, PlaybackError>, op: &s
 fn open_is_typed_unsupported() {
     let mut sink = UnsupportedOutputSink::new();
 
-    assert_unsupported(sink.open(&OutputSettings::default()), "open");
+    let mut settings = OutputSettings::default();
+    settings.selected_device_id = Some("device-1".to_string());
+
+    assert_unsupported(sink.open(&settings), "open");
+    let status = sink.status();
+    assert_eq!(status.active_device_id.as_deref(), Some("device-1"));
 }
 
 #[test]
@@ -50,4 +55,21 @@ fn pause_resume_flush_stop_are_typed_unsupported() {
     assert_unsupported(sink.resume(), "resume");
     assert_unsupported(sink.flush(), "flush");
     assert_unsupported(sink.stop(), "stop");
+    assert!(!sink.status().is_active);
+}
+
+#[test]
+fn close_resets_runtime_status() {
+    let mut sink = UnsupportedOutputSink::new();
+    let mut settings = OutputSettings::default();
+    settings.selected_device_id = Some("device-2".to_string());
+    let _ = sink.open(&settings);
+
+    let close_result = sink.close();
+
+    assert!(close_result.is_ok());
+    let status = sink.status();
+    assert!(status.active_device_id.is_none());
+    assert!(status.last_error.is_none());
+    assert!(!status.is_active);
 }

@@ -20,3 +20,23 @@ fn output_frame_keeps_stream_position_and_samples() {
     assert_eq!(output.position_ms, 12_345);
     assert_eq!(output.samples, vec![0.1, -0.1, 0.5, -0.5]);
 }
+
+#[test]
+fn output_frame_allows_empty_samples() {
+    let decoded = DecodedAudioFrame {
+        stream: AudioStreamInfo {
+            sample_rate_hz: 44_100,
+            channels: 1,
+            sample_format: AudioSampleFormat::Signed16,
+        },
+        position_ms: 0,
+        samples: vec![],
+    };
+
+    let output = OutputAudioFrame::from_decoded_frame(decoded);
+
+    assert_eq!(output.stream.sample_rate_hz, 44_100);
+    assert_eq!(output.stream.channels, 1);
+    assert_eq!(output.position_ms, 0);
+    assert!(output.samples.is_empty());
+}
