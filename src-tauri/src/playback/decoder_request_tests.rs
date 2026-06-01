@@ -43,3 +43,15 @@ fn open_request_keeps_owned_values_after_track_changes() {
     assert_eq!(request.track_id, "track-1");
     assert_eq!(request.source_path, "C:/Music/track-1.flac");
 }
+
+#[test]
+fn open_request_preserves_empty_source_path() {
+    let mut track = track();
+    track.id = TrackId("track-empty".to_string());
+    track.source_path = String::new();
+
+    let request = AudioDecoderOpenRequest::from_track(&track);
+
+    assert_eq!(request.track_id, "track-empty");
+    assert_eq!(request.source_path, "");
+}
