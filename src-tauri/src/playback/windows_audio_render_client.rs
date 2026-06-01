@@ -41,6 +41,7 @@ mod platform {
     use super::super::windows_audio_endpoint::platform::{
         create_device_enumerator, default_render_endpoint,
     };
+    use super::super::windows_audio_render_padding::platform::current_padding_frames;
     use super::{WindowsAudioRenderClientSnapshot, WindowsAudioRenderSessionState};
     use windows::Win32::Media::Audio::{IAudioRenderClient, AUDCLNT_SHAREMODE_SHARED};
     use windows::Win32::System::Com::CoTaskMemFree;
@@ -70,6 +71,7 @@ mod platform {
 
         let buffer_frame_count = unsafe { audio_client.GetBufferSize() }
             .map_err(|error| windows_audio_error("read buffer size", error))?;
+        let queued_padding_frames = current_padding_frames(&audio_client)?;
         let _render_client: IAudioRenderClient = unsafe { audio_client.GetService() }
             .map_err(|error| windows_audio_error("get render client service", error))?;
         unsafe { CoTaskMemFree(Some(raw_format.cast::<c_void>())) };
@@ -77,7 +79,8 @@ mod platform {
         Ok(WindowsAudioRenderClientSnapshot {
             render_client_available: true,
             buffer_frame_count: Some(buffer_frame_count),
-            session: WindowsAudioRenderSessionState::ready(buffer_frame_count),
+            session: WindowsAudioRenderSessionState::ready(buffer_frame_count)
+                .with_padding(queued_padding_frames),
             note: None,
         })
     }
