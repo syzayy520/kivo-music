@@ -125,3 +125,6 @@ mod playback_worker_state_tests;
 
 #[cfg(test)]
 mod playback_worker_transition_tests;
+
+#[cfg(test)]
+mod windows_audio_client_init_tests;
