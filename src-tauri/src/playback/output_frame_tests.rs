@@ -22,6 +22,23 @@ fn output_frame_keeps_stream_position_and_samples() {
 }
 
 #[test]
+fn output_frame_preserves_sample_format() {
+    let decoded = DecodedAudioFrame {
+        stream: AudioStreamInfo {
+            sample_rate_hz: 96_000,
+            channels: 6,
+            sample_format: AudioSampleFormat::Signed24,
+        },
+        position_ms: 250,
+        samples: vec![0.25, -0.25],
+    };
+
+    let output = OutputAudioFrame::from_decoded_frame(decoded);
+
+    assert!(matches!(output.stream.sample_format, AudioSampleFormat::Signed24));
+}
+
+#[test]
 fn output_frame_allows_empty_samples() {
     let decoded = DecodedAudioFrame {
         stream: AudioStreamInfo {
