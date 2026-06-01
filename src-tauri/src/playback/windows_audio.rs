@@ -59,21 +59,22 @@ mod platform {
 
     use super::super::errors::PlaybackResult;
     use super::super::windows_audio_com::platform::{windows_audio_error, WindowsComScope};
+    use super::super::windows_audio_endpoint::platform::{
+        create_device_enumerator, default_render_endpoint,
+    };
     use super::{
         WindowsAudioDevice, WindowsAudioDeviceSnapshot, WindowsAudioPlan, WindowsAudioStatus,
     };
     use windows::Win32::Media::Audio::{
-        eConsole, eRender, IMMDevice, IMMDeviceEnumerator, MMDeviceEnumerator, DEVICE_STATE_ACTIVE,
+        eRender, IMMDevice, IMMDeviceEnumerator, DEVICE_STATE_ACTIVE,
     };
-    use windows::Win32::System::Com::{CoCreateInstance, CoTaskMemFree, CLSCTX_ALL};
+    use windows::Win32::System::Com::CoTaskMemFree;
 
     pub fn query_windows_audio_devices(
         plan: &WindowsAudioPlan,
     ) -> PlaybackResult<WindowsAudioDeviceSnapshot> {
         let _com = WindowsComScope::initialize()?;
-        let enumerator: IMMDeviceEnumerator =
-            unsafe { CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL) }
-                .map_err(|error| windows_audio_error("create device enumerator", error))?;
+        let enumerator = create_device_enumerator()?;
 
         let default_device_id = default_render_device_id(&enumerator).ok();
         let collection = unsafe { enumerator.EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE) }
@@ -118,8 +119,7 @@ mod platform {
     }
 
     fn default_render_device_id(enumerator: &IMMDeviceEnumerator) -> PlaybackResult<String> {
-        let device = unsafe { enumerator.GetDefaultAudioEndpoint(eRender, eConsole) }
-            .map_err(|error| windows_audio_error("read default render endpoint", error))?;
+        let device = default_render_endpoint(enumerator)?;
         device_id(&device)
     }
 
