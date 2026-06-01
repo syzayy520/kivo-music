@@ -3,7 +3,25 @@ import type { MouseEvent } from 'react'
 import { windowChromeStyle } from './windowChromeStyle'
 import './windowChrome.css'
 
-const appWindow = getCurrentWindow()
+type KivoWindow = ReturnType<typeof getCurrentWindow>
+
+function getSafeCurrentWindow(): KivoWindow | null {
+  try {
+    return getCurrentWindow()
+  } catch {
+    return null
+  }
+}
+
+function runWindowAction(action: (window: KivoWindow) => Promise<void>) {
+  const currentWindow = getSafeCurrentWindow()
+
+  if (!currentWindow) {
+    return
+  }
+
+  void action(currentWindow).catch(() => undefined)
+}
 
 function startWindowDrag(event: MouseEvent<HTMLElement>) {
   if (event.button !== 0) {
@@ -16,7 +34,7 @@ function startWindowDrag(event: MouseEvent<HTMLElement>) {
     return
   }
 
-  void appWindow.startDragging()
+  runWindowAction((currentWindow) => currentWindow.startDragging())
 }
 
 function stopWindowControlPropagation(event: MouseEvent<HTMLButtonElement>) {
@@ -29,7 +47,7 @@ export function WindowChrome() {
       className="km-window-chrome"
       data-tauri-drag-region
       style={windowChromeStyle}
-      onDoubleClick={() => void appWindow.toggleMaximize()}
+      onDoubleClick={() => runWindowAction((currentWindow) => currentWindow.toggleMaximize())}
       onMouseDown={startWindowDrag}
     >
       <div className="km-window-drag" data-tauri-drag-region />
@@ -39,7 +57,7 @@ export function WindowChrome() {
           aria-label="Minimize"
           onDoubleClick={stopWindowControlPropagation}
           onMouseDown={stopWindowControlPropagation}
-          onClick={() => void appWindow.minimize()}
+          onClick={() => runWindowAction((currentWindow) => currentWindow.minimize())}
         >
           −
         </button>
@@ -48,7 +66,7 @@ export function WindowChrome() {
           aria-label="Maximize"
           onDoubleClick={stopWindowControlPropagation}
           onMouseDown={stopWindowControlPropagation}
-          onClick={() => void appWindow.toggleMaximize()}
+          onClick={() => runWindowAction((currentWindow) => currentWindow.toggleMaximize())}
         >
           □
         </button>
@@ -58,7 +76,7 @@ export function WindowChrome() {
           className="danger"
           onDoubleClick={stopWindowControlPropagation}
           onMouseDown={stopWindowControlPropagation}
-          onClick={() => void appWindow.close()}
+          onClick={() => runWindowAction((currentWindow) => currentWindow.close())}
         >
           ×
         </button>
