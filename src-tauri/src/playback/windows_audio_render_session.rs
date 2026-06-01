@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use super::windows_audio_render_write_plan::WindowsAudioRenderWritePlan;
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct WindowsAudioRenderSessionState {
     pub initialized: bool,
@@ -51,5 +53,9 @@ impl WindowsAudioRenderSessionState {
     pub fn with_written_frames(mut self, written_frames: u64) -> Self {
         self.written_frames = written_frames;
         self
+    }
+
+    pub fn write_plan(&self, requested_frame_count: u32) -> WindowsAudioRenderWritePlan {
+        WindowsAudioRenderWritePlan::plan(requested_frame_count, self.available_frame_count)
     }
 }
