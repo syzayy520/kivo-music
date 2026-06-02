@@ -48,7 +48,7 @@ export const premiumLocalHomeData = {
     {
       description: '1,286 首 · FLAC / ALAC',
       eyebrow: '高品质收藏',
-      iconName: 'sparkle',
+      iconName: 'next',
       id: 'hi-res-collection',
       imageUrl: artwork.winterMist,
       title: 'Hi-Res Collection',
@@ -57,7 +57,7 @@ export const premiumLocalHomeData = {
     {
       description: '12 首 · 42 分钟',
       eyebrow: '最近完整专辑',
-      iconName: 'album',
+      iconName: 'next',
       id: 'recent-complete-album',
       imageUrl: artwork.greenHills,
       title: 'Echo Bloom',
