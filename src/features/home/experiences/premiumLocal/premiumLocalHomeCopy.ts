@@ -15,7 +15,7 @@ export const premiumLocalHomeCopy = {
     statusAriaLabel: '本地资料库状态',
     statusLabel: '本地资料库',
     statusValue: '1,286 首 · 无损就绪',
-    title: '首页',
+    title: '欢迎回来',
   },
   player: {
     ariaLabel: 'premiumLocal 播放器视觉面板',

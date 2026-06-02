@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 export type PremiumLocalHomeIconName =
   | 'album'
   | 'library'
@@ -42,7 +44,7 @@ export function PremiumLocalHomeIcon({ name }: PremiumLocalHomeIconProps) {
   }
 }
 
-function Icon({ children }: { children: React.ReactNode }) {
+function Icon({ children }: { children: ReactNode }) {
   return (
     <svg className="km-home-premium-icon" viewBox="0 0 24 24" aria-hidden="true">
       {children}
