@@ -1,4 +1,5 @@
 import './playerBar.css'
+import './playerBarPremiumLocal.css'
 import { t } from '../../shared/i18n'
 import { PlayerControls } from './components/PlayerControls'
 import { PlayerMeta } from './components/PlayerMeta'
