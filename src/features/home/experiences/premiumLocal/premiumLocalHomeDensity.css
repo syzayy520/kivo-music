@@ -113,6 +113,18 @@
   border-radius: 14px;
 }
 
+.km-home-premium-album-art button {
+  right: 8px;
+  bottom: 8px;
+  width: 28px;
+  height: 28px;
+  opacity: 0;
+}
+
+.km-home-premium-album-card:hover .km-home-premium-album-art button {
+  opacity: 0.72;
+}
+
 .km-home-premium-album-card strong {
   margin-top: 7px;
   font-size: 13px;
