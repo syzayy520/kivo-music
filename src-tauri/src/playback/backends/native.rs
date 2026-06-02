@@ -44,6 +44,28 @@ impl KivoNativeEngine {
         Err(PlaybackError::UnsupportedOperation(message))
     }
 
+    fn load_pipeline_until_output_boundary(&mut self, track: &PlaybackTrack) -> PlaybackResult<()> {
+        let request = AudioDecoderOpenRequest::from_track(track);
+        self.pipeline.open_decoder(request, 0)?;
+        self.pipeline.schedule_decode_step()?;
+
+        match self.pipeline.schedule_output_submit_step() {
+            Ok(()) => Ok(()),
+            Err(PlaybackError::UnsupportedOperation(_)) => Ok(()),
+            Err(error) => Err(error),
+        }
+    }
+
+    fn unsupported_load(
+        &mut self,
+        pipeline_error: Option<PlaybackError>,
+    ) -> PlaybackResult<PlaybackState> {
+        let message = unsupported_operation_message("load");
+        self.state.error =
+            Some(pipeline_error.map_or_else(|| message.clone(), |error| error.to_string()));
+        Err(PlaybackError::UnsupportedOperation(message))
+    }
+
     fn record_error(&mut self, error: PlaybackError) -> PlaybackResult<PlaybackState> {
         self.state.error = Some(error.to_string());
         Err(error)
@@ -67,14 +89,11 @@ impl PlaybackEngine for KivoNativeEngine {
     }
 
     fn load(&mut self, track: PlaybackTrack) -> PlaybackResult<PlaybackState> {
-        let request = AudioDecoderOpenRequest::from_track(&track);
-        let _ = self.pipeline.open_decoder(request, 0);
-        let _ = self.pipeline.schedule_decode_step();
-        let _ = self.pipeline.schedule_output_submit_step();
+        let pipeline_error = self.load_pipeline_until_output_boundary(&track).err();
         self.playback.load_track(track);
         self.state.current_track = self.playback.current_track();
         self.state.status = self.playback.current_status();
-        self.unsupported("load")
+        self.unsupported_load(pipeline_error)
     }
 
     fn play(&mut self) -> PlaybackResult<PlaybackState> {

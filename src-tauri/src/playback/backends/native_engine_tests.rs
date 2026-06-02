@@ -70,10 +70,7 @@ fn load_keeps_track_and_returns_typed_unsupported() {
             .map(|track| track.title.as_str()),
         Some("Track 1")
     );
-    assert_eq!(
-        state.error.as_deref(),
-        Some("kivo core audio load is not implemented yet")
-    );
+    assert_eq!(state.error.as_deref(), Some("unsupported format: flac"));
 }
 
 #[test]
@@ -265,4 +262,28 @@ fn load_with_track_without_source_path_extension_is_still_typed_unsupported() {
         }
         other => panic!("expected unsupported operation, got {other:?}"),
     }
+}
+
+#[test]
+fn load_records_pipeline_error_when_decoder_open_fails_but_keeps_public_load_unsupported() {
+    let mut engine = KivoNativeEngine::new();
+
+    let result = engine.load(track());
+
+    match result {
+        Err(PlaybackError::UnsupportedOperation(message)) => {
+            assert_eq!(message, "kivo core audio load is not implemented yet");
+        }
+        other => panic!("expected unsupported operation, got {other:?}"),
+    }
+
+    let state = engine.current_state();
+    assert_eq!(
+        state
+            .current_track
+            .as_ref()
+            .map(|track| track.title.as_str()),
+        Some("Track 1")
+    );
+    assert_eq!(state.error.as_deref(), Some("unsupported format: flac"));
 }
