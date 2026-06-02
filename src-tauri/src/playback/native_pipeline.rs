@@ -1,9 +1,12 @@
+use std::fmt;
+
 use serde::{Deserialize, Serialize};
 
-use super::decoder::AudioStreamInfo;
+use super::decoder::{AudioDecoder, AudioStreamInfo};
 use super::decoder_request::AudioDecoderOpenRequest;
 use super::decoder_runtime_state::DecoderRuntimeState;
 use super::decoder_session::DecoderSession;
+use super::decoders::factory::create_decoder_for_path;
 use super::errors::{PlaybackError, PlaybackResult};
 use super::output::{AudioOutputFrame, OutputRuntimeStatus, OutputSettings};
 use super::playback_worker_command::PlaybackWorkerCommand;
@@ -17,11 +20,23 @@ pub struct NativePipelineState {
     pub decoder_state: DecoderRuntimeState,
     pub output_settings: OutputSettings,
     pub output_status: OutputRuntimeStatus,
+    pub last_decoded_frame: Option<AudioOutputFrame>,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Default)]
 pub struct NativePipeline {
     state: NativePipelineState,
+    decoder: Option<Box<dyn AudioDecoder>>,
+}
+
+impl fmt::Debug for NativePipeline {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("NativePipeline")
+            .field("state", &self.state)
+            .field("decoder_open", &self.decoder.is_some())
+            .finish()
+    }
 }
 
 impl Default for NativePipelineState {
@@ -32,6 +47,7 @@ impl Default for NativePipelineState {
             decoder_state: DecoderRuntimeState::idle(),
             output_settings: OutputSettings::default(),
             output_status: OutputRuntimeStatus::default(),
+            last_decoded_frame: None,
         }
     }
 }
@@ -61,6 +77,35 @@ impl NativePipeline {
 
     pub fn set_decoder_request(&mut self, request: AudioDecoderOpenRequest) {
         self.state.decoder_request = Some(request);
+    }
+
+    pub fn open_decoder(
+        &mut self,
+        request: AudioDecoderOpenRequest,
+        opened_at_ms: u64,
+    ) -> PlaybackResult<DecoderSession> {
+        self.state.decoder_state.begin_opening();
+        self.state.decoder_request = Some(request.clone());
+        self.state.decoder_session = None;
+        self.state.last_decoded_frame = None;
+        self.decoder = None;
+
+        let mut decoder = create_decoder_for_path(&request.source_path).map_err(|error| {
+            self.state.decoder_state.mark_failed(error.to_string());
+            error
+        })?;
+
+        let stream_info = decoder.open(&request.source_path).map_err(|error| {
+            self.state.decoder_state.mark_failed(error.to_string());
+            error
+        })?;
+
+        let session = DecoderSession::from_open_request(&request, stream_info, opened_at_ms);
+        self.state.decoder_session = Some(session.clone());
+        self.state.decoder_state.mark_open();
+        self.decoder = Some(decoder);
+
+        Ok(session)
     }
 
     pub fn configure_decoder_open(
@@ -156,9 +201,32 @@ impl NativePipeline {
     }
 
     pub fn schedule_decode_step(&mut self) -> PlaybackResult<()> {
-        Err(PlaybackError::UnsupportedOperation(
-            "native pipeline schedule_decode_step is not implemented yet".to_string(),
-        ))
+        let decoder = self.decoder.as_mut().ok_or_else(|| {
+            PlaybackError::Backend("native pipeline decoder is not open".to_string())
+        })?;
+
+        let frame = decoder.next_frame().map_err(|error| {
+            self.state.decoder_state.mark_failed(error.to_string());
+            error
+        })?;
+
+        match frame {
+            Some(frame) => {
+                self.update_decoder_position(frame.position_ms);
+                self.count_decoded_frame();
+                self.state.last_decoded_frame = Some(AudioOutputFrame {
+                    stream: frame.stream,
+                    position_ms: frame.position_ms,
+                    samples: frame.samples,
+                });
+                Ok(())
+            }
+            None => {
+                self.state.decoder_state.begin_draining();
+                self.state.last_decoded_frame = None;
+                Ok(())
+            }
+        }
     }
 
     pub fn submit(&mut self) -> PlaybackResult<()> {
