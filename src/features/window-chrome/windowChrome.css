@@ -9,6 +9,10 @@
   user-select: none;
 }
 
+.km-window-traffic-lights {
+  display: none;
+}
+
 .km-window-drag {
   height: 100%;
   min-width: 0;

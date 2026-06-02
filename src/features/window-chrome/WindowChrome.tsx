@@ -2,6 +2,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import type { MouseEvent } from 'react'
 import { windowChromeStyle } from './windowChromeStyle'
 import './windowChrome.css'
+import './windowChromePremiumLocal.css'
 
 type KivoWindow = ReturnType<typeof getCurrentWindow>
 
@@ -50,6 +51,11 @@ export function WindowChrome() {
       onDoubleClick={() => runWindowAction((currentWindow) => currentWindow.toggleMaximize())}
       onMouseDown={startWindowDrag}
     >
+      <div className="km-window-traffic-lights" aria-hidden="true" data-tauri-drag-region>
+        <span className="km-window-traffic-light km-window-traffic-light-close" />
+        <span className="km-window-traffic-light km-window-traffic-light-minimize" />
+        <span className="km-window-traffic-light km-window-traffic-light-zoom" />
+      </div>
       <div className="km-window-drag" data-tauri-drag-region />
       <div className="km-window-controls">
         <button

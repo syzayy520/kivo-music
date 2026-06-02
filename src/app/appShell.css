@@ -47,6 +47,17 @@
   background-clip: content-box;
 }
 
+.km-app[data-shell-mode='premiumLocal'] {
+  --km-shell-top-row: 34px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(244, 243, 240, 0.94)),
+    var(--km-window);
+}
+
+.km-app[data-shell-mode='premiumLocal'] .km-stage {
+  grid-row: 2 / 4;
+}
+
 @media (prefers-color-scheme: dark) {
   .km-app {
     background: var(--km-window);
@@ -74,5 +85,9 @@
 @media (max-width: 1120px) {
   .km-app {
     grid-template-columns: var(--km-shell-sidebar-compact, 224px) minmax(0, 1fr);
+  }
+
+  .km-app[data-shell-mode='premiumLocal'] .km-window-chrome {
+    grid-template-columns: var(--km-shell-sidebar-compact, 224px) minmax(0, 1fr) auto;
   }
 }
