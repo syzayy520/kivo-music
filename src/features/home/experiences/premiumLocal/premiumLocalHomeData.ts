@@ -46,16 +46,16 @@ export const premiumLocalHomeData = {
   },
   features: [
     {
-      description: 'FLAC / ALAC · 24-bit',
+      description: '1,286 首 · FLAC / ALAC',
       eyebrow: '高品质收藏',
       iconName: 'sparkle',
       id: 'hi-res-collection',
-      imageUrl: artwork.frequencyBlue,
+      imageUrl: artwork.winterMist,
       title: 'Hi-Res Collection',
       tone: 'dark',
     },
     {
-      description: 'Nova District · 12 首 · 42 分钟',
+      description: '12 首 · 42 分钟',
       eyebrow: '最近完整专辑',
       iconName: 'album',
       id: 'recent-complete-album',
@@ -70,6 +70,7 @@ export const premiumLocalHomeData = {
     { artist: 'The Vernon Spring', id: 'recent-added-river-run', imageUrl: artwork.oceanWave, meta: 'Lossless · FLAC', title: 'River Run' },
     { artist: 'Yuno', id: 'recent-added-blest', imageUrl: artwork.springBloom, meta: 'Local · AAC', title: 'Blest' },
     { artist: 'Local Natives', id: 'recent-added-ultrablur', imageUrl: artwork.frequencyBlue, meta: 'Hi-Res · 96 kHz', title: 'Ultrablur Nights' },
+    { artist: 'Nao', id: 'recent-added-jupiter', imageUrl: artwork.beamSky, meta: 'Local · AAC', title: 'Jupiter' },
   ] satisfies PremiumLocalAlbumCard[],
   recentlyPlayed: [
     { artist: 'Luna Vale', id: 'recent-played-midnight-archive', imageUrl: artwork.pinkHill, meta: 'Lossless · FLAC · 24-bit', title: 'Midnight Archive' },
@@ -77,6 +78,7 @@ export const premiumLocalHomeData = {
     { artist: 'Solstice', id: 'recent-played-golden-hour', imageUrl: artwork.beamSky, meta: 'Local · ALAC', title: 'Golden Hour' },
     { artist: 'Luna Vale', id: 'recent-played-afterglow', imageUrl: artwork.moonPink, meta: 'Local · AAC', title: 'Afterglow' },
     { artist: 'Orbit Room', id: 'recent-played-velvet-lights', imageUrl: artwork.purpleCloud, meta: 'Lossless · FLAC', title: 'Velvet Lights' },
+    { artist: 'Yuno', id: 'recent-played-paper-planes', imageUrl: artwork.winterMist, meta: 'Local · AAC', title: 'Paper Planes' },
   ] satisfies PremiumLocalAlbumCard[],
   player: {
     artist: 'Luna Vale',
