@@ -5,6 +5,56 @@
 > Status: documentation-only  
 > Related audit: `docs/audio-core-design-audit.md`
 
+## 0. Mandatory Iron Law: No Code Piling
+
+This rule is mandatory and must be checked before every audio-core code change.
+
+Kivo audio code must not be piled into large mixed files. A file can only have one clear responsibility. When a file becomes large or starts taking on a second responsibility, the correct action is to split it by layer, function, or sub-responsibility. Do not keep adding unrelated logic just because the file already exists.
+
+Hard requirements:
+
+- [ ] One source file = one responsibility.
+- [ ] One folder = one responsibility class.
+- [ ] Large files must be split when they become hard to review or mix responsibilities.
+- [ ] Do not mix manager logic, decoder logic, output logic, event logic, queue logic, and command logic in the same file.
+- [ ] Do not add helper functions to a random existing file just because it is convenient.
+- [ ] Do not create vague dumping files such as `utils.rs`, `helpers.rs`, `misc.rs`, or `common.rs` unless the responsibility is narrow, named, and justified.
+- [ ] If a change needs a new responsibility, create a focused new file/module for that responsibility.
+- [ ] If a file grows because tests or types are being added, move tests/types to focused sibling files when appropriate.
+- [ ] If the developer cannot explain the file's single job in one sentence, the file is already wrong.
+
+Review threshold:
+
+- Around 200-250 lines is a warning zone, not an automatic failure.
+- Exceeding that range requires a written justification in the delivery report.
+- If a file exceeds that range because multiple responsibilities are mixed, it must be split before delivery.
+- A smaller file can still be rejected if it mixes responsibilities.
+
+Bad example:
+
+```text
+manager.rs does all of this:
+- queue selection
+- decoder opening
+- output frame submission
+- WASAPI device policy
+- event mapping
+- metadata probing
+```
+
+Correct example:
+
+```text
+manager.rs                 high-level coordination only
+native_pipeline.rs         decode/output orchestration only
+decoders/wav_decoder.rs    WAV decoding only
+native_output.rs           native output sink boundary only
+playback_event_bus.rs      event dispatch/bus only
+commands.rs                Tauri command boundary only
+```
+
+Any ticket that violates this rule must be rejected even if it compiles.
+
 ## 1. Purpose
 
 This checklist turns the Kivo audio-core design rules into concrete review items. Every future backend audio ticket must use this document before implementation and again before delivery.
@@ -88,10 +138,19 @@ Review items:
 - [ ] Tests are either in focused test files or tightly scoped module tests.
 - [ ] No drive-by refactor is mixed into the ticket.
 
-Soft warning threshold:
+Hard split requirements:
 
-- [ ] If a touched file becomes large, justify why it does not need splitting.
-- [ ] If a file is starting to coordinate more than one child layer, split it.
+- [ ] If a file starts doing more than one job, split it before delivery.
+- [ ] If a feature needs a new responsibility, add a focused file instead of piling into an existing file.
+- [ ] If a touched file becomes large because unrelated logic was added, split by responsibility.
+- [ ] If the only reason code is in a file is convenience, move it to the correct layer/file.
+
+Review threshold:
+
+- [ ] Around 200-250 lines requires extra attention.
+- [ ] Over the threshold requires written justification in delivery.
+- [ ] Over the threshold with mixed responsibilities is not allowed.
+- [ ] A file under the threshold can still fail if it mixes responsibilities.
 
 ## 5. Truthfulness Checklist
 
@@ -366,6 +425,8 @@ Delivery must report:
 - [ ] Layer ownership check result.
 - [ ] Truthfulness check result.
 - [ ] Single-responsibility check result.
+- [ ] No-code-piling check result.
+- [ ] Any file over the warning threshold and the split/justification decision.
 
 ## 19. Recommended Next Ticket
 
@@ -397,6 +458,8 @@ Forbidden direction:
 - [ ] Do not modify frontend.
 - [ ] Do not claim playback is working.
 - [ ] Do not merge metadata scraping into decoder.
+- [ ] Do not pile multiple new responsibilities into one existing file.
+- [ ] Do not exceed the file warning threshold without split/justification.
 
 ## 20. Final Rule
 
@@ -413,4 +476,6 @@ Single-responsibility.
 Tree-governed.
 No fake playback claims.
 No giant mixed files.
+No code piling.
+Split large/mixed files before delivery.
 ```
