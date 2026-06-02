@@ -2,15 +2,15 @@
   grid-column: 1 / 3;
   min-height: 70px;
   grid-template-columns:
-    minmax(250px, 318px)
-    minmax(360px, 1fr)
-    minmax(210px, 270px);
-  gap: clamp(14px, 1.8vw, 22px);
+    minmax(318px, 350px)
+    minmax(340px, 1fr)
+    minmax(260px, 318px);
+  gap: clamp(14px, 1.6vw, 20px);
   margin:
     0
     clamp(18px, 2.2vw, 28px)
     14px;
-  padding: 9px 15px;
+  padding: 9px 20px;
   border-color: rgba(23, 23, 27, 0.08);
   border-radius: 24px;
   background-color: rgba(255, 255, 255, 0.76);
@@ -27,7 +27,8 @@
 }
 
 .km-app[data-shell-mode='premiumLocal'] .km-player-track {
-  grid-template-columns: 52px minmax(0, 1fr) auto;
+  min-width: 0;
+  grid-template-columns: 52px minmax(138px, 1fr) max-content;
   gap: 12px;
 }
 
@@ -49,11 +50,29 @@
   font-size: 12px;
 }
 
+.km-app[data-shell-mode='premiumLocal'] .km-player-track-actions {
+  gap: 8px;
+  white-space: nowrap;
+}
+
 .km-app[data-shell-mode='premiumLocal'] .km-player-action {
-  width: 28px;
-  height: 28px;
-  color: rgba(56, 53, 62, 0.68);
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 30px;
+  padding: 0;
+  color: rgba(56, 53, 62, 0.72);
+  line-height: 1;
+  white-space: nowrap;
   background: transparent;
+}
+
+.km-app[data-shell-mode='premiumLocal'] .km-player-action span {
+  display: block;
+  font-size: 20px;
+  line-height: 1;
 }
 
 .km-app[data-shell-mode='premiumLocal'] .km-player-core {
@@ -94,15 +113,16 @@
 }
 
 .km-app[data-shell-mode='premiumLocal'] .km-player-meta {
-  gap: 12px;
+  gap: 13px;
   color: rgba(77, 74, 83, 0.68);
   font-size: 12px;
 }
 
 .km-app[data-shell-mode='premiumLocal'] .km-player-quality {
-  max-width: 120px;
-  padding: 6px 10px;
+  max-width: 142px;
+  padding: 6px 11px;
   border-radius: 999px;
+  color: rgba(48, 46, 54, 0.76);
   background: rgba(255, 255, 255, 0.58);
 }
 
@@ -121,15 +141,27 @@
 }
 
 .km-app[data-shell-mode='premiumLocal'] .km-player-queue {
-  min-width: 72px;
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
   color: rgba(29, 28, 34, 0.78);
+  line-height: 1;
   background: rgba(255, 255, 255, 0.58);
+}
+
+.km-app[data-shell-mode='premiumLocal'] .km-player-queue span {
+  display: block;
+  font-size: 20px;
+  line-height: 1;
 }
 
 @media (max-width: 1120px) {
   .km-app[data-shell-mode='premiumLocal'] .km-player {
     grid-template-columns:
-      minmax(220px, 280px)
+      minmax(300px, 330px)
       minmax(280px, 1fr)
       auto;
     gap: 12px;
