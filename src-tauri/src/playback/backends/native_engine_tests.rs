@@ -74,7 +74,7 @@ fn load_keeps_track_and_returns_typed_unsupported() {
 }
 
 #[test]
-fn load_opens_wav_decoder_session_and_decodes_one_frame_but_keeps_public_load_unsupported() {
+fn load_opens_wav_decoder_session_and_decodes_one_frame_submitted_to_null_sink() {
     let mut engine = KivoNativeEngine::new();
     let (track, path) = wav_track();
 
@@ -103,10 +103,8 @@ fn load_opens_wav_decoder_session_and_decodes_one_frame_but_keeps_public_load_un
     assert_eq!(frame.stream.sample_rate_hz, 44_100);
     assert_eq!(frame.stream.channels, 2);
     assert_eq!(frame.samples.len(), 4);
-    assert_eq!(
-        pipeline.output_status.last_error.as_deref(),
-        Some("kivo native output submit frame is not implemented yet")
-    );
+    assert!(pipeline.output_status.last_error.is_none());
+    assert_eq!(pipeline.output_status.pending_frames, 1);
 
     fs::remove_file(path).expect("remove wav file");
 }

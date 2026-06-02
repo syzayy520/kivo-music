@@ -2,24 +2,15 @@ use super::wav_test_file::write_test_wav;
 use super::*;
 
 #[test]
-fn start_routes_to_output_open_boundary() {
+fn start_opens_null_sink_output_boundary() {
     let mut pipeline = NativePipeline::new();
 
-    let result = pipeline.start();
-
-    match result {
-        Err(PlaybackError::UnsupportedOperation(message)) => {
-            assert_eq!(message, "kivo native output open is not implemented yet");
-        }
-        Err(other) => panic!("expected unsupported output open, got {other}"),
-        Ok(_) => panic!("expected unsupported output open, got success"),
-    }
+    pipeline.start().expect("null sink open should succeed");
 
     let state = pipeline.state();
-    assert_eq!(
-        state.output_status.last_error.as_deref(),
-        Some("kivo native output open is not implemented yet")
-    );
+    assert!(state.output_status.is_open);
+    assert!(state.output_status.is_active);
+    assert!(state.output_status.last_error.is_none());
 }
 
 #[test]

@@ -36,7 +36,7 @@ fn schedule_decode_step_records_first_wav_frame() {
 }
 
 #[test]
-fn schedule_output_submit_step_routes_decoded_frame_to_output_boundary() {
+fn schedule_output_submit_step_routes_decoded_frame_to_null_sink_boundary() {
     let path = write_test_wav();
     let mut pipeline = NativePipeline::new();
     let request = AudioDecoderOpenRequest {
@@ -49,24 +49,13 @@ fn schedule_output_submit_step_routes_decoded_frame_to_output_boundary() {
         .schedule_decode_step()
         .expect("schedule decode step");
 
-    let result = pipeline.schedule_output_submit_step();
-
-    match result {
-        Err(PlaybackError::UnsupportedOperation(message)) => {
-            assert_eq!(
-                message,
-                "kivo native output submit frame is not implemented yet"
-            );
-        }
-        Err(other) => panic!("expected unsupported operation, got {other}"),
-        Ok(_) => panic!("expected unsupported output submit, got success"),
-    }
+    pipeline
+        .schedule_output_submit_step()
+        .expect("null sink should accept decoded frame");
 
     let state = pipeline.state();
-    assert_eq!(
-        state.output_status.last_error.as_deref(),
-        Some("kivo native output submit frame is not implemented yet")
-    );
+    assert!(state.output_status.last_error.is_none());
+    assert_eq!(state.output_status.pending_frames, 1);
 
     pipeline.shutdown().expect("shutdown pipeline");
     fs::remove_file(path).expect("remove wav test file");

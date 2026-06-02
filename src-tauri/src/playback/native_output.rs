@@ -1,56 +1,54 @@
-use super::errors::{PlaybackError, PlaybackResult};
+use super::errors::PlaybackResult;
+use super::native_null_output::KivoNullOutputSink;
 use super::output::{AudioOutputFrame, OutputRuntimeStatus, OutputSettings, OutputSink};
 
+/// Native output facade for the native audio pipeline.
+///
+/// Currently delegates to [`KivoNullOutputSink`] as the output boundary.
+/// This keeps the pipeline decoupled from any specific output implementation.
 #[derive(Clone, Debug, Default)]
 pub struct KivoNativeOutputSink {
-    status: OutputRuntimeStatus,
+    inner: KivoNullOutputSink,
 }
 
 impl KivoNativeOutputSink {
     pub fn new() -> Self {
-        Self::default()
-    }
-
-    fn unsupported(&mut self, operation: &str) -> PlaybackResult<OutputRuntimeStatus> {
-        let message = format!("kivo native output {operation} is not implemented yet");
-        self.status.last_error = Some(message.clone());
-        Err(PlaybackError::UnsupportedOperation(message))
+        Self {
+            inner: KivoNullOutputSink::new(),
+        }
     }
 }
 
 impl OutputSink for KivoNativeOutputSink {
     fn open(&mut self, settings: &OutputSettings) -> PlaybackResult<OutputRuntimeStatus> {
-        self.status.active_device_id = settings.selected_device_id.clone();
-        self.unsupported("open")
+        self.inner.open(settings)
     }
 
-    fn submit_frame(&mut self, _frame: AudioOutputFrame) -> PlaybackResult<OutputRuntimeStatus> {
-        self.unsupported("submit frame")
+    fn submit_frame(&mut self, frame: AudioOutputFrame) -> PlaybackResult<OutputRuntimeStatus> {
+        self.inner.submit_frame(frame)
     }
 
     fn pause(&mut self) -> PlaybackResult<OutputRuntimeStatus> {
-        self.unsupported("pause")
+        self.inner.pause()
     }
 
     fn resume(&mut self) -> PlaybackResult<OutputRuntimeStatus> {
-        self.unsupported("resume")
+        self.inner.resume()
     }
 
     fn flush(&mut self) -> PlaybackResult<OutputRuntimeStatus> {
-        self.unsupported("flush")
+        self.inner.flush()
     }
 
     fn stop(&mut self) -> PlaybackResult<OutputRuntimeStatus> {
-        self.status.is_active = false;
-        self.unsupported("stop")
+        self.inner.stop()
     }
 
     fn status(&self) -> OutputRuntimeStatus {
-        self.status.clone()
+        self.inner.status()
     }
 
     fn close(&mut self) -> PlaybackResult<()> {
-        self.status = OutputRuntimeStatus::default();
-        Ok(())
+        self.inner.close()
     }
 }

@@ -49,6 +49,7 @@ pub mod types;
 pub mod volume;
 pub mod windows_audio;
 
+mod native_null_output;
 mod native_pipeline_decoder;
 mod native_pipeline_output;
 mod native_pipeline_runtime;
