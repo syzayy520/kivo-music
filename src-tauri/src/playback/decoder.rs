@@ -24,7 +24,7 @@ pub struct DecodedAudioFrame {
     pub samples: Vec<f32>,
 }
 
-pub trait AudioDecoder {
+pub trait AudioDecoder: Send {
     fn open(&mut self, path: &str) -> PlaybackResult<AudioStreamInfo>;
     fn next_frame(&mut self) -> PlaybackResult<Option<DecodedAudioFrame>>;
     fn seek(&mut self, position_ms: u64) -> PlaybackResult<()>;
