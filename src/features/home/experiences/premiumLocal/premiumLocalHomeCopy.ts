@@ -7,9 +7,9 @@ export const premiumLocalHomeCopy = {
   showAllLabel: '查看全部',
   spotlightAriaLabel: '首页焦点内容',
   header: {
-    description: '继续播放你的本地收藏，安静发现最近加入的专辑。',
-    eyebrow: 'Kivo Music',
-    title: '欢迎回来',
+    description: '来自你的资料库。',
+    eyebrow: '',
+    title: '首页',
   },
   player: {
     ariaLabel: 'premiumLocal 播放器视觉面板',
