@@ -1,6 +1,5 @@
 import type { PremiumLocalAlbumCard } from './premiumLocalHomeData'
 import { premiumLocalHomeCopy } from './premiumLocalHomeCopy'
-import { PremiumLocalHomeIcon } from './PremiumLocalHomeIcon'
 
 type PremiumLocalHomeShelfProps = {
   eyebrow: string
@@ -25,11 +24,7 @@ export function PremiumLocalHomeShelf({ eyebrow, title, items }: PremiumLocalHom
               className="km-home-premium-album-art"
               style={{ backgroundImage: `url(${item.imageUrl})` }}
               aria-hidden="true"
-            >
-              <button type="button" aria-label={premiumLocalHomeCopy.playAlbumAriaLabel.replace('{album}', item.title)}>
-                <PremiumLocalHomeIcon name="play" />
-              </button>
-            </div>
+            />
             <strong>{item.title}</strong>
             <span>{item.artist}</span>
             <p>{item.meta}</p>
