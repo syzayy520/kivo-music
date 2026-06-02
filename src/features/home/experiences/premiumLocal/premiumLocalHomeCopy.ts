@@ -9,7 +9,7 @@ export const premiumLocalHomeCopy = {
   header: {
     description: '来自你的资料库。',
     eyebrow: '',
-    title: '首页',
+    title: '',
   },
   player: {
     ariaLabel: 'premiumLocal 播放器视觉面板',
@@ -24,7 +24,7 @@ export const premiumLocalHomeCopy = {
     volumeAriaLabel: '音量',
   },
   shelves: {
-    recentlyAdded: { eyebrow: '最近加入', title: '资料库新加入。' },
-    recentlyPlayed: { eyebrow: '最近播放', title: '继续聆听。' },
+    recentlyAdded: { eyebrow: '', title: '最近加入' },
+    recentlyPlayed: { eyebrow: '', title: '最近播放' },
   },
 } as const
