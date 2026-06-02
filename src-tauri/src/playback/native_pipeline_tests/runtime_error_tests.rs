@@ -1,3 +1,4 @@
+use super::wav_test_file::write_test_wav;
 use super::*;
 
 #[test]
@@ -95,12 +96,6 @@ fn shutdown_closes_empty_pipeline_without_fake_runtime_error() {
 fn worker_commands_are_typed_unsupported() {
     let mut pipeline = NativePipeline::new();
     let commands = vec![
-        (
-            PlaybackWorkerCommand::Load {
-                track: worker_track(),
-            },
-            "load",
-        ),
         (PlaybackWorkerCommand::Play, "play"),
         (PlaybackWorkerCommand::Pause, "pause"),
         (PlaybackWorkerCommand::Resume, "resume"),
@@ -116,6 +111,38 @@ fn worker_commands_are_typed_unsupported() {
     for (command, operation) in commands {
         assert_worker_unsupported(pipeline.handle_worker_command(&command), operation);
     }
+}
+
+#[test]
+fn worker_load_opens_decoder_and_decodes_first_wav_frame() {
+    let path = write_test_wav();
+    let mut pipeline = NativePipeline::new();
+    let track = PlaybackTrack {
+        id: TrackId("worker-wav-load-1".to_string()),
+        title: "Worker Wav Load".to_string(),
+        artist: "Worker Artist".to_string(),
+        source_path: path.clone(),
+    };
+
+    pipeline
+        .handle_worker_command(&PlaybackWorkerCommand::Load { track })
+        .expect("worker load wav");
+
+    let state = pipeline.state();
+    let session = state
+        .decoder_session
+        .expect("worker load should keep decoder session");
+    let frame = state
+        .last_decoded_frame
+        .expect("worker load should decode one frame");
+
+    assert_eq!(session.track_id, "worker-wav-load-1");
+    assert_eq!(session.decoded_frame_count, 1);
+    assert_eq!(frame.stream.sample_rate_hz, 48_000);
+    assert_eq!(frame.stream.channels, 2);
+
+    pipeline.shutdown().expect("shutdown pipeline");
+    std::fs::remove_file(path).expect("remove wav test file");
 }
 
 #[test]

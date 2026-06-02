@@ -1,7 +1,12 @@
 use super::super::*;
 
+fn assert_load_backend_error(error: Option<&str>) {
+    let message = error.expect("load should record backend error");
+    assert!(message.starts_with("backend error:"));
+}
+
 #[test]
-fn route_load_records_runtime_unsupported_context() {
+fn route_load_records_runtime_backend_error_context() {
     let mut pipeline = NativePipeline::new();
     let state = PlaybackWorkerState::idle();
     let command = PlaybackWorkerCommand::Load {
@@ -13,14 +18,11 @@ fn route_load_records_runtime_unsupported_context() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Loaded);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-load-6"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command load is not implemented yet")
-    );
+    assert_load_backend_error(snapshot.output_status.last_error.as_deref());
 }
 
 #[test]
-fn route_load_from_playing_records_runtime_unsupported_context() {
+fn route_load_from_playing_records_runtime_backend_error_context() {
     let mut pipeline = NativePipeline::new();
     let mut state = PlaybackWorkerState::idle();
     state.mark_loaded("edge-before-load-ctx-1");
@@ -34,14 +36,11 @@ fn route_load_from_playing_records_runtime_unsupported_context() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Loaded);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-load-ctx-1"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command load is not implemented yet")
-    );
+    assert_load_backend_error(snapshot.output_status.last_error.as_deref());
 }
 
 #[test]
-fn route_load_from_paused_records_runtime_unsupported_context() {
+fn route_load_from_paused_records_runtime_backend_error_context() {
     let mut pipeline = NativePipeline::new();
     let mut state = PlaybackWorkerState::idle();
     state.mark_loaded("edge-before-load-ctx-2");
@@ -55,14 +54,11 @@ fn route_load_from_paused_records_runtime_unsupported_context() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Loaded);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-load-ctx-2"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command load is not implemented yet")
-    );
+    assert_load_backend_error(snapshot.output_status.last_error.as_deref());
 }
 
 #[test]
-fn route_load_from_stopped_records_runtime_unsupported_context() {
+fn route_load_from_stopped_records_runtime_backend_error_context() {
     let mut pipeline = NativePipeline::new();
     let mut state = PlaybackWorkerState::idle();
     state.mark_loaded("edge-before-load-ctx-3");
@@ -76,14 +72,11 @@ fn route_load_from_stopped_records_runtime_unsupported_context() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Loaded);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-load-ctx-3"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command load is not implemented yet")
-    );
+    assert_load_backend_error(snapshot.output_status.last_error.as_deref());
 }
 
 #[test]
-fn route_load_from_failed_records_runtime_unsupported_context() {
+fn route_load_from_failed_records_runtime_backend_error_context() {
     let mut pipeline = NativePipeline::new();
     let mut state = PlaybackWorkerState::idle();
     state.mark_loaded("edge-before-load-ctx-4");
@@ -97,8 +90,5 @@ fn route_load_from_failed_records_runtime_unsupported_context() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Loaded);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-load-ctx-4"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command load is not implemented yet")
-    );
+    assert_load_backend_error(snapshot.output_status.last_error.as_deref());
 }

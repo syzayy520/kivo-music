@@ -1,8 +1,10 @@
+use super::decoder_request::AudioDecoderOpenRequest;
 use super::errors::{PlaybackError, PlaybackResult};
 use super::native_pipeline::NativePipeline;
 use super::playback_worker_command::PlaybackWorkerCommand;
 use super::playback_worker_state::PlaybackWorkerState;
 use super::playback_worker_transition;
+use super::types::PlaybackTrack;
 
 impl NativePipeline {
     fn worker_operation_name(command: &PlaybackWorkerCommand) -> &'static str {
@@ -19,8 +21,18 @@ impl NativePipeline {
         }
     }
 
+    fn load_worker_track(&mut self, track: &PlaybackTrack) -> PlaybackResult<()> {
+        let request = AudioDecoderOpenRequest::from_track(track);
+        self.open_decoder(request, 0)?;
+        self.schedule_decode_step()
+    }
+
     pub fn handle_worker_command(&mut self, command: &PlaybackWorkerCommand) -> PlaybackResult<()> {
         let operation = Self::worker_operation_name(command);
+
+        if let PlaybackWorkerCommand::Load { track } = command {
+            return self.load_worker_track(track);
+        }
 
         if matches!(command, PlaybackWorkerCommand::Shutdown) {
             return self.shutdown();

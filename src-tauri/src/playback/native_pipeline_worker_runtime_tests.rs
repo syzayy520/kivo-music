@@ -16,7 +16,6 @@ fn track() -> PlaybackTrack {
 fn worker_runtime_error_messages_include_operation_context() {
     let mut pipeline = NativePipeline::new();
     let commands = vec![
-        (PlaybackWorkerCommand::Load { track: track() }, "load"),
         (PlaybackWorkerCommand::Play, "play"),
         (PlaybackWorkerCommand::Pause, "pause"),
         (PlaybackWorkerCommand::Resume, "resume"),
@@ -41,5 +40,19 @@ fn worker_runtime_error_messages_include_operation_context() {
             Err(other) => panic!("expected unsupported operation, got {other}"),
             Ok(_) => panic!("expected unsupported operation, got success"),
         }
+    }
+}
+
+#[test]
+fn worker_load_reports_backend_error_for_missing_wav_file() {
+    let mut pipeline = NativePipeline::new();
+    let result = pipeline.handle_worker_command(&PlaybackWorkerCommand::Load { track: track() });
+
+    match result {
+        Err(PlaybackError::Backend(message)) => {
+            assert!(!message.is_empty());
+        }
+        Err(other) => panic!("expected backend error, got {other}"),
+        Ok(_) => panic!("expected backend error, got success"),
     }
 }

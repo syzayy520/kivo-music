@@ -31,15 +31,6 @@ fn output_frame() -> AudioOutputFrame {
     }
 }
 
-fn worker_track() -> PlaybackTrack {
-    PlaybackTrack {
-        id: TrackId("worker-track-1".to_string()),
-        title: "Worker Track".to_string(),
-        artist: "Worker Artist".to_string(),
-        source_path: "C:/Music/worker-track-1.wav".to_string(),
-    }
-}
-
 fn assert_worker_unsupported(result: Result<(), PlaybackError>, operation: &str) {
     match result {
         Err(PlaybackError::UnsupportedOperation(message)) => {
