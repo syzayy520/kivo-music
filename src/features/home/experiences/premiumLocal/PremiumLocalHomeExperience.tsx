@@ -5,6 +5,7 @@ import { PremiumLocalHomeHero } from './PremiumLocalHomeHero'
 import { PremiumLocalHomeShelf } from './PremiumLocalHomeShelf'
 import { PremiumLocalPlayerSurface } from './PremiumLocalPlayerSurface'
 import './premiumLocalHome.css'
+import './premiumLocalHomeDensity.css'
 
 export function PremiumLocalHomeExperience() {
   return (
