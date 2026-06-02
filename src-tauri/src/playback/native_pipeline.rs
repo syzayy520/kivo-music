@@ -1,32 +1,15 @@
 use std::fmt;
 
-use serde::{Deserialize, Serialize};
-
-use super::decoder::{AudioDecoder, AudioStreamInfo};
-use super::decoder_request::AudioDecoderOpenRequest;
-use super::decoder_runtime_state::DecoderRuntimeState;
-use super::decoder_session::DecoderSession;
-use super::decoders::factory::create_decoder_for_path;
-use super::errors::{PlaybackError, PlaybackResult};
-use super::output::{AudioOutputFrame, OutputRuntimeStatus, OutputSettings};
-use super::playback_worker_command::PlaybackWorkerCommand;
-use super::playback_worker_state::PlaybackWorkerState;
-use super::playback_worker_transition;
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct NativePipelineState {
-    pub decoder_request: Option<AudioDecoderOpenRequest>,
-    pub decoder_session: Option<DecoderSession>,
-    pub decoder_state: DecoderRuntimeState,
-    pub output_settings: OutputSettings,
-    pub output_status: OutputRuntimeStatus,
-    pub last_decoded_frame: Option<AudioOutputFrame>,
-}
+use super::decoder::AudioDecoder;
+use super::native_output::KivoNativeOutputSink;
+pub use super::native_pipeline_state::NativePipelineState;
+use super::output::OutputSink;
 
 #[derive(Default)]
 pub struct NativePipeline {
-    state: NativePipelineState,
-    decoder: Option<Box<dyn AudioDecoder>>,
+    pub(super) state: NativePipelineState,
+    pub(super) decoder: Option<Box<dyn AudioDecoder>>,
+    pub(super) output: KivoNativeOutputSink,
 }
 
 impl fmt::Debug for NativePipeline {
@@ -35,215 +18,17 @@ impl fmt::Debug for NativePipeline {
             .debug_struct("NativePipeline")
             .field("state", &self.state)
             .field("decoder_open", &self.decoder.is_some())
+            .field("output_status", &self.output.status())
             .finish()
     }
 }
 
-impl Default for NativePipelineState {
-    fn default() -> Self {
-        Self {
-            decoder_request: None,
-            decoder_session: None,
-            decoder_state: DecoderRuntimeState::idle(),
-            output_settings: OutputSettings::default(),
-            output_status: OutputRuntimeStatus::default(),
-            last_decoded_frame: None,
-        }
-    }
-}
-
 impl NativePipeline {
-    fn worker_operation_name(command: &PlaybackWorkerCommand) -> &'static str {
-        match command {
-            PlaybackWorkerCommand::Load { .. } => "load",
-            PlaybackWorkerCommand::Play => "play",
-            PlaybackWorkerCommand::Pause => "pause",
-            PlaybackWorkerCommand::Resume => "resume",
-            PlaybackWorkerCommand::Stop => "stop",
-            PlaybackWorkerCommand::Seek { .. } => "seek",
-            PlaybackWorkerCommand::SetVolume { .. } => "set_volume",
-            PlaybackWorkerCommand::SetMuted { .. } => "set_muted",
-            PlaybackWorkerCommand::Shutdown => "shutdown",
-        }
-    }
-
     pub fn new() -> Self {
         Self::default()
     }
 
     pub fn state(&self) -> NativePipelineState {
         self.state.clone()
-    }
-
-    pub fn set_decoder_request(&mut self, request: AudioDecoderOpenRequest) {
-        self.state.decoder_request = Some(request);
-    }
-
-    pub fn open_decoder(
-        &mut self,
-        request: AudioDecoderOpenRequest,
-        opened_at_ms: u64,
-    ) -> PlaybackResult<DecoderSession> {
-        self.state.decoder_state.begin_opening();
-        self.state.decoder_request = Some(request.clone());
-        self.state.decoder_session = None;
-        self.state.last_decoded_frame = None;
-        self.decoder = None;
-
-        let mut decoder = create_decoder_for_path(&request.source_path).map_err(|error| {
-            self.state.decoder_state.mark_failed(error.to_string());
-            error
-        })?;
-
-        let stream_info = decoder.open(&request.source_path).map_err(|error| {
-            self.state.decoder_state.mark_failed(error.to_string());
-            error
-        })?;
-
-        let session = DecoderSession::from_open_request(&request, stream_info, opened_at_ms);
-        self.state.decoder_session = Some(session.clone());
-        self.state.decoder_state.mark_open();
-        self.decoder = Some(decoder);
-
-        Ok(session)
-    }
-
-    pub fn configure_decoder_open(
-        &mut self,
-        request: AudioDecoderOpenRequest,
-        stream_info: AudioStreamInfo,
-        opened_at_ms: u64,
-    ) {
-        self.state.decoder_state.begin_opening();
-        self.state.decoder_request = Some(request.clone());
-        self.state.decoder_session = Some(DecoderSession::from_open_request(
-            &request,
-            stream_info,
-            opened_at_ms,
-        ));
-        self.state.decoder_state.mark_open();
-    }
-
-    pub fn update_decoder_position(&mut self, position_ms: u64) {
-        if let Some(session) = self.state.decoder_session.as_mut() {
-            session.update_position(position_ms);
-        }
-    }
-
-    pub fn count_decoded_frame(&mut self) {
-        if let Some(session) = self.state.decoder_session.as_mut() {
-            session.count_frame();
-        }
-    }
-
-    pub fn set_decoder_state(&mut self, state: DecoderRuntimeState) {
-        self.state.decoder_state = state;
-    }
-
-    pub fn set_output_settings(&mut self, settings: OutputSettings) {
-        self.state.output_settings = settings;
-    }
-
-    pub fn set_output_status(&mut self, status: OutputRuntimeStatus) {
-        self.state.output_status = status;
-    }
-
-    pub fn note_frame_submitted(&mut self, _frame: &AudioOutputFrame) {
-        self.state.output_status.pending_frames =
-            self.state.output_status.pending_frames.saturating_add(1);
-        self.state.output_status.is_active = true;
-    }
-
-    pub fn handle_worker_command(&mut self, command: &PlaybackWorkerCommand) -> PlaybackResult<()> {
-        let operation = Self::worker_operation_name(command);
-
-        Err(PlaybackError::UnsupportedOperation(format!(
-            "native pipeline worker command {operation} is not implemented yet"
-        )))
-    }
-
-    pub fn map_worker_state(
-        &self,
-        state: &PlaybackWorkerState,
-        command: &PlaybackWorkerCommand,
-    ) -> PlaybackWorkerState {
-        let mut next = state.clone();
-        playback_worker_transition::apply_command(&mut next, command);
-        next
-    }
-
-    pub fn route_worker_command(
-        &mut self,
-        state: &PlaybackWorkerState,
-        command: &PlaybackWorkerCommand,
-    ) -> (PlaybackWorkerState, PlaybackResult<()>) {
-        let next = self.map_worker_state(state, command);
-        let runtime = self.handle_worker_command(command);
-        (next, runtime)
-    }
-
-    pub fn route_worker_command_record_runtime_error(
-        &mut self,
-        state: &PlaybackWorkerState,
-        command: &PlaybackWorkerCommand,
-    ) -> PlaybackWorkerState {
-        let (next, runtime) = self.route_worker_command(state, command);
-        if let Err(error) = runtime {
-            self.state.output_status.last_error = Some(error.to_string());
-        }
-        next
-    }
-
-    pub fn start(&mut self) -> PlaybackResult<()> {
-        Err(PlaybackError::UnsupportedOperation(
-            "native pipeline start is not implemented yet".to_string(),
-        ))
-    }
-
-    pub fn schedule_decode_step(&mut self) -> PlaybackResult<()> {
-        let decoder = self.decoder.as_mut().ok_or_else(|| {
-            PlaybackError::Backend("native pipeline decoder is not open".to_string())
-        })?;
-
-        let frame = decoder.next_frame().map_err(|error| {
-            self.state.decoder_state.mark_failed(error.to_string());
-            error
-        })?;
-
-        match frame {
-            Some(frame) => {
-                self.update_decoder_position(frame.position_ms);
-                self.count_decoded_frame();
-                self.state.last_decoded_frame = Some(AudioOutputFrame {
-                    stream: frame.stream,
-                    position_ms: frame.position_ms,
-                    samples: frame.samples,
-                });
-                Ok(())
-            }
-            None => {
-                self.state.decoder_state.begin_draining();
-                self.state.last_decoded_frame = None;
-                Ok(())
-            }
-        }
-    }
-
-    pub fn submit(&mut self) -> PlaybackResult<()> {
-        Err(PlaybackError::UnsupportedOperation(
-            "native pipeline submit is not implemented yet".to_string(),
-        ))
-    }
-
-    pub fn schedule_output_submit_step(&mut self) -> PlaybackResult<()> {
-        Err(PlaybackError::UnsupportedOperation(
-            "native pipeline schedule_output_submit_step is not implemented yet".to_string(),
-        ))
-    }
-
-    pub fn shutdown(&mut self) -> PlaybackResult<()> {
-        Err(PlaybackError::UnsupportedOperation(
-            "native pipeline shutdown is not implemented yet".to_string(),
-        ))
     }
 }

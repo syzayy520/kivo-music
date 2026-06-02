@@ -67,7 +67,9 @@ fn assert_worker_unsupported(result: Result<(), PlaybackError>, operation: &str)
 }
 
 mod decoder_config_tests;
+mod decoder_step_tests;
 mod output_runtime_tests;
 mod runtime_error_tests;
 mod state_snapshot_tests;
+mod wav_test_file;
 mod worker_route_tests;

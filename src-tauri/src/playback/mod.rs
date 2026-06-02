@@ -49,6 +49,12 @@ pub mod types;
 pub mod volume;
 pub mod windows_audio;
 
+mod native_pipeline_decoder;
+mod native_pipeline_output;
+mod native_pipeline_runtime;
+mod native_pipeline_state;
+mod native_pipeline_worker;
+
 #[cfg(test)]
 mod activity_log_tests;
 
