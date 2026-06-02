@@ -7,14 +7,8 @@ export const premiumLocalHomeCopy = {
   showAllLabel: '查看全部',
   spotlightAriaLabel: '首页焦点内容',
   header: {
-    actionsAriaLabel: '首页顶部操作',
-    description: '从本地资料库继续播放，安静发现最近加入的专辑。',
+    description: '继续播放你的本地收藏，安静发现最近加入的专辑。',
     eyebrow: 'Kivo Music',
-    searchAriaLabel: '搜索本地资料库',
-    searchPlaceholder: '搜索专辑、艺人、歌曲',
-    statusAriaLabel: '本地资料库状态',
-    statusLabel: '本地资料库',
-    statusValue: '1,286 首 · 无损就绪',
     title: '欢迎回来',
   },
   player: {
