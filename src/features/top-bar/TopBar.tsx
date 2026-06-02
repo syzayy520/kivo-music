@@ -17,6 +17,9 @@ function TopBarMoreIcon() {
 
 export function TopBar() {
   const showPremiumLocalControls = ACTIVE_HOME_EXPERIENCE_SHELL_MODE === 'premiumLocal'
+  const searchPlaceholder = showPremiumLocalControls
+    ? '搜索专辑、艺人、歌曲'
+    : t(topBarCopy.searchPlaceholderKey)
 
   return (
     <header className="km-topbar" style={topBarStyle}>
@@ -25,17 +28,24 @@ export function TopBar() {
       </div>
       <label className="km-search">
         <span>{t(topBarCopy.searchLabelKey)}</span>
-        <input
-          aria-label={t(topBarCopy.searchAriaLabelKey)}
-          placeholder={t(topBarCopy.searchPlaceholderKey)}
-        />
+        <input aria-label={t(topBarCopy.searchAriaLabelKey)} placeholder={searchPlaceholder} />
       </label>
       <div className="km-library-status">
-        <small>{t(topBarCopy.statusLabelKey)}</small>
-        <strong>{t(topBarCopy.statusValueKey)}</strong>
+        {showPremiumLocalControls ? (
+          <>
+            <span className="km-library-status-dot" aria-hidden="true" />
+            <small>本地资料库</small>
+            <strong>1,286 首</strong>
+          </>
+        ) : (
+          <>
+            <small>{t(topBarCopy.statusLabelKey)}</small>
+            <strong>{t(topBarCopy.statusValueKey)}</strong>
+          </>
+        )}
       </div>
       {showPremiumLocalControls ? (
-        <button className="km-topbar-more" type="button" aria-label="More options">
+        <button className="km-topbar-more" type="button" aria-label="更多选项">
           <TopBarMoreIcon />
         </button>
       ) : null}
