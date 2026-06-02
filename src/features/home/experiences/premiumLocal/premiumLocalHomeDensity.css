@@ -6,7 +6,9 @@
   padding: 2px 0 12px;
 }
 
-.km-home-premium-heading span:empty {
+.km-home-premium-heading span:empty,
+.km-home-premium-heading h2:empty,
+.km-home-premium-shelf-head span:empty {
   display: none;
 }
 
@@ -18,7 +20,7 @@
 }
 
 .km-home-premium-heading p {
-  margin-top: 5px;
+  margin-top: 0;
   line-height: 1.35;
 }
 
@@ -51,6 +53,10 @@
 
 .km-home-premium-shelf-head {
   margin-bottom: 9px;
+}
+
+.km-home-premium-shelf-head h3 {
+  margin-top: 0;
 }
 
 .km-home-premium-album-grid {
