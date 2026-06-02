@@ -22,6 +22,10 @@ impl NativePipeline {
     pub fn handle_worker_command(&mut self, command: &PlaybackWorkerCommand) -> PlaybackResult<()> {
         let operation = Self::worker_operation_name(command);
 
+        if matches!(command, PlaybackWorkerCommand::Shutdown) {
+            return self.shutdown();
+        }
+
         Err(PlaybackError::UnsupportedOperation(format!(
             "native pipeline worker command {operation} is not implemented yet"
         )))

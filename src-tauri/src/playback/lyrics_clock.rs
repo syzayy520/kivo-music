@@ -13,7 +13,6 @@ pub fn find_active_lyric_line(
 ) -> Option<ActiveLyricLine> {
     lines
         .iter()
-        .filter(|line| line.starts_at_ms <= position_ms)
-        .last()
+        .rfind(|line| line.starts_at_ms <= position_ms)
         .cloned()
 }

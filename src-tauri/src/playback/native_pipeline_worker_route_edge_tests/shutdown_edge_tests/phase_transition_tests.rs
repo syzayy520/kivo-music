@@ -13,12 +13,7 @@ fn route_shutdown_from_stopped_keeps_stopped_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-5"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command shutdown is not implemented yet"
-        )
-    );
+    assert_eq!(snapshot.output_status.last_error.as_deref(), None);
 }
 
 #[test]
@@ -34,12 +29,7 @@ fn route_shutdown_from_failed_moves_to_stopped_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-17"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command shutdown is not implemented yet"
-        )
-    );
+    assert_eq!(snapshot.output_status.last_error.as_deref(), None);
 }
 
 #[test]
@@ -53,12 +43,7 @@ fn route_shutdown_from_idle_moves_to_stopped_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(next.active_track_id, None);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command shutdown is not implemented yet"
-        )
-    );
+    assert_eq!(snapshot.output_status.last_error.as_deref(), None);
 }
 
 #[test]
@@ -74,12 +59,7 @@ fn route_shutdown_from_paused_moves_to_stopped_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-30"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command shutdown is not implemented yet"
-        )
-    );
+    assert_eq!(snapshot.output_status.last_error.as_deref(), None);
 }
 
 #[test]
@@ -95,10 +75,5 @@ fn route_shutdown_from_playing_moves_to_stopped_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-32"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command shutdown is not implemented yet"
-        )
-    );
+    assert_eq!(snapshot.output_status.last_error.as_deref(), None);
 }

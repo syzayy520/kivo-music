@@ -23,14 +23,12 @@ impl NativePipeline {
         self.state.last_decoded_frame = None;
         self.decoder = None;
 
-        let mut decoder = create_decoder_for_path(&request.source_path).map_err(|error| {
+        let mut decoder = create_decoder_for_path(&request.source_path).inspect_err(|error| {
             self.state.decoder_state.mark_failed(error.to_string());
-            error
         })?;
 
-        let stream_info = decoder.open(&request.source_path).map_err(|error| {
+        let stream_info = decoder.open(&request.source_path).inspect_err(|error| {
             self.state.decoder_state.mark_failed(error.to_string());
-            error
         })?;
 
         let session = DecoderSession::from_open_request(&request, stream_info, opened_at_ms);
@@ -78,9 +76,8 @@ impl NativePipeline {
             PlaybackError::Backend("native pipeline decoder is not open".to_string())
         })?;
 
-        let frame = decoder.next_frame().map_err(|error| {
+        let frame = decoder.next_frame().inspect_err(|error| {
             self.state.decoder_state.mark_failed(error.to_string());
-            error
         })?;
 
         match frame {
@@ -107,9 +104,8 @@ impl NativePipeline {
             PlaybackError::Backend("native pipeline decoder is not open".to_string())
         })?;
 
-        decoder.seek(position_ms).map_err(|error| {
+        decoder.seek(position_ms).inspect_err(|error| {
             self.state.decoder_state.mark_failed(error.to_string());
-            error
         })?;
 
         self.update_decoder_position(position_ms);

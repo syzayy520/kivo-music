@@ -1,28 +1,18 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub enum AudioOutputMode {
+    #[default]
     Shared,
     Dedicated,
 }
 
-impl Default for AudioOutputMode {
-    fn default() -> Self {
-        Self::Shared
-    }
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub enum AudioOutputFallbackPolicy {
+    #[default]
     SystemDefault,
     KeepCurrent,
     Halt,
-}
-
-impl Default for AudioOutputFallbackPolicy {
-    fn default() -> Self {
-        Self::SystemDefault
-    }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

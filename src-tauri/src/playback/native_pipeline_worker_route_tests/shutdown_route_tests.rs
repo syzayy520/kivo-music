@@ -13,10 +13,5 @@ fn route_shutdown_from_playing_moves_to_stopped() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(next.active_track_id.as_deref(), Some("route-track-5"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command shutdown is not implemented yet"
-        )
-    );
+    assert_eq!(snapshot.output_status.last_error.as_deref(), None);
 }

@@ -11,12 +11,6 @@ pub struct PlaybackQueue {
     pub shuffle: bool,
 }
 
-impl Default for RepeatMode {
-    fn default() -> Self {
-        Self::Off
-    }
-}
-
 impl PlaybackQueue {
     pub fn append(&mut self, track: PlaybackTrack) {
         self.items.push(track);

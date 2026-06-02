@@ -10,12 +10,7 @@ fn route_shutdown_from_idle_records_runtime_unsupported_context() {
     let snapshot = pipeline.state();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command shutdown is not implemented yet"
-        )
-    );
+    assert_eq!(snapshot.output_status.last_error.as_deref(), None);
 }
 
 #[test]
@@ -30,12 +25,7 @@ fn route_shutdown_from_playing_records_runtime_unsupported_context() {
     let snapshot = pipeline.state();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command shutdown is not implemented yet"
-        )
-    );
+    assert_eq!(snapshot.output_status.last_error.as_deref(), None);
 }
 
 #[test]
@@ -50,12 +40,7 @@ fn route_shutdown_from_paused_records_runtime_unsupported_context() {
     let snapshot = pipeline.state();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command shutdown is not implemented yet"
-        )
-    );
+    assert_eq!(snapshot.output_status.last_error.as_deref(), None);
 }
 
 #[test]
@@ -70,12 +55,7 @@ fn route_shutdown_from_stopped_records_runtime_unsupported_context() {
     let snapshot = pipeline.state();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command shutdown is not implemented yet"
-        )
-    );
+    assert_eq!(snapshot.output_status.last_error.as_deref(), None);
 }
 
 #[test]
@@ -90,10 +70,5 @@ fn route_shutdown_from_failed_records_runtime_unsupported_context() {
     let snapshot = pipeline.state();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command shutdown is not implemented yet"
-        )
-    );
+    assert_eq!(snapshot.output_status.last_error.as_deref(), None);
 }

@@ -40,19 +40,6 @@ fn worker_track() -> PlaybackTrack {
     }
 }
 
-fn assert_unsupported(result: Result<(), PlaybackError>, operation: &str) {
-    match result {
-        Err(PlaybackError::UnsupportedOperation(message)) => {
-            assert_eq!(
-                message,
-                format!("native pipeline {operation} is not implemented yet")
-            );
-        }
-        Err(other) => panic!("expected unsupported operation, got {other}"),
-        Ok(_) => panic!("expected unsupported operation, got success"),
-    }
-}
-
 fn assert_worker_unsupported(result: Result<(), PlaybackError>, operation: &str) {
     match result {
         Err(PlaybackError::UnsupportedOperation(message)) => {

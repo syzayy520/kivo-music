@@ -10,8 +10,9 @@ pub enum PlaybackStatus {
     Failed,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub enum RepeatMode {
+    #[default]
     Off,
     One,
     All,

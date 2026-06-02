@@ -27,7 +27,6 @@ fn worker_runtime_error_messages_include_operation_context() {
             "set_volume",
         ),
         (PlaybackWorkerCommand::SetMuted { muted: true }, "set_muted"),
-        (PlaybackWorkerCommand::Shutdown, "shutdown"),
     ];
 
     for (command, operation) in commands {

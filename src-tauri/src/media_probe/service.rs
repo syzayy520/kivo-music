@@ -16,7 +16,7 @@ pub struct MediaProbeService {
 impl MediaProbeService {
     pub fn new() -> Self {
         Self {
-            backend: FfprobeBackend::default(),
+            backend: FfprobeBackend,
         }
     }
 
