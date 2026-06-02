@@ -12,8 +12,7 @@ fn route_play_from_loaded_moves_to_playing() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id.as_deref(), Some("route-track-6"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command play is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
+    assert!(snapshot.output_status.is_open);
+    assert!(snapshot.output_status.is_active);
 }

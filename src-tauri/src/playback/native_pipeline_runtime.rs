@@ -37,6 +37,58 @@ impl NativePipeline {
         }
     }
 
+    pub fn pause_output(&mut self) -> PlaybackResult<()> {
+        match self.output.pause() {
+            Ok(status) => {
+                self.state.output_status = status;
+                Ok(())
+            }
+            Err(error) => {
+                self.state.output_status = self.output.status();
+                Err(error)
+            }
+        }
+    }
+
+    pub fn resume_output(&mut self) -> PlaybackResult<()> {
+        match self.output.resume() {
+            Ok(status) => {
+                self.state.output_status = status;
+                Ok(())
+            }
+            Err(error) => {
+                self.state.output_status = self.output.status();
+                Err(error)
+            }
+        }
+    }
+
+    pub fn stop_output(&mut self) -> PlaybackResult<()> {
+        match self.output.stop() {
+            Ok(status) => {
+                self.state.output_status = status;
+                Ok(())
+            }
+            Err(error) => {
+                self.state.output_status = self.output.status();
+                Err(error)
+            }
+        }
+    }
+
+    pub fn flush_output(&mut self) -> PlaybackResult<()> {
+        match self.output.flush() {
+            Ok(status) => {
+                self.state.output_status = status;
+                Ok(())
+            }
+            Err(error) => {
+                self.state.output_status = self.output.status();
+                Err(error)
+            }
+        }
+    }
+
     pub fn shutdown(&mut self) -> PlaybackResult<()> {
         self.close_decoder()?;
         self.output.close()?;

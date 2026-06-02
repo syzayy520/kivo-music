@@ -84,14 +84,9 @@ fn shutdown_closes_empty_pipeline_without_fake_runtime_error() {
 }
 
 #[test]
-fn worker_commands_are_typed_unsupported() {
+fn worker_set_volume_and_set_muted_are_typed_unsupported() {
     let mut pipeline = NativePipeline::new();
     let commands = vec![
-        (PlaybackWorkerCommand::Play, "play"),
-        (PlaybackWorkerCommand::Pause, "pause"),
-        (PlaybackWorkerCommand::Resume, "resume"),
-        (PlaybackWorkerCommand::Stop, "stop"),
-        (PlaybackWorkerCommand::Seek { position_ms: 1_000 }, "seek"),
         (
             PlaybackWorkerCommand::SetVolume { level: 0.8 },
             "set_volume",
@@ -105,7 +100,7 @@ fn worker_commands_are_typed_unsupported() {
 }
 
 #[test]
-fn worker_load_opens_decoder_and_decodes_first_wav_frame() {
+fn worker_load_opens_decoder_decodes_first_frame_and_submits_to_null_sink() {
     let path = write_test_wav();
     let mut pipeline = NativePipeline::new();
     let track = PlaybackTrack {
@@ -131,6 +126,8 @@ fn worker_load_opens_decoder_and_decodes_first_wav_frame() {
     assert_eq!(session.decoded_frame_count, 1);
     assert_eq!(frame.stream.sample_rate_hz, 48_000);
     assert_eq!(frame.stream.channels, 2);
+    assert_eq!(state.output_status.pending_frames, 1);
+    assert!(state.output_status.last_error.is_none());
 
     pipeline.shutdown().expect("shutdown pipeline");
     std::fs::remove_file(path).expect("remove wav test file");

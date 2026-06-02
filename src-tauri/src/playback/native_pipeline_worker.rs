@@ -24,18 +24,22 @@ impl NativePipeline {
     fn load_worker_track(&mut self, track: &PlaybackTrack) -> PlaybackResult<()> {
         let request = AudioDecoderOpenRequest::from_track(track);
         self.open_decoder(request, 0)?;
-        self.schedule_decode_step()
+        self.schedule_decode_step()?;
+        self.schedule_output_submit_step()
     }
 
     pub fn handle_worker_command(&mut self, command: &PlaybackWorkerCommand) -> PlaybackResult<()> {
         let operation = Self::worker_operation_name(command);
 
-        if let PlaybackWorkerCommand::Load { track } = command {
-            return self.load_worker_track(track);
-        }
-
-        if matches!(command, PlaybackWorkerCommand::Shutdown) {
-            return self.shutdown();
+        match command {
+            PlaybackWorkerCommand::Load { track } => return self.load_worker_track(track),
+            PlaybackWorkerCommand::Play => return self.start(),
+            PlaybackWorkerCommand::Pause => return self.pause_output(),
+            PlaybackWorkerCommand::Resume => return self.resume_output(),
+            PlaybackWorkerCommand::Stop => return self.stop_output(),
+            PlaybackWorkerCommand::Seek { position_ms } => return self.seek_decoder(*position_ms),
+            PlaybackWorkerCommand::Shutdown => return self.shutdown(),
+            PlaybackWorkerCommand::SetVolume { .. } | PlaybackWorkerCommand::SetMuted { .. } => {}
         }
 
         Err(PlaybackError::UnsupportedOperation(format!(

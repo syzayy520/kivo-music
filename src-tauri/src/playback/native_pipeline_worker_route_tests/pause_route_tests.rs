@@ -12,8 +12,5 @@ fn route_pause_from_loaded_keeps_track_and_updates_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Paused);
     assert_eq!(next.active_track_id.as_deref(), Some("route-track-2"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command pause is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }

@@ -13,8 +13,11 @@ fn route_seek_from_paused_keeps_paused_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Paused);
     assert_eq!(next.active_track_id.as_deref(), Some("route-track-7"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command seek is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_some());
+    assert!(snapshot
+        .output_status
+        .last_error
+        .as_deref()
+        .unwrap()
+        .contains("decoder is not open"));
 }

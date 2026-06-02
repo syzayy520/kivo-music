@@ -13,10 +13,7 @@ fn route_resume_from_playing_keeps_playing_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-4"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command resume is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
@@ -32,10 +29,7 @@ fn route_resume_from_stopped_moves_to_playing_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-11"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command resume is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
@@ -51,10 +45,7 @@ fn route_resume_from_failed_moves_to_playing_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-14"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command resume is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
@@ -68,10 +59,7 @@ fn route_resume_from_idle_moves_to_playing_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id, None);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command resume is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
@@ -87,10 +75,7 @@ fn route_resume_from_paused_moves_to_playing_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-28"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command resume is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
@@ -103,10 +88,7 @@ fn route_resume_from_idle_records_runtime_unsupported_context() {
     let snapshot = pipeline.state();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command resume is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
@@ -121,10 +103,7 @@ fn route_resume_from_playing_records_runtime_unsupported_context() {
     let snapshot = pipeline.state();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command resume is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
@@ -139,10 +118,7 @@ fn route_resume_from_paused_records_runtime_unsupported_context() {
     let snapshot = pipeline.state();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command resume is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
@@ -157,10 +133,7 @@ fn route_resume_from_stopped_records_runtime_unsupported_context() {
     let snapshot = pipeline.state();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command resume is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
@@ -175,8 +148,5 @@ fn route_resume_from_failed_records_runtime_unsupported_context() {
     let snapshot = pipeline.state();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command resume is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }

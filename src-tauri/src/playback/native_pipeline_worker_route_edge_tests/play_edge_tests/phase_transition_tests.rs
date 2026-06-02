@@ -13,10 +13,7 @@ fn route_play_from_playing_keeps_playing_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-2"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command play is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
@@ -32,10 +29,7 @@ fn route_play_from_stopped_moves_to_playing_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-10"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command play is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
@@ -51,10 +45,7 @@ fn route_play_from_failed_moves_to_playing_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-13"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command play is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
@@ -68,10 +59,7 @@ fn route_play_from_idle_moves_to_playing_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id, None);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command play is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
@@ -87,8 +75,5 @@ fn route_play_from_paused_moves_to_playing_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-27"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command play is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }

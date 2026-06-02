@@ -13,8 +13,5 @@ fn route_stop_from_playing_moves_to_stopped() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(next.active_track_id.as_deref(), Some("route-track-4"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command stop is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }

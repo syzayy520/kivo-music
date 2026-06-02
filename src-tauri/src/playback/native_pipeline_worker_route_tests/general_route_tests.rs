@@ -10,10 +10,7 @@ fn route_worker_command_maps_state_and_keeps_runtime_unsupported() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(state.phase, PlaybackWorkerPhase::Idle);
-    assert!(matches!(
-        runtime,
-        Err(PlaybackError::UnsupportedOperation(_))
-    ));
+    assert!(runtime.is_ok());
 }
 
 #[test]
@@ -42,14 +39,11 @@ fn route_worker_command_keeps_operation_context() {
     let (_next, runtime) = pipeline.route_worker_command(&state, &command);
 
     match runtime {
-        Err(PlaybackError::UnsupportedOperation(message)) => {
-            assert_eq!(
-                message,
-                "native pipeline worker command seek is not implemented yet"
-            );
+        Err(PlaybackError::Backend(message)) => {
+            assert!(message.contains("decoder is not open"));
         }
-        Err(other) => panic!("expected unsupported operation, got {other}"),
-        Ok(_) => panic!("expected unsupported operation, got success"),
+        Err(other) => panic!("expected backend error, got {other}"),
+        Ok(_) => panic!("expected backend error, got success"),
     }
 }
 
@@ -63,10 +57,13 @@ fn route_worker_command_records_runtime_error_context() {
     let snapshot = pipeline.state();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Idle);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command seek is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_some());
+    assert!(snapshot
+        .output_status
+        .last_error
+        .as_deref()
+        .unwrap()
+        .contains("decoder is not open"));
 }
 
 #[test]

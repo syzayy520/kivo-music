@@ -13,8 +13,5 @@ fn route_resume_from_paused_moves_to_playing() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id.as_deref(), Some("route-track-3"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command resume is not implemented yet")
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
