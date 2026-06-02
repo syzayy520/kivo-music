@@ -32,12 +32,11 @@ export function Sidebar() {
         ))}
       </nav>
       {isPremiumLocal ? (
-        <section className="km-sidebar-premium-card" aria-label="Local profile preview">
-          <span className="km-sidebar-premium-avatar" aria-hidden="true">D</span>
+        <section className="km-sidebar-premium-card" aria-label="本地用户入口">
           <div>
             <strong>Danny Rico</strong>
-            <small>Local library ready</small>
           </div>
+          <span className="km-sidebar-premium-chevron" aria-hidden="true">⌄</span>
         </section>
       ) : null}
     </aside>
