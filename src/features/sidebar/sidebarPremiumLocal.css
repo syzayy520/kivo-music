@@ -1,0 +1,151 @@
+.km-app[data-shell-mode='premiumLocal'] .km-sidebar {
+  display: flex;
+  flex-direction: column;
+  padding: 22px 18px;
+  border-right-color: rgba(23, 23, 27, 0.06);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(245, 244, 241, 0.62)),
+    var(--km-sidebar-bg);
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.72);
+}
+
+.km-app[data-shell-mode='premiumLocal'] .km-brand {
+  min-height: 46px;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.km-app[data-shell-mode='premiumLocal'] .km-brand > span {
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.38), transparent 26%),
+    linear-gradient(135deg, #ff3c68 0%, #df184a 100%);
+  box-shadow: 0 14px 28px rgba(214, 20, 72, 0.24);
+}
+
+.km-app[data-shell-mode='premiumLocal'] .km-brand strong {
+  color: rgba(22, 21, 26, 0.94);
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+
+.km-app[data-shell-mode='premiumLocal'] .km-brand small {
+  margin-top: 3px;
+  color: rgba(72, 69, 78, 0.66);
+  font-size: 12px;
+}
+
+.km-app[data-shell-mode='premiumLocal'] .km-nav {
+  gap: 24px;
+}
+
+.km-app[data-shell-mode='premiumLocal'] .km-nav p {
+  margin-bottom: 8px;
+  color: rgba(75, 72, 82, 0.52);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.km-app[data-shell-mode='premiumLocal'] .km-nav a {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 2px 0;
+  padding: 0 13px;
+  border-radius: 14px;
+  color: rgba(40, 38, 45, 0.78);
+  font-size: 14px;
+  font-weight: 560;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.km-app[data-shell-mode='premiumLocal'] .km-nav a.active {
+  color: rgba(17, 16, 20, 0.94);
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow:
+    0 12px 26px rgba(32, 30, 36, 0.07),
+    inset 0 0 0 1px rgba(23, 23, 27, 0.045);
+}
+
+.km-app[data-shell-mode='premiumLocal'] .km-sidebar-premium-icon {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.88;
+}
+
+.km-app[data-shell-mode='premiumLocal'] .km-nav a span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.km-app[data-shell-mode='premiumLocal'] .km-sidebar-premium-card {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-top: auto;
+  padding: 8px 10px;
+  border: 1px solid rgba(23, 23, 27, 0.055);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow:
+    0 10px 24px rgba(32, 30, 36, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.66);
+}
+
+.km-app[data-shell-mode='premiumLocal'] .km-sidebar-premium-avatar {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(135deg, #343238, #17161b);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.km-app[data-shell-mode='premiumLocal'] .km-sidebar-premium-card strong,
+.km-app[data-shell-mode='premiumLocal'] .km-sidebar-premium-card small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.km-app[data-shell-mode='premiumLocal'] .km-sidebar-premium-card strong {
+  color: rgba(24, 23, 28, 0.9);
+  font-size: 13px;
+}
+
+.km-app[data-shell-mode='premiumLocal'] .km-sidebar-premium-card small {
+  margin-top: 2px;
+  color: rgba(75, 72, 82, 0.58);
+  font-size: 11px;
+}
+
+@media (max-height: 760px) {
+  .km-app[data-shell-mode='premiumLocal'] .km-nav {
+    gap: 18px;
+  }
+
+  .km-app[data-shell-mode='premiumLocal'] .km-sidebar-premium-card {
+    display: none;
+  }
+}
