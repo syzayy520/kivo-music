@@ -3,6 +3,7 @@ use crate::playback::output::{AudioOutputFrame, OutputRuntimeStatus, OutputSetti
 
 use super::config::WasapiOutputConfig;
 use super::errors::wasapi_unsupported;
+use super::platform::WasapiCompileBoundary;
 use super::status::WasapiOutputStatus;
 
 /// WASAPI output sink stub for the native audio pipeline.
@@ -37,6 +38,15 @@ impl WasapiOutputSink {
     /// Get current stub status.
     pub fn wasapi_status(&self) -> &WasapiOutputStatus {
         &self.status
+    }
+
+    /// Get the WASAPI compile boundary for this platform.
+    ///
+    /// Returns a `WasapiCompileBoundary` that confirms whether
+    /// Windows WASAPI types are linked on this target platform.
+    /// This does NOT perform any real audio operations.
+    pub fn compile_boundary(&self) -> WasapiCompileBoundary {
+        super::platform::wasapi_compile_boundary()
     }
 }
 
