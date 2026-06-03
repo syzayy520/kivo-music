@@ -1,37 +1,33 @@
 // reset_boundary_tests/env_tests.rs
 //
 // Tests for reset boundary smoke environment variable opt-in logic.
-// Each test does remove_var before set_var to avoid Windows env var
-// interference between tests running in the same process.
+// All env checks are combined into a single test to avoid Windows
+// env var race conditions when tests run in parallel within the same
+// process. env::set_var / env::remove_var affect the entire process,
+// so parallel test execution can cause intermittent failures.
 
 use crate::playback::output_wasapi::reset_boundary::env::is_opt_in_enabled;
 use crate::playback::output_wasapi::reset_boundary::report::WASAPI_RESET_SMOKE_ENV;
 
 #[test]
-fn env_name_is_correct() {
+fn env_opt_in_works_correctly() {
+    // 1. Env name constant is correct
     assert_eq!(WASAPI_RESET_SMOKE_ENV, "KIVO_WASAPI_RESET_SMOKE");
-}
 
-#[test]
-fn opt_in_false_when_env_missing() {
+    // 2. Opt-in false when env missing
     std::env::remove_var(WASAPI_RESET_SMOKE_ENV);
     assert!(!is_opt_in_enabled());
-}
 
-#[test]
-fn opt_in_false_when_env_not_one() {
+    // 3. Opt-in false for non-"1" values
     for val in &["0", "true", "yes", "on", "2"] {
-        std::env::remove_var(WASAPI_RESET_SMOKE_ENV);
         std::env::set_var(WASAPI_RESET_SMOKE_ENV, val);
         assert!(!is_opt_in_enabled(), "should be false for '{val}'");
     }
-    std::env::remove_var(WASAPI_RESET_SMOKE_ENV);
-}
 
-#[test]
-fn opt_in_true_when_env_is_one() {
-    std::env::remove_var(WASAPI_RESET_SMOKE_ENV);
+    // 4. Opt-in true when env is "1"
     std::env::set_var(WASAPI_RESET_SMOKE_ENV, "1");
     assert!(is_opt_in_enabled());
+
+    // Cleanup
     std::env::remove_var(WASAPI_RESET_SMOKE_ENV);
 }
