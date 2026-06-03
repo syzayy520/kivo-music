@@ -1,0 +1,280 @@
+// report_builders.rs
+//
+// Builder methods for WasapiClientInitializeSmokeReport.
+//
+// This file contains constructor methods that create report instances
+// for various smoke probe outcomes.
+
+use super::report::{WasapiClientInitializeSmokeReport, WASAPI_CLIENT_INIT_SMOKE_ENV};
+
+impl WasapiClientInitializeSmokeReport {
+    /// Create a skipped report for non-Windows platforms.
+    pub fn skipped_non_windows() -> Self {
+        Self {
+            platform: "non-windows",
+            opt_in_env: WASAPI_CLIENT_INIT_SMOKE_ENV,
+            opt_in_enabled: false,
+            attempted: false,
+            skipped: true,
+            skipped_reason: Some("unsupported platform"),
+            endpoint_available: false,
+            client_activated: false,
+            mix_format_available: false,
+            initialize_attempted: false,
+            initialized_audio_client: false,
+            is_format_supported_called: false,
+            render_client_available: false,
+            service_requested: false,
+            buffer_requested: false,
+            started_audio_client: false,
+            stopped_audio_client: false,
+            reset_audio_client: false,
+            sample_rate_hz: None,
+            channels: None,
+            bits_per_sample: None,
+            block_align: None,
+            avg_bytes_per_sec: None,
+            format_tag: None,
+            cb_size: None,
+            share_mode: "shared",
+            stream_flags: 0,
+            buffer_duration_hns: 0,
+            periodicity_hns: 0,
+            error_message: None,
+        }
+    }
+
+    /// Create a skipped report for missing opt-in environment variable.
+    pub fn skipped_env_missing() -> Self {
+        Self {
+            platform: "windows",
+            opt_in_env: WASAPI_CLIENT_INIT_SMOKE_ENV,
+            opt_in_enabled: false,
+            attempted: false,
+            skipped: true,
+            skipped_reason: Some("set KIVO_WASAPI_CLIENT_INIT_SMOKE=1 to run"),
+            endpoint_available: false,
+            client_activated: false,
+            mix_format_available: false,
+            initialize_attempted: false,
+            initialized_audio_client: false,
+            is_format_supported_called: false,
+            render_client_available: false,
+            service_requested: false,
+            buffer_requested: false,
+            started_audio_client: false,
+            stopped_audio_client: false,
+            reset_audio_client: false,
+            sample_rate_hz: None,
+            channels: None,
+            bits_per_sample: None,
+            block_align: None,
+            avg_bytes_per_sec: None,
+            format_tag: None,
+            cb_size: None,
+            share_mode: "shared",
+            stream_flags: 0,
+            buffer_duration_hns: 0,
+            periodicity_hns: 0,
+            error_message: None,
+        }
+    }
+
+    /// Create a skipped report for a failed probe attempt.
+    pub fn skipped_with_error(reason: &'static str, error: String) -> Self {
+        Self {
+            platform: "windows",
+            opt_in_env: WASAPI_CLIENT_INIT_SMOKE_ENV,
+            opt_in_enabled: true,
+            attempted: true,
+            skipped: true,
+            skipped_reason: Some(reason),
+            endpoint_available: false,
+            client_activated: false,
+            mix_format_available: false,
+            initialize_attempted: false,
+            initialized_audio_client: false,
+            is_format_supported_called: false,
+            render_client_available: false,
+            service_requested: false,
+            buffer_requested: false,
+            started_audio_client: false,
+            stopped_audio_client: false,
+            reset_audio_client: false,
+            sample_rate_hz: None,
+            channels: None,
+            bits_per_sample: None,
+            block_align: None,
+            avg_bytes_per_sec: None,
+            format_tag: None,
+            cb_size: None,
+            share_mode: "shared",
+            stream_flags: 0,
+            buffer_duration_hns: 0,
+            periodicity_hns: 0,
+            error_message: Some(error),
+        }
+    }
+
+    /// Create a report when endpoint is available but activation failed.
+    pub fn endpoint_available_but_activate_failed(error: String) -> Self {
+        Self {
+            platform: "windows",
+            opt_in_env: WASAPI_CLIENT_INIT_SMOKE_ENV,
+            opt_in_enabled: true,
+            attempted: true,
+            skipped: true,
+            skipped_reason: Some("audio client activation failed"),
+            endpoint_available: true,
+            client_activated: false,
+            mix_format_available: false,
+            initialize_attempted: false,
+            initialized_audio_client: false,
+            is_format_supported_called: false,
+            render_client_available: false,
+            service_requested: false,
+            buffer_requested: false,
+            started_audio_client: false,
+            stopped_audio_client: false,
+            reset_audio_client: false,
+            sample_rate_hz: None,
+            channels: None,
+            bits_per_sample: None,
+            block_align: None,
+            avg_bytes_per_sec: None,
+            format_tag: None,
+            cb_size: None,
+            share_mode: "shared",
+            stream_flags: 0,
+            buffer_duration_hns: 0,
+            periodicity_hns: 0,
+            error_message: Some(error),
+        }
+    }
+
+    /// Create a report when client activated but GetMixFormat failed.
+    pub fn client_activated_but_mix_format_failed(error: String) -> Self {
+        Self {
+            platform: "windows",
+            opt_in_env: WASAPI_CLIENT_INIT_SMOKE_ENV,
+            opt_in_enabled: true,
+            attempted: true,
+            skipped: true,
+            skipped_reason: Some("mix format unavailable"),
+            endpoint_available: true,
+            client_activated: true,
+            mix_format_available: false,
+            initialize_attempted: false,
+            initialized_audio_client: false,
+            is_format_supported_called: false,
+            render_client_available: false,
+            service_requested: false,
+            buffer_requested: false,
+            started_audio_client: false,
+            stopped_audio_client: false,
+            reset_audio_client: false,
+            sample_rate_hz: None,
+            channels: None,
+            bits_per_sample: None,
+            block_align: None,
+            avg_bytes_per_sec: None,
+            format_tag: None,
+            cb_size: None,
+            share_mode: "shared",
+            stream_flags: 0,
+            buffer_duration_hns: 0,
+            periodicity_hns: 0,
+            error_message: Some(error),
+        }
+    }
+
+    /// Create a report when mix format obtained but Initialize failed.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mix_format_obtained_but_initialize_failed(
+        sample_rate_hz: u32,
+        channels: u16,
+        bits_per_sample: u16,
+        block_align: u16,
+        avg_bytes_per_sec: u32,
+        format_tag: u16,
+        cb_size: u16,
+        error: String,
+    ) -> Self {
+        Self {
+            platform: "windows",
+            opt_in_env: WASAPI_CLIENT_INIT_SMOKE_ENV,
+            opt_in_enabled: true,
+            attempted: true,
+            skipped: true,
+            skipped_reason: Some("initialize failed"),
+            endpoint_available: true,
+            client_activated: true,
+            mix_format_available: true,
+            initialize_attempted: true,
+            initialized_audio_client: false,
+            is_format_supported_called: false,
+            render_client_available: false,
+            service_requested: false,
+            buffer_requested: false,
+            started_audio_client: false,
+            stopped_audio_client: false,
+            reset_audio_client: false,
+            sample_rate_hz: Some(sample_rate_hz),
+            channels: Some(channels),
+            bits_per_sample: Some(bits_per_sample),
+            block_align: Some(block_align),
+            avg_bytes_per_sec: Some(avg_bytes_per_sec),
+            format_tag: Some(format_tag),
+            cb_size: Some(cb_size),
+            share_mode: "shared",
+            stream_flags: 0,
+            buffer_duration_hns: 0,
+            periodicity_hns: 0,
+            error_message: Some(error),
+        }
+    }
+
+    /// Create a success report when Initialize succeeded.
+    pub fn success(
+        sample_rate_hz: u32,
+        channels: u16,
+        bits_per_sample: u16,
+        block_align: u16,
+        avg_bytes_per_sec: u32,
+        format_tag: u16,
+        cb_size: u16,
+    ) -> Self {
+        Self {
+            platform: "windows",
+            opt_in_env: WASAPI_CLIENT_INIT_SMOKE_ENV,
+            opt_in_enabled: true,
+            attempted: true,
+            skipped: false,
+            skipped_reason: None,
+            endpoint_available: true,
+            client_activated: true,
+            mix_format_available: true,
+            initialize_attempted: true,
+            initialized_audio_client: true,
+            is_format_supported_called: false,
+            render_client_available: false,
+            service_requested: false,
+            buffer_requested: false,
+            started_audio_client: false,
+            stopped_audio_client: false,
+            reset_audio_client: false,
+            sample_rate_hz: Some(sample_rate_hz),
+            channels: Some(channels),
+            bits_per_sample: Some(bits_per_sample),
+            block_align: Some(block_align),
+            avg_bytes_per_sec: Some(avg_bytes_per_sec),
+            format_tag: Some(format_tag),
+            cb_size: Some(cb_size),
+            share_mode: "shared",
+            stream_flags: 0,
+            buffer_duration_hns: 0,
+            periodicity_hns: 0,
+            error_message: None,
+        }
+    }
+}
