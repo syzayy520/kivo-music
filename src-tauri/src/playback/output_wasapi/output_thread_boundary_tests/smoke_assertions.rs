@@ -120,3 +120,69 @@ pub fn assert_prohibited_always_false(report: &WasapiOutputThreadSmokeReport) {
         "no playback capability"
     );
 }
+
+/// Assert that panic fields are correctly set.
+#[allow(dead_code)]
+pub fn assert_panic_report_fields(report: &WasapiOutputThreadSmokeReport) {
+    assert!(report.thread_panic_caught, "panic should be caught");
+    assert!(
+        report.thread_panic_message.is_some(),
+        "panic message should be present"
+    );
+    assert!(
+        report.error_message.is_some(),
+        "error message should be present for panic"
+    );
+    assert!(
+        !report.output_sink_connected,
+        "panic should not connect OutputSink"
+    );
+    assert!(
+        !report.capability_exposed,
+        "panic should not expose capabilities"
+    );
+    assert!(
+        !report.ring_buffer_created,
+        "panic should not create ring buffer"
+    );
+    assert!(
+        !report.decoder_connected,
+        "panic should not connect decoder"
+    );
+    assert!(
+        !report.pipeline_connected,
+        "panic should not connect pipeline"
+    );
+    assert!(
+        !report.real_pcm_produced,
+        "panic should not produce real PCM"
+    );
+    assert!(
+        !report.non_silent_data_written,
+        "panic should not write non-silent data"
+    );
+}
+
+/// Assert that join fields are correctly set for success path.
+#[allow(dead_code)]
+pub fn assert_join_success_fields(report: &WasapiOutputThreadSmokeReport) {
+    assert!(report.thread_join_attempted, "join should be attempted");
+    assert!(report.thread_joined, "join should succeed");
+    assert!(!report.thread_join_failed, "join should not fail");
+    assert!(
+        !report.thread_panic_caught,
+        "panic should not be caught in success"
+    );
+}
+
+/// Assert that join fields are correctly set for failure path.
+#[allow(dead_code)]
+pub fn assert_join_failure_fields(report: &WasapiOutputThreadSmokeReport) {
+    assert!(report.thread_join_attempted, "join should be attempted");
+    assert!(!report.thread_joined, "join should not succeed");
+    assert!(report.thread_join_failed, "join should fail");
+    assert!(
+        report.error_message.is_some(),
+        "error message should be present for join failure"
+    );
+}

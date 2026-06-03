@@ -116,6 +116,11 @@ impl WasapiOutputThreadSmokeReport {
         self.thread_report_received = other.thread_report_received;
         self.thread_recv_timeout_ms = other.thread_recv_timeout_ms;
         self.thread_recv_timed_out = other.thread_recv_timed_out;
+        self.thread_join_attempted = other.thread_join_attempted;
+        self.thread_joined = other.thread_joined;
+        self.thread_join_failed = other.thread_join_failed;
+        self.thread_panic_caught = other.thread_panic_caught;
+        self.thread_panic_message = other.thread_panic_message;
         self.thread_duration_ms = other.thread_duration_ms;
 
         // Thread internal WASAPI fields (copy from other)

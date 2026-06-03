@@ -40,11 +40,11 @@ pub fn probe_output_thread_boundary() -> WasapiOutputThreadSmokeReport {
     };
 
     // Spawn the output thread
-    let rx = spawn_output_thread_probe();
+    let (rx, handle) = spawn_output_thread_probe();
     report.thread_spawned = true;
 
     // Wait for the report with timeout
-    let thread_report = recv_timeout_and_join(rx, OUTPUT_THREAD_TIMEOUT);
+    let thread_report = recv_timeout_and_join(rx, handle, OUTPUT_THREAD_TIMEOUT);
 
     // Apply the thread outcome to the report
     apply_thread_outcome(

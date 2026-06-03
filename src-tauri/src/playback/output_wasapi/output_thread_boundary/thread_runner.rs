@@ -12,6 +12,7 @@
 //   - OutputSink / PlaybackCapabilities
 //   - Async runtime
 
+use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::sync::mpsc;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -21,25 +22,50 @@ use super::thread_report::ThreadReport;
 
 /// Spawn a thread to run the output thread boundary probe.
 ///
-/// Returns a receiver that will receive the thread's report.
-/// The thread will run the probe and send the report via the channel.
-pub fn spawn_output_thread_probe() -> mpsc::Receiver<ThreadReport> {
+/// Returns a receiver that will receive the thread's report and the thread's JoinHandle.
+/// The thread will run the probe with catch_unwind and send the report via the channel.
+pub fn spawn_output_thread_probe() -> (mpsc::Receiver<ThreadReport>, thread::JoinHandle<()>) {
     let (tx, rx) = mpsc::channel();
 
-    thread::spawn(move || {
-        // Run the probe and send the result
-        let report = probe_output_thread_boundary_internal();
-        let _ = tx.send(ThreadReport::Success(Box::new(report)));
+    let handle = thread::spawn(move || {
+        // Run the probe with catch_unwind to capture panics
+        let result = catch_unwind(AssertUnwindSafe(probe_output_thread_boundary_internal));
+
+        match result {
+            Ok(report) => {
+                // Success: send the report
+                let _ = tx.send(ThreadReport::Success(Box::new(report)));
+            }
+            Err(payload) => {
+                // Panic captured: extract message and send Panic report
+                let panic_message = if let Some(s) = payload.downcast_ref::<String>() {
+                    s.clone()
+                } else if let Some(s) = payload.downcast_ref::<&str>() {
+                    s.to_string()
+                } else {
+                    "unknown panic".to_string()
+                };
+                let _ = tx.send(ThreadReport::Panic(panic_message));
+            }
+        }
     });
 
-    rx
+    (rx, handle)
 }
 
-/// Receive the report with a timeout and join the thread.
+/// Receive the report with a timeout and optionally join the thread.
 ///
-/// Returns a `ThreadReport` indicating success, timeout, or join failure.
-/// The thread is expected to send a `ThreadReport::Success` on completion.
-pub fn recv_timeout_and_join(rx: mpsc::Receiver<ThreadReport>, timeout: Duration) -> ThreadReport {
+/// Returns a `ThreadReport` indicating success, timeout, panic, or join failure.
+///
+/// # Join semantics
+/// - **Ok(report)**: Report received. Join handle (thread should be finished or finishing).
+/// - **Timeout**: Do NOT join (would block indefinitely). Return Timeout.
+/// - **Disconnected**: Join to determine if thread panicked or exited abnormally.
+pub fn recv_timeout_and_join(
+    rx: mpsc::Receiver<ThreadReport>,
+    handle: thread::JoinHandle<()>,
+    timeout: Duration,
+) -> ThreadReport {
     let start = Instant::now();
 
     match rx.recv_timeout(timeout) {
@@ -50,18 +76,72 @@ pub fn recv_timeout_and_join(rx: mpsc::Receiver<ThreadReport>, timeout: Duration
                 ThreadReport::Success(mut report) => {
                     report.thread_report_received = true;
                     report.thread_recv_timeout_ms = Some(elapsed.as_millis() as u64);
-                    ThreadReport::Success(report) // already boxed
+                    report.thread_join_attempted = true;
+
+                    // Join handle - thread should be finished after sending report
+                    match handle.join() {
+                        Ok(()) => {
+                            report.thread_joined = true;
+                            report.thread_join_failed = false;
+                        }
+                        Err(_) => {
+                            // Thread panicked after sending report (unlikely but possible)
+                            report.thread_joined = false;
+                            report.thread_join_failed = true;
+                            report.thread_panic_caught = true;
+                            report.thread_panic_message =
+                                Some("thread panicked after sending report".to_string());
+                        }
+                    }
+                    ThreadReport::Success(report)
+                }
+                ThreadReport::Panic(panic_message) => {
+                    // Thread caught its own panic and sent a Panic report
+                    // Still attempt join to clean up
+                    let mut report = Box::new(
+                        crate::playback::output_wasapi::output_thread_boundary::report::WasapiOutputThreadSmokeReport::default(),
+                    );
+                    report.thread_report_received = true;
+                    report.thread_recv_timeout_ms = Some(elapsed.as_millis() as u64);
+                    report.thread_panic_caught = true;
+                    report.thread_panic_message = Some(panic_message);
+                    report.thread_join_attempted = true;
+
+                    match handle.join() {
+                        Ok(()) => {
+                            report.thread_joined = true;
+                            report.thread_join_failed = false;
+                        }
+                        Err(_) => {
+                            report.thread_joined = false;
+                            report.thread_join_failed = true;
+                        }
+                    }
+                    ThreadReport::Success(report)
                 }
                 other => other,
             }
         }
         Err(mpsc::RecvTimeoutError::Timeout) => {
             // Timeout waiting for report
+            // Do NOT join - would block indefinitely
             ThreadReport::Timeout
         }
         Err(mpsc::RecvTimeoutError::Disconnected) => {
-            // Channel disconnected (thread panicked or dropped)
-            ThreadReport::JoinFailed("Channel disconnected".to_string())
+            // Channel disconnected without receiving a report
+            // Join to determine if thread panicked or exited abnormally
+            match handle.join() {
+                Ok(()) => {
+                    // Thread exited without sending a report (abnormal but not panic)
+                    ThreadReport::JoinFailed(
+                        "channel disconnected, thread exited without report".to_string(),
+                    )
+                }
+                Err(_) => {
+                    // Thread panicked without sending a report
+                    ThreadReport::Panic("thread panicked without sending report".to_string())
+                }
+            }
         }
     }
 }

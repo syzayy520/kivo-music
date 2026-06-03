@@ -2,27 +2,24 @@
 //
 // Tests verifying RAII guard cleanup behavior and prohibited operations.
 
+use crate::playback::output_wasapi::output_thread_boundary::output_thread_outcome::apply_thread_outcome;
 use crate::playback::output_wasapi::output_thread_boundary::report::WasapiOutputThreadSmokeReport;
+use crate::playback::output_wasapi::output_thread_boundary::thread_report::ThreadReport;
 
 #[test]
 fn report_has_no_loop_executed_true() {
-    // After any report path, loop_executed must be false (loop not implemented)
     let r = WasapiOutputThreadSmokeReport::skipped_non_windows();
     assert!(!r.audio_produced, "no audio in skipped report");
-
     let r2 = WasapiOutputThreadSmokeReport::skipped_env_missing();
     assert!(!r2.audio_produced, "no audio in env_missing report");
-
     let r3 = WasapiOutputThreadSmokeReport::skipped_with_error("test", "err".into());
     assert!(!r3.audio_produced, "no audio in error report");
 }
 
 #[test]
 fn report_has_no_real_pcm() {
-    // audio_produced must always be false
     let r = WasapiOutputThreadSmokeReport::default();
     assert!(!r.audio_produced);
-
     let r2 = WasapiOutputThreadSmokeReport::skipped_non_windows();
     assert!(!r2.audio_produced);
 }
@@ -56,7 +53,6 @@ fn report_has_no_ring_buffer_decoder_pipeline() {
 
 #[test]
 fn reset_only_after_stop_success() {
-    // In a success report, both stop and reset must be attempted and succeeded
     use crate::playback::output_wasapi::output_thread_boundary::format_fields::FormatFields;
     let fields = FormatFields {
         sample_rate_hz: 48000,
@@ -68,18 +64,14 @@ fn reset_only_after_stop_success() {
         cb_size: 0,
     };
     let r = WasapiOutputThreadSmokeReport::success(fields, 1024, 960, 0);
-    assert!(r.stop_attempted, "Stop must be attempted in success path");
-    assert!(r.stopped_audio_client, "Stop must succeed in success path");
-    assert!(
-        r.reset_attempted,
-        "Reset must be attempted after Stop success"
-    );
-    assert!(r.reset_succeeded, "Reset must succeed in success path");
+    assert!(r.stop_attempted, "Stop must be attempted");
+    assert!(r.stopped_audio_client, "Stop must succeed");
+    assert!(r.reset_attempted, "Reset must be attempted after Stop");
+    assert!(r.reset_succeeded, "Reset must succeed");
 }
 
 #[test]
 fn stop_failure_prevents_reset() {
-    // When Stop fails, Reset should not be attempted
     use crate::playback::output_wasapi::output_thread_boundary::format_fields::FormatFields;
     let fields = FormatFields {
         sample_rate_hz: 48000,
@@ -102,43 +94,80 @@ fn stop_failure_prevents_reset() {
 
 #[test]
 fn skipped_reports_preserve_prohibited_defaults() {
-    // All skipped builders should inherit base defaults for prohibited fields
     let reports = vec![
         WasapiOutputThreadSmokeReport::skipped_non_windows(),
         WasapiOutputThreadSmokeReport::skipped_env_missing(),
         WasapiOutputThreadSmokeReport::skipped_with_error("test", "err".into()),
     ];
-
     for r in &reports {
-        assert!(
-            !r.output_sink_connected,
-            "output_sink_connected should be false"
-        );
-        assert!(!r.capability_exposed, "capability_exposed should be false");
-        assert!(
-            !r.thread_callback_registered,
-            "thread_callback_registered should be false"
-        );
-        assert!(
-            !r.async_runtime_created,
-            "async_runtime_created should be false"
-        );
-        assert!(
-            !r.ring_buffer_created,
-            "ring_buffer_created should be false"
-        );
-        assert!(!r.decoder_connected, "decoder_connected should be false");
-        assert!(!r.pipeline_connected, "pipeline_connected should be false");
-        assert!(!r.manager_connected, "manager_connected should be false");
-        assert!(!r.real_pcm_produced, "real_pcm_produced should be false");
-        assert!(
-            !r.non_silent_data_written,
-            "non_silent_data_written should be false"
-        );
-        assert!(!r.audio_produced, "audio_produced should be false");
-        assert!(
-            !r.playback_capability_enabled,
-            "playback_capability_enabled should be false"
-        );
+        assert!(!r.output_sink_connected);
+        assert!(!r.capability_exposed);
+        assert!(!r.thread_callback_registered);
+        assert!(!r.async_runtime_created);
+        assert!(!r.ring_buffer_created);
+        assert!(!r.decoder_connected);
+        assert!(!r.pipeline_connected);
+        assert!(!r.manager_connected);
+        assert!(!r.real_pcm_produced);
+        assert!(!r.non_silent_data_written);
+        assert!(!r.audio_produced);
+        assert!(!r.playback_capability_enabled);
     }
+}
+
+#[test]
+fn timeout_report_has_no_join_attempted() {
+    let mut report = WasapiOutputThreadSmokeReport::default();
+    apply_thread_outcome(&mut report, ThreadReport::Timeout, 15000);
+    assert!(
+        !report.thread_join_attempted,
+        "Timeout should not attempt join"
+    );
+    assert!(!report.thread_joined, "Timeout should not join");
+    assert!(
+        !report.thread_join_failed,
+        "Timeout should not have join failure"
+    );
+    assert!(
+        !report.thread_panic_caught,
+        "Timeout should not catch panic"
+    );
+}
+
+#[test]
+fn panic_report_does_not_enable_playback() {
+    let mut report = WasapiOutputThreadSmokeReport::default();
+    apply_thread_outcome(
+        &mut report,
+        ThreadReport::Panic("test panic".to_string()),
+        15000,
+    );
+    assert!(!report.output_sink_connected);
+    assert!(!report.capability_exposed);
+    assert!(!report.ring_buffer_created);
+    assert!(!report.decoder_connected);
+    assert!(!report.pipeline_connected);
+    assert!(!report.manager_connected);
+    assert!(!report.real_pcm_produced);
+    assert!(!report.non_silent_data_written);
+    assert!(!report.audio_produced);
+}
+
+#[test]
+fn join_failure_report_does_not_enable_playback() {
+    let mut report = WasapiOutputThreadSmokeReport::default();
+    apply_thread_outcome(
+        &mut report,
+        ThreadReport::JoinFailed("channel disconnected".to_string()),
+        15000,
+    );
+    assert!(!report.output_sink_connected);
+    assert!(!report.capability_exposed);
+    assert!(!report.ring_buffer_created);
+    assert!(!report.decoder_connected);
+    assert!(!report.pipeline_connected);
+    assert!(!report.manager_connected);
+    assert!(!report.real_pcm_produced);
+    assert!(!report.non_silent_data_written);
+    assert!(!report.audio_produced);
 }
