@@ -5,6 +5,7 @@ pub mod device;
 pub mod errors;
 pub mod format;
 pub mod initialize;
+pub mod output_thread_boundary;
 pub mod padding_query;
 pub mod platform;
 pub mod render_client;
@@ -43,3 +44,6 @@ mod silent_loop_tests;
 
 #[cfg(test)]
 mod start_stop_tests;
+
+#[cfg(test)]
+mod output_thread_boundary_tests;
