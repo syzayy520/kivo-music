@@ -149,11 +149,13 @@ impl PlaybackEngine for KivoNativeEngine {
 
     fn set_volume(&mut self, level: f32) -> PlaybackResult<PlaybackState> {
         self.state.volume.level = level.clamp(0.0, 1.0);
+        let _ = self.pipeline.set_output_volume(level);
         self.unsupported("set volume")
     }
 
     fn set_muted(&mut self, muted: bool) -> PlaybackResult<PlaybackState> {
         self.state.volume.muted = muted;
+        let _ = self.pipeline.set_output_muted(muted);
         self.unsupported("set muted")
     }
 

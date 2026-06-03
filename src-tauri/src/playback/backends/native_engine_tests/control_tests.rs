@@ -92,7 +92,11 @@ fn set_volume_updates_state_and_returns_typed_unsupported() {
     }
 
     let state = engine.current_state();
+    let pipeline = engine.pipeline_state();
+
     assert_eq!(state.volume.level, 1.0);
+    assert_eq!(pipeline.output_status.controls.volume_level, 1.0);
+    assert!(pipeline.output_status.last_error.is_none());
     assert_eq!(
         state.error.as_deref(),
         Some("kivo core audio set volume is not implemented yet")
@@ -113,7 +117,11 @@ fn set_muted_updates_state_and_returns_typed_unsupported() {
     }
 
     let state = engine.current_state();
+    let pipeline = engine.pipeline_state();
+
     assert!(state.volume.muted);
+    assert!(pipeline.output_status.controls.muted);
+    assert!(pipeline.output_status.last_error.is_none());
     assert_eq!(
         state.error.as_deref(),
         Some("kivo core audio set muted is not implemented yet")
