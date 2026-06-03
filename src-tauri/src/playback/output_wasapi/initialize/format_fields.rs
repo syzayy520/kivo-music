@@ -2,35 +2,44 @@
 //
 // Format field extraction from WAVEFORMATEX.
 //
-// This file contains logic to safely read format fields from a
-// WAVEFORMATEX pointer, handling packed struct alignment issues.
+// This file contains the FormatFields struct and logic to safely read
+// format fields from a WAVEFORMATEX pointer, handling packed struct
+// alignment issues.
 
 use windows::Win32::Media::Audio::WAVEFORMATEX;
 
+/// Format fields extracted from a WAVEFORMATEX pointer.
+///
+/// Uses named fields instead of positional tuple to avoid
+/// passing 7+ separate parameters across function boundaries.
+#[derive(Clone, Copy)]
+pub struct FormatFields {
+    pub sample_rate_hz: u32,
+    pub channels: u16,
+    pub bits_per_sample: u16,
+    pub block_align: u16,
+    pub avg_bytes_per_sec: u32,
+    pub format_tag: u16,
+    pub cb_size: u16,
+}
+
 /// Extract basic format fields from a WAVEFORMATEX pointer.
 ///
-/// WAVEFORMATEX is a packed struct, so fields are copied to local
-/// variables before being returned to avoid unaligned reference issues.
+/// WAVEFORMATEX is a packed struct, so fields are copied to a
+/// FormatFields struct before being returned to avoid unaligned
+/// reference issues.
 ///
 /// # Safety
 /// The caller must ensure the pointer is valid and non-null.
-pub unsafe fn extract_format_fields(ptr: *mut WAVEFORMATEX) -> (u32, u16, u16, u16, u32, u16, u16) {
+pub unsafe fn extract_format_fields(ptr: *mut WAVEFORMATEX) -> FormatFields {
     let format = unsafe { &*ptr };
-    let sample_rate_hz = format.nSamplesPerSec;
-    let channels = format.nChannels;
-    let bits_per_sample = format.wBitsPerSample;
-    let format_tag = format.wFormatTag;
-    let cb_size = format.cbSize;
-    let block_align = format.nBlockAlign;
-    let avg_bytes_per_sec = format.nAvgBytesPerSec;
-
-    (
-        sample_rate_hz,
-        channels,
-        bits_per_sample,
-        block_align,
-        avg_bytes_per_sec,
-        format_tag,
-        cb_size,
-    )
+    FormatFields {
+        sample_rate_hz: format.nSamplesPerSec,
+        channels: format.nChannels,
+        bits_per_sample: format.wBitsPerSample,
+        block_align: format.nBlockAlign,
+        avg_bytes_per_sec: format.nAvgBytesPerSec,
+        format_tag: format.wFormatTag,
+        cb_size: format.cbSize,
+    }
 }

@@ -33,15 +33,10 @@
 //   - Pipeline integration
 //   - Decoder changes
 
-use windows::Win32::Media::Audio::{
-    eConsole, eRender, IAudioClient, IMMDeviceEnumerator, MMDeviceEnumerator,
-    AUDCLNT_SHAREMODE_SHARED,
-};
-use windows::Win32::System::Com::{CoCreateInstance, CLSCTX_ALL};
-
 use super::env::is_opt_in_enabled;
 use super::format_fields::extract_format_fields;
-use super::guards::{ComApartment, MixFormatGuard};
+use super::guards::ComApartment;
+use super::initialize_steps;
 use super::report::WasapiClientInitializeSmokeReport;
 
 /// Probe IAudioClient::Initialize in shared mode on Windows.
@@ -86,144 +81,43 @@ pub fn probe_initialize() -> WasapiClientInitializeSmokeReport {
     };
 
     // Step 3: Create IMMDeviceEnumerator
-    let enumerator: IMMDeviceEnumerator =
-        // Windows COM FFI boundary
-        match unsafe { CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL) } {
-            Ok(enumerator) => enumerator,
-            Err(e) => {
-                return WasapiClientInitializeSmokeReport::skipped_with_error(
-                    "device enumerator creation failed",
-                    format!("CoCreateInstance failed: {e}"),
-                );
-            }
-        };
-
-    // Step 4: Get default audio render endpoint
-    // eRender = output device, eConsole = console/multimedia role
-    let endpoint =
-        // Windows COM FFI boundary
-        match unsafe { enumerator.GetDefaultAudioEndpoint(eRender, eConsole) } {
-            Ok(endpoint) => endpoint,
-            Err(e) => {
-                return WasapiClientInitializeSmokeReport::skipped_with_error(
-                    "default endpoint unavailable",
-                    format!("GetDefaultAudioEndpoint failed: {e}"),
-                );
-            }
-        };
-
-    // Step 5: Activate IAudioClient from endpoint
-    // This is the same as P0-022 client activate smoke
-    // We do NOT Initialize yet, just get the client
-    let audio_client: IAudioClient =
-        // Windows COM FFI boundary
-        // no audio client initialization yet
-        // no render client
-        // no playback
-        match unsafe { endpoint.Activate(CLSCTX_ALL, None) } {
-            Ok(client) => client,
-            Err(e) => {
-                return WasapiClientInitializeSmokeReport::endpoint_available_but_activate_failed(
-                    format!("Activate IAudioClient failed: {e}"),
-                );
-            }
-        };
-
-    // Step 6: Call GetMixFormat
-    // Returns a COM-allocated WAVEFORMATEX pointer that must be freed with CoTaskMemFree.
-    // This is the same as P0-024 mix format smoke
-    // We do NOT Initialize yet, just get the format
-    let format_ptr =
-        // Windows COM FFI boundary
-        // no audio client initialization yet
-        // no render client
-        // no playback
-        match unsafe { audio_client.GetMixFormat() } {
-            Ok(ptr) => ptr,
-            Err(e) => {
-                return WasapiClientInitializeSmokeReport::client_activated_but_mix_format_failed(
-                    format!("GetMixFormat failed: {e}"),
-                );
-            }
-        };
-
-    // Step 7: Hold the pointer in RAII guard for safe release
-    let guard = MixFormatGuard { ptr: format_ptr };
-
-    // Step 8: Read basic format fields into local variables
-    // WAVEFORMATEX is packed, so we copy fields to local variables before using them.
-    // This avoids unaligned reference issues with packed struct fields.
-    let (
-        sample_rate_hz,
-        channels,
-        bits_per_sample,
-        block_align,
-        avg_bytes_per_sec,
-        format_tag,
-        cb_size,
-    ) = unsafe { extract_format_fields(guard.ptr) };
-
-    // Step 9: Call IAudioClient::Initialize in shared mode
-    // This is the main purpose of this smoke test.
-    // We use shared mode with minimal parameters:
-    // - AUDCLNT_SHAREMODE_SHARED: shared mode, best compatibility
-    // - stream_flags = 0: no special flags
-    // - hnsBufferDuration = 0: use default buffer size (typically 10ms)
-    // - hnsPeriodicity = 0: shared mode must be 0, engine decides
-    // - pFormat = mix format pointer: device native format
-    // - AudioSessionGuid = None: use default audio session
-    //
-    // We do NOT:
-    // - Call IsFormatSupported (not needed in shared mode)
-    // - Call GetService (not getting render client)
-    // - Get IAudioRenderClient (not getting render client)
-    // - Call GetBuffer / ReleaseBuffer (not getting buffer)
-    // - Call Start / Stop / Reset (not starting playback)
-    // - Produce sound (not starting playback)
-    let hr = unsafe {
-        audio_client.Initialize(
-            AUDCLNT_SHAREMODE_SHARED,
-            0,         // stream_flags
-            0,         // hnsBufferDuration (0 = default)
-            0,         // hnsPeriodicity (0 = default for shared mode)
-            guard.ptr, // pFormat
-            None,      // AudioSessionGuid
-        )
+    let enumerator = match initialize_steps::create_device_enumerator() {
+        Ok(e) => e,
+        Err(report) => return report,
     };
 
-    // Step 10: Check if Initialize succeeded
-    if hr.is_err() {
+    // Step 4: Get default audio render endpoint
+    let endpoint = match initialize_steps::get_default_render_endpoint(&enumerator) {
+        Ok(ep) => ep,
+        Err(report) => return report,
+    };
+
+    // Step 5: Activate IAudioClient from endpoint
+    let audio_client = match initialize_steps::activate_audio_client(&endpoint) {
+        Ok(client) => client,
+        Err(report) => return report,
+    };
+
+    // Step 6: Get mix format and wrap in RAII guard
+    let guard = match initialize_steps::get_mix_format(&audio_client) {
+        Ok(g) => g,
+        Err(report) => return report,
+    };
+
+    // Step 7: Read format fields into local struct
+    // WAVEFORMATEX is packed, so we copy fields to avoid unaligned reference issues.
+    let fields = unsafe { extract_format_fields(guard.ptr) };
+
+    // Step 8: Call IAudioClient::Initialize in shared mode
+    // We do NOT: IsFormatSupported, GetService, GetBuffer, Start/Stop/Reset
+    if let Err(e) = initialize_steps::initialize_shared_client(&audio_client, guard.ptr) {
         return WasapiClientInitializeSmokeReport::mix_format_obtained_but_initialize_failed(
-            sample_rate_hz,
-            channels,
-            bits_per_sample,
-            block_align,
-            avg_bytes_per_sec,
-            format_tag,
-            cb_size,
-            format!("IAudioClient::Initialize failed: {hr:?}"),
+            fields, e,
         );
     }
 
-    // Step 11: Initialize succeeded. Report success.
-    // audio_client will be dropped here.
-    // MixFormatGuard will release format pointer.
-    // COM cleanup happens via ComApartment::drop.
-    //
-    // We do NOT:
-    // - Call GetService (not getting render client)
-    // - Get IAudioRenderClient (not getting render client)
-    // - Call GetBuffer / ReleaseBuffer (not getting buffer)
-    // - Call Start / Stop / Reset (not starting playback)
-    // - Produce sound (not starting playback)
-
-    WasapiClientInitializeSmokeReport::success(
-        sample_rate_hz,
-        channels,
-        bits_per_sample,
-        block_align,
-        avg_bytes_per_sec,
-        format_tag,
-        cb_size,
-    )
+    // Step 9: Initialize succeeded.
+    // audio_client dropped here. MixFormatGuard releases format pointer.
+    // COM cleanup via ComApartment::drop.
+    WasapiClientInitializeSmokeReport::success(fields)
 }

@@ -17,8 +17,13 @@
 pub mod env;
 pub mod format_fields;
 pub mod guards;
+pub mod initialize_steps;
 pub mod report;
 pub mod report_builders;
+pub mod report_defaults;
+pub mod report_failure_builders;
+pub mod report_skipped_builders;
+pub mod report_success_builders;
 
 #[cfg(windows)]
 pub use initialize_windows::*;
