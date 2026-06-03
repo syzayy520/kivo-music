@@ -25,85 +25,15 @@
 //   - Async operations
 //   - System volume changes
 
-use std::env;
-use std::ffi::c_void;
-
 use windows::Win32::Media::Audio::{
-    eConsole, eRender, IAudioClient, IMMDeviceEnumerator, MMDeviceEnumerator, WAVEFORMATEX,
+    eConsole, eRender, IAudioClient, IMMDeviceEnumerator, MMDeviceEnumerator,
 };
-use windows::Win32::System::Com::{
-    CoCreateInstance, CoInitializeEx, CoTaskMemFree, CoUninitialize, CLSCTX_ALL,
-    COINIT_MULTITHREADED,
-};
+use windows::Win32::System::Com::{CoCreateInstance, CLSCTX_ALL};
 
-use super::{WasapiMixFormatSmokeReport, WASAPI_MIX_FORMAT_SMOKE_ENV};
-
-/// RAII guard for COM apartment initialization.
-///
-/// Calls `CoInitializeEx` on creation and `CoUninitialize` on drop.
-/// This ensures COM is properly cleaned up even if the smoke probe
-/// encounters an error.
-struct ComApartment {
-    initialized: bool,
-}
-
-impl ComApartment {
-    /// Initialize COM apartment with MTA (multi-threaded apartment).
-    ///
-    /// Returns `Ok(ComApartment)` if initialization succeeded,
-    /// or `Err(String)` with the error description.
-    fn initialize() -> Result<Self, String> {
-        // Windows COM FFI boundary
-        // no audio client initialization
-        // no render client
-        // no playback
-        unsafe {
-            let hr = CoInitializeEx(None, COINIT_MULTITHREADED);
-            if hr.is_ok() {
-                Ok(Self { initialized: true })
-            } else {
-                Err(format!("CoInitializeEx failed: {hr:?}"))
-            }
-        }
-    }
-}
-
-impl Drop for ComApartment {
-    fn drop(&mut self) {
-        if self.initialized {
-            // Windows COM FFI boundary
-            unsafe {
-                CoUninitialize();
-            }
-        }
-    }
-}
-
-/// RAII guard for WAVEFORMATEX pointer returned by GetMixFormat.
-///
-/// Calls `CoTaskMemFree` on drop to release the COM-allocated memory.
-/// This ensures the format pointer is always properly released even if
-/// the smoke probe encounters an error after GetMixFormat succeeds.
-struct MixFormatGuard {
-    ptr: *mut WAVEFORMATEX,
-}
-
-impl Drop for MixFormatGuard {
-    fn drop(&mut self) {
-        // mix format pointer lifetime
-        // release COM-allocated memory
-        if !self.ptr.is_null() {
-            unsafe {
-                CoTaskMemFree(Some(self.ptr as *const c_void));
-            }
-        }
-    }
-}
-
-/// Check if the opt-in environment variable is set to "1".
-fn is_opt_in_enabled() -> bool {
-    env::var(WASAPI_MIX_FORMAT_SMOKE_ENV).ok().as_deref() == Some("1")
-}
+use super::env::is_opt_in_enabled;
+use super::format_fields::extract_format_fields;
+use super::guards::{ComApartment, MixFormatGuard};
+use super::report::WasapiMixFormatSmokeReport;
 
 /// Probe IAudioClient::GetMixFormat from the default audio render endpoint on Windows.
 ///
@@ -195,7 +125,7 @@ pub fn probe_mix_format() -> WasapiMixFormatSmokeReport {
     // no audio client initialization
     // no render client
     // no playback
-    let format_ptr: *mut WAVEFORMATEX =
+    let format_ptr =
         // Windows COM FFI boundary
         match unsafe { audio_client.GetMixFormat() } {
             Ok(ptr) => ptr,
@@ -212,14 +142,15 @@ pub fn probe_mix_format() -> WasapiMixFormatSmokeReport {
     // Step 8: Read basic format fields into local variables
     // WAVEFORMATEX is packed, so we copy fields to local variables before using them.
     // This avoids unaligned reference issues with packed struct fields.
-    let format = unsafe { &*guard.ptr };
-    let sample_rate_hz = format.nSamplesPerSec;
-    let channels = format.nChannels;
-    let bits_per_sample = format.wBitsPerSample;
-    let format_tag = format.wFormatTag;
-    let cb_size = format.cbSize;
-    let block_align = format.nBlockAlign;
-    let avg_bytes_per_sec = format.nAvgBytesPerSec;
+    let (
+        sample_rate_hz,
+        channels,
+        bits_per_sample,
+        block_align,
+        avg_bytes_per_sec,
+        format_tag,
+        cb_size,
+    ) = unsafe { extract_format_fields(guard.ptr) };
 
     // Step 9: Report success. Format pointer will be released by MixFormatGuard::drop.
     // audio_client will be dropped here.
