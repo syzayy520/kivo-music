@@ -50,7 +50,10 @@ pub mod volume;
 pub mod windows_audio;
 
 mod native_null_output;
+mod native_pipeline_buffer;
+mod native_pipeline_clock;
 mod native_pipeline_decoder;
+mod native_pipeline_drain;
 mod native_pipeline_output;
 mod native_pipeline_runtime;
 mod native_pipeline_state;
@@ -91,6 +94,15 @@ mod lifecycle_recorder_tests;
 
 #[cfg(test)]
 mod manager_queue_tests;
+
+#[cfg(test)]
+mod native_pipeline_buffer_tests;
+
+#[cfg(test)]
+mod native_pipeline_clock_tests;
+
+#[cfg(test)]
+mod native_pipeline_drain_tests;
 
 #[cfg(test)]
 mod native_pipeline_tests;

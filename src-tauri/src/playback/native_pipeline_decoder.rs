@@ -84,11 +84,13 @@ impl NativePipeline {
             Some(frame) => {
                 self.update_decoder_position(frame.position_ms);
                 self.count_decoded_frame();
-                self.state.last_decoded_frame = Some(AudioOutputFrame {
+                let output_frame = AudioOutputFrame {
                     stream: frame.stream,
                     position_ms: frame.position_ms,
                     samples: frame.samples,
-                });
+                };
+                self.state.last_decoded_frame = Some(output_frame.clone());
+                self.enqueue_decoded_frame(output_frame);
                 Ok(())
             }
             None => {
@@ -110,6 +112,7 @@ impl NativePipeline {
 
         self.update_decoder_position(position_ms);
         self.state.last_decoded_frame = None;
+        self.clear_buffer();
         Ok(())
     }
 
@@ -122,6 +125,7 @@ impl NativePipeline {
         self.state.decoder_session = None;
         self.state.last_decoded_frame = None;
         self.state.decoder_state.mark_closed();
+        self.clear_buffer();
         Ok(())
     }
 }

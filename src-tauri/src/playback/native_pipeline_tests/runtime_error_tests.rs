@@ -22,7 +22,7 @@ fn submit_without_frame_returns_backend_error() {
 
     match result {
         Err(PlaybackError::Backend(message)) => {
-            assert_eq!(message, "native pipeline output frame is not ready");
+            assert_eq!(message, "pipeline buffer is empty, no frame to drain");
         }
         Err(other) => panic!("expected backend error, got {other}"),
         Ok(_) => panic!("expected backend error, got success"),
@@ -36,7 +36,7 @@ fn schedule_output_submit_step_without_frame_returns_backend_error() {
 
     match result {
         Err(PlaybackError::Backend(message)) => {
-            assert_eq!(message, "native pipeline output frame is not ready");
+            assert_eq!(message, "pipeline buffer is empty, no frame to drain");
         }
         Err(other) => panic!("expected backend error, got {other}"),
         Ok(_) => panic!("expected backend error, got success"),

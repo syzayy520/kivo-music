@@ -11,7 +11,7 @@ impl NativePipeline {
         let request = AudioDecoderOpenRequest::from_track(track);
         self.open_decoder(request, 0)?;
         self.schedule_decode_step()?;
-        self.schedule_output_submit_step()
+        self.drain_next_frame_to_output()
     }
 
     pub fn handle_worker_command(&mut self, command: &PlaybackWorkerCommand) -> PlaybackResult<()> {
