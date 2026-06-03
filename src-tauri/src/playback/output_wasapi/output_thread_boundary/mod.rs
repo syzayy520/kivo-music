@@ -19,6 +19,10 @@ pub mod thread_runner;
 
 // Platform-specific modules
 #[cfg(target_os = "windows")]
+pub mod output_thread_flow;
+#[cfg(target_os = "windows")]
+pub mod output_thread_outcome;
+#[cfg(target_os = "windows")]
 pub mod output_thread_steps;
 #[cfg(target_os = "windows")]
 pub mod output_thread_windows;

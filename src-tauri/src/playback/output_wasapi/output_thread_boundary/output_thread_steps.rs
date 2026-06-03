@@ -63,9 +63,7 @@ pub(super) fn get_mix_format(
     audio_client: &IAudioClient,
 ) -> Result<MixFormatGuard, WasapiOutputThreadSmokeReport> {
     let format_ptr = unsafe { audio_client.GetMixFormat() }.map_err(|e| {
-        WasapiOutputThreadSmokeReport::mix_format_failed(format!(
-            "GetMixFormat failed: {e}"
-        ))
+        WasapiOutputThreadSmokeReport::mix_format_failed(format!("GetMixFormat failed: {e}"))
     })?;
     Ok(MixFormatGuard { ptr: format_ptr })
 }
