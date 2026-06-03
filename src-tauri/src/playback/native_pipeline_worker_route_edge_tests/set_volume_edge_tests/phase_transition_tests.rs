@@ -15,12 +15,7 @@ fn route_set_volume_from_stopped_keeps_stopped_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-7"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command set_volume is not implemented yet"
-        )
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
@@ -38,12 +33,7 @@ fn route_set_volume_from_failed_keeps_failed_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Failed);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-19"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command set_volume is not implemented yet"
-        )
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
@@ -59,12 +49,7 @@ fn route_set_volume_from_idle_keeps_idle_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Idle);
     assert_eq!(next.active_track_id, None);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command set_volume is not implemented yet"
-        )
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
@@ -82,12 +67,7 @@ fn route_set_volume_from_paused_keeps_paused_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Paused);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-21"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command set_volume is not implemented yet"
-        )
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
@@ -105,10 +85,5 @@ fn route_set_volume_from_playing_keeps_playing_phase() {
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-23"));
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command set_volume is not implemented yet"
-        )
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }

@@ -1,7 +1,6 @@
 use super::decoder::{AudioSampleFormat, AudioStreamInfo};
 use super::decoder_request::AudioDecoderOpenRequest;
 use super::decoder_runtime_state::{DecoderRuntimePhase, DecoderRuntimeState};
-use super::errors::PlaybackError;
 use super::native_pipeline::NativePipeline;
 use super::output::{AudioOutputFrame, OutputRuntimeStatus, OutputSettings};
 use super::playback_worker_command::PlaybackWorkerCommand;
@@ -28,19 +27,6 @@ fn output_frame() -> AudioOutputFrame {
         stream: stream_info(),
         position_ms: 100,
         samples: vec![0.0, 0.1, -0.1, 0.2],
-    }
-}
-
-fn assert_worker_unsupported(result: Result<(), PlaybackError>, operation: &str) {
-    match result {
-        Err(PlaybackError::UnsupportedOperation(message)) => {
-            assert_eq!(
-                message,
-                format!("native pipeline worker command {operation} is not implemented yet")
-            );
-        }
-        Err(other) => panic!("expected unsupported operation, got {other}"),
-        Ok(_) => panic!("expected unsupported operation, got success"),
     }
 }
 

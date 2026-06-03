@@ -13,29 +13,20 @@ fn track() -> PlaybackTrack {
 }
 
 #[test]
-fn worker_set_volume_and_set_muted_are_typed_unsupported() {
+fn worker_set_volume_and_set_muted_update_output_controls() {
     let mut pipeline = NativePipeline::new();
-    let commands = vec![
-        (
-            PlaybackWorkerCommand::SetVolume { level: 0.5 },
-            "set_volume",
-        ),
-        (PlaybackWorkerCommand::SetMuted { muted: true }, "set_muted"),
-    ];
 
-    for (command, operation) in commands {
-        let result = pipeline.handle_worker_command(&command);
-        match result {
-            Err(PlaybackError::UnsupportedOperation(message)) => {
-                assert_eq!(
-                    message,
-                    format!("native pipeline worker command {operation} is not implemented yet")
-                );
-            }
-            Err(other) => panic!("expected unsupported operation, got {other}"),
-            Ok(_) => panic!("expected unsupported operation, got success"),
-        }
-    }
+    pipeline
+        .handle_worker_command(&PlaybackWorkerCommand::SetVolume { level: 1.5 })
+        .expect("set output volume");
+    pipeline
+        .handle_worker_command(&PlaybackWorkerCommand::SetMuted { muted: true })
+        .expect("set output muted");
+
+    let state = pipeline.state();
+    assert_eq!(state.output_status.controls.volume_level, 1.0);
+    assert!(state.output_status.controls.muted);
+    assert!(state.output_status.last_error.is_none());
 }
 
 #[test]

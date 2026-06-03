@@ -1,5 +1,5 @@
 use super::decoder_request::AudioDecoderOpenRequest;
-use super::errors::{PlaybackError, PlaybackResult};
+use super::errors::PlaybackResult;
 use super::native_pipeline::NativePipeline;
 use super::playback_worker_command::PlaybackWorkerCommand;
 use super::playback_worker_state::PlaybackWorkerState;
@@ -7,20 +7,6 @@ use super::playback_worker_transition;
 use super::types::PlaybackTrack;
 
 impl NativePipeline {
-    fn worker_operation_name(command: &PlaybackWorkerCommand) -> &'static str {
-        match command {
-            PlaybackWorkerCommand::Load { .. } => "load",
-            PlaybackWorkerCommand::Play => "play",
-            PlaybackWorkerCommand::Pause => "pause",
-            PlaybackWorkerCommand::Resume => "resume",
-            PlaybackWorkerCommand::Stop => "stop",
-            PlaybackWorkerCommand::Seek { .. } => "seek",
-            PlaybackWorkerCommand::SetVolume { .. } => "set_volume",
-            PlaybackWorkerCommand::SetMuted { .. } => "set_muted",
-            PlaybackWorkerCommand::Shutdown => "shutdown",
-        }
-    }
-
     fn load_worker_track(&mut self, track: &PlaybackTrack) -> PlaybackResult<()> {
         let request = AudioDecoderOpenRequest::from_track(track);
         self.open_decoder(request, 0)?;
@@ -29,22 +15,17 @@ impl NativePipeline {
     }
 
     pub fn handle_worker_command(&mut self, command: &PlaybackWorkerCommand) -> PlaybackResult<()> {
-        let operation = Self::worker_operation_name(command);
-
         match command {
-            PlaybackWorkerCommand::Load { track } => return self.load_worker_track(track),
-            PlaybackWorkerCommand::Play => return self.start(),
-            PlaybackWorkerCommand::Pause => return self.pause_output(),
-            PlaybackWorkerCommand::Resume => return self.resume_output(),
-            PlaybackWorkerCommand::Stop => return self.stop_output(),
-            PlaybackWorkerCommand::Seek { position_ms } => return self.seek_decoder(*position_ms),
-            PlaybackWorkerCommand::Shutdown => return self.shutdown(),
-            PlaybackWorkerCommand::SetVolume { .. } | PlaybackWorkerCommand::SetMuted { .. } => {}
+            PlaybackWorkerCommand::Load { track } => self.load_worker_track(track),
+            PlaybackWorkerCommand::Play => self.start(),
+            PlaybackWorkerCommand::Pause => self.pause_output(),
+            PlaybackWorkerCommand::Resume => self.resume_output(),
+            PlaybackWorkerCommand::Stop => self.stop_output(),
+            PlaybackWorkerCommand::Seek { position_ms } => self.seek_decoder(*position_ms),
+            PlaybackWorkerCommand::SetVolume { level } => self.set_output_volume(*level),
+            PlaybackWorkerCommand::SetMuted { muted } => self.set_output_muted(*muted),
+            PlaybackWorkerCommand::Shutdown => self.shutdown(),
         }
-
-        Err(PlaybackError::UnsupportedOperation(format!(
-            "native pipeline worker command {operation} is not implemented yet"
-        )))
     }
 
     pub fn map_worker_state(

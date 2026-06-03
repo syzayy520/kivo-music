@@ -1,3 +1,4 @@
+use super::super::errors::PlaybackError;
 use super::wav_test_file::write_test_wav;
 use super::*;
 
@@ -84,19 +85,20 @@ fn shutdown_closes_empty_pipeline_without_fake_runtime_error() {
 }
 
 #[test]
-fn worker_set_volume_and_set_muted_are_typed_unsupported() {
+fn worker_set_volume_and_set_muted_update_output_controls() {
     let mut pipeline = NativePipeline::new();
-    let commands = vec![
-        (
-            PlaybackWorkerCommand::SetVolume { level: 0.8 },
-            "set_volume",
-        ),
-        (PlaybackWorkerCommand::SetMuted { muted: true }, "set_muted"),
-    ];
 
-    for (command, operation) in commands {
-        assert_worker_unsupported(pipeline.handle_worker_command(&command), operation);
-    }
+    pipeline
+        .handle_worker_command(&PlaybackWorkerCommand::SetVolume { level: 0.8 })
+        .expect("worker set volume");
+    pipeline
+        .handle_worker_command(&PlaybackWorkerCommand::SetMuted { muted: true })
+        .expect("worker set muted");
+
+    let state = pipeline.state();
+    assert_eq!(state.output_status.controls.volume_level, 0.8);
+    assert!(state.output_status.controls.muted);
+    assert!(state.output_status.last_error.is_none());
 }
 
 #[test]

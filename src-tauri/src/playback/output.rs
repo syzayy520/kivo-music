@@ -29,6 +29,21 @@ pub struct OutputLatency {
     pub measured_ms: Option<u32>,
 }
 
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct OutputControlState {
+    pub volume_level: f32,
+    pub muted: bool,
+}
+
+impl Default for OutputControlState {
+    fn default() -> Self {
+        Self {
+            volume_level: 1.0,
+            muted: false,
+        }
+    }
+}
+
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct OutputRuntimeStatus {
     pub is_open: bool,
@@ -36,6 +51,7 @@ pub struct OutputRuntimeStatus {
     pub active_device_id: Option<String>,
     pub pending_frames: usize,
     pub latency: OutputLatency,
+    pub controls: OutputControlState,
     pub gap_count: u64,
     pub last_error: Option<String>,
 }
@@ -47,6 +63,8 @@ pub trait OutputSink {
     fn resume(&mut self) -> PlaybackResult<OutputRuntimeStatus>;
     fn flush(&mut self) -> PlaybackResult<OutputRuntimeStatus>;
     fn stop(&mut self) -> PlaybackResult<OutputRuntimeStatus>;
+    fn set_volume(&mut self, level: f32) -> PlaybackResult<OutputRuntimeStatus>;
+    fn set_muted(&mut self, muted: bool) -> PlaybackResult<OutputRuntimeStatus>;
     fn status(&self) -> OutputRuntimeStatus;
     fn close(&mut self) -> PlaybackResult<()>;
 }

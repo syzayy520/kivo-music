@@ -44,6 +44,14 @@ impl OutputSink for KivoNativeOutputSink {
         self.inner.stop()
     }
 
+    fn set_volume(&mut self, level: f32) -> PlaybackResult<OutputRuntimeStatus> {
+        self.inner.set_volume(level)
+    }
+
+    fn set_muted(&mut self, muted: bool) -> PlaybackResult<OutputRuntimeStatus> {
+        self.inner.set_muted(muted)
+    }
+
     fn status(&self) -> OutputRuntimeStatus {
         self.inner.status()
     }

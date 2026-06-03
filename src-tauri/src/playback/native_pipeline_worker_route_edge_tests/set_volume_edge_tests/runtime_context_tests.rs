@@ -1,7 +1,7 @@
 use super::super::*;
 
 #[test]
-fn route_set_volume_from_idle_records_runtime_unsupported_context() {
+fn route_set_volume_from_idle_updates_output_controls() {
     let mut pipeline = NativePipeline::new();
     let state = PlaybackWorkerState::idle();
     let command = PlaybackWorkerCommand::SetVolume { level: 0.2 };
@@ -10,16 +10,11 @@ fn route_set_volume_from_idle_records_runtime_unsupported_context() {
     let snapshot = pipeline.state();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Idle);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command set_volume is not implemented yet"
-        )
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
-fn route_set_volume_from_playing_records_runtime_unsupported_context() {
+fn route_set_volume_from_playing_updates_output_controls() {
     let mut pipeline = NativePipeline::new();
     let mut state = PlaybackWorkerState::idle();
     state.mark_loaded("edge-set-volume-ctx-1");
@@ -30,16 +25,11 @@ fn route_set_volume_from_playing_records_runtime_unsupported_context() {
     let snapshot = pipeline.state();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command set_volume is not implemented yet"
-        )
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
-fn route_set_volume_from_paused_records_runtime_unsupported_context() {
+fn route_set_volume_from_paused_updates_output_controls() {
     let mut pipeline = NativePipeline::new();
     let mut state = PlaybackWorkerState::idle();
     state.mark_loaded("edge-set-volume-ctx-2");
@@ -50,16 +40,11 @@ fn route_set_volume_from_paused_records_runtime_unsupported_context() {
     let snapshot = pipeline.state();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Paused);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command set_volume is not implemented yet"
-        )
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
-fn route_set_volume_from_stopped_records_runtime_unsupported_context() {
+fn route_set_volume_from_stopped_updates_output_controls() {
     let mut pipeline = NativePipeline::new();
     let mut state = PlaybackWorkerState::idle();
     state.mark_loaded("edge-set-volume-ctx-3");
@@ -70,16 +55,11 @@ fn route_set_volume_from_stopped_records_runtime_unsupported_context() {
     let snapshot = pipeline.state();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command set_volume is not implemented yet"
-        )
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }
 
 #[test]
-fn route_set_volume_from_failed_records_runtime_unsupported_context() {
+fn route_set_volume_from_failed_updates_output_controls() {
     let mut pipeline = NativePipeline::new();
     let mut state = PlaybackWorkerState::idle();
     state.mark_loaded("edge-set-volume-ctx-4");
@@ -90,10 +70,5 @@ fn route_set_volume_from_failed_records_runtime_unsupported_context() {
     let snapshot = pipeline.state();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Failed);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some(
-            "unsupported operation: native pipeline worker command set_volume is not implemented yet"
-        )
-    );
+    assert!(snapshot.output_status.last_error.is_none());
 }

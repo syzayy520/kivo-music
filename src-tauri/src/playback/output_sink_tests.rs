@@ -53,6 +53,8 @@ fn pause_resume_flush_stop_are_typed_unsupported() {
     assert_unsupported(sink.resume(), "resume");
     assert_unsupported(sink.flush(), "flush");
     assert_unsupported(sink.stop(), "stop");
+    assert_unsupported(sink.set_volume(0.4), "set_volume");
+    assert_unsupported(sink.set_muted(true), "set_muted");
 }
 
 // --- Null Sink boundary tests (KivoNativeOutputSink delegates to KivoNullOutputSink) ---
@@ -143,4 +145,16 @@ fn null_sink_pause_and_resume_succeed_without_error() {
 
     let resumed = sink.resume().expect("resume");
     assert!(resumed.last_error.is_none());
+}
+
+#[test]
+fn null_sink_volume_and_muted_controls_update_status() {
+    let mut sink = KivoNativeOutputSink::new();
+
+    let volume = sink.set_volume(1.5).expect("set volume");
+    assert_eq!(volume.controls.volume_level, 1.0);
+
+    let muted = sink.set_muted(true).expect("set muted");
+    assert!(muted.controls.muted);
+    assert!(muted.last_error.is_none());
 }

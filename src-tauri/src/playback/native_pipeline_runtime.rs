@@ -89,6 +89,32 @@ impl NativePipeline {
         }
     }
 
+    pub fn set_output_volume(&mut self, level: f32) -> PlaybackResult<()> {
+        match self.output.set_volume(level) {
+            Ok(status) => {
+                self.state.output_status = status;
+                Ok(())
+            }
+            Err(error) => {
+                self.state.output_status = self.output.status();
+                Err(error)
+            }
+        }
+    }
+
+    pub fn set_output_muted(&mut self, muted: bool) -> PlaybackResult<()> {
+        match self.output.set_muted(muted) {
+            Ok(status) => {
+                self.state.output_status = status;
+                Ok(())
+            }
+            Err(error) => {
+                self.state.output_status = self.output.status();
+                Err(error)
+            }
+        }
+    }
+
     pub fn shutdown(&mut self) -> PlaybackResult<()> {
         self.close_decoder()?;
         self.output.close()?;

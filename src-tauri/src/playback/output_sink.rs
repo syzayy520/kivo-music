@@ -45,6 +45,16 @@ impl OutputSink for UnsupportedOutputSink {
         self.unsupported("stop")
     }
 
+    fn set_volume(&mut self, level: f32) -> PlaybackResult<OutputRuntimeStatus> {
+        self.status.controls.volume_level = level.clamp(0.0, 1.0);
+        self.unsupported("set_volume")
+    }
+
+    fn set_muted(&mut self, muted: bool) -> PlaybackResult<OutputRuntimeStatus> {
+        self.status.controls.muted = muted;
+        self.unsupported("set_muted")
+    }
+
     fn status(&self) -> OutputRuntimeStatus {
         self.status.clone()
     }

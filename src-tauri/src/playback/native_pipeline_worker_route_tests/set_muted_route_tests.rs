@@ -1,7 +1,7 @@
 use super::*;
 
 #[test]
-fn route_set_muted_keeps_phase_and_records_operation_context() {
+fn route_set_muted_keeps_phase_and_updates_output_controls() {
     let mut pipeline = NativePipeline::new();
     let state = PlaybackWorkerState::idle();
     let command = PlaybackWorkerCommand::SetMuted { muted: true };
@@ -10,8 +10,6 @@ fn route_set_muted_keeps_phase_and_records_operation_context() {
     let snapshot = pipeline.state();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Idle);
-    assert_eq!(
-        snapshot.output_status.last_error.as_deref(),
-        Some("unsupported operation: native pipeline worker command set_muted is not implemented yet")
-    );
+    assert!(snapshot.output_status.controls.muted);
+    assert!(snapshot.output_status.last_error.is_none());
 }

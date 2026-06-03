@@ -55,6 +55,18 @@ impl OutputSink for KivoNullOutputSink {
         Ok(self.status.clone())
     }
 
+    fn set_volume(&mut self, level: f32) -> PlaybackResult<OutputRuntimeStatus> {
+        self.status.controls.volume_level = level.clamp(0.0, 1.0);
+        self.status.last_error = None;
+        Ok(self.status.clone())
+    }
+
+    fn set_muted(&mut self, muted: bool) -> PlaybackResult<OutputRuntimeStatus> {
+        self.status.controls.muted = muted;
+        self.status.last_error = None;
+        Ok(self.status.clone())
+    }
+
     fn status(&self) -> OutputRuntimeStatus {
         self.status.clone()
     }
