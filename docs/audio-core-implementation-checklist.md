@@ -71,12 +71,12 @@ Rules:
 3. If a capability is scaffolded but returns typed unsupported errors, it must be marked as "Not runtime-closed".
 4. Every baseline refresh must include verification date and verifier initials.
 
-Current code-verified snapshot (2026-05-31):
+Current code-verified snapshot (2026-06-03):
 
 - Playback architecture layering is present across commands, manager, engine, pipeline, and domain modules.
 - Native playback runtime loop is not closed yet.
-- Native pipeline start/decode/submit scheduling paths are not implemented yet.
-- Output sink runtime submission path is not implemented yet.
+- Native pipeline start/decode/submit scheduling paths are wired to decoder and null output boundaries.
+- Null output sink can consume decoded frames for runtime boundary tests, but real audible output is not implemented yet.
 - mpv is currently represented as compatibility descriptor-level status in this tree.
 
 Claim discipline:
