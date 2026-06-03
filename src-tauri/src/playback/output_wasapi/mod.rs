@@ -5,6 +5,7 @@ pub mod device;
 pub mod errors;
 pub mod format;
 pub mod initialize;
+pub mod padding_query;
 pub mod platform;
 pub mod render_client;
 pub mod sink;
@@ -25,6 +26,9 @@ mod format_tests;
 
 #[cfg(test)]
 mod initialize_tests;
+
+#[cfg(test)]
+mod padding_query_tests;
 
 #[cfg(test)]
 mod render_client_tests;
