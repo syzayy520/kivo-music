@@ -22,8 +22,14 @@ fn wasapi_output_sink_still_unsupported_after_start_stop_boundary() {
     );
 
     let status = sink.status();
-    assert!(!status.is_open, "WasapiOutputSink status should not be open");
-    assert!(!status.is_active, "WasapiOutputSink status should not be active");
+    assert!(
+        !status.is_open,
+        "WasapiOutputSink status should not be open"
+    );
+    assert!(
+        !status.is_active,
+        "WasapiOutputSink status should not be active"
+    );
 }
 
 #[test]
@@ -43,9 +49,18 @@ fn capabilities_remain_default_after_start_stop_boundary() {
     let caps = PlaybackCapabilities::default();
 
     assert!(!caps.can_seek, "can_seek should be false");
-    assert!(!caps.can_select_output_device, "can_select_output_device should be false");
-    assert!(!caps.can_use_exclusive_output, "can_use_exclusive_output should be false");
-    assert!(!caps.can_probe_metadata, "can_probe_metadata should be false");
+    assert!(
+        !caps.can_select_output_device,
+        "can_select_output_device should be false"
+    );
+    assert!(
+        !caps.can_use_exclusive_output,
+        "can_use_exclusive_output should be false"
+    );
+    assert!(
+        !caps.can_probe_metadata,
+        "can_probe_metadata should be false"
+    );
     assert!(!caps.can_gapless, "can_gapless should be false");
     assert!(!caps.can_replaygain, "can_replaygain should be false");
 }
@@ -61,14 +76,38 @@ fn public_native_engine_remains_unsupported_after_start_stop_boundary() {
         source_path: "test.wav".to_string(),
     };
 
-    assert!(matches!(engine.load(track), Err(PlaybackError::UnsupportedOperation(_))));
-    assert!(matches!(engine.play(), Err(PlaybackError::UnsupportedOperation(_))));
-    assert!(matches!(engine.pause(), Err(PlaybackError::UnsupportedOperation(_))));
-    assert!(matches!(engine.resume(), Err(PlaybackError::UnsupportedOperation(_))));
-    assert!(matches!(engine.stop(), Err(PlaybackError::UnsupportedOperation(_))));
-    assert!(matches!(engine.seek(0), Err(PlaybackError::UnsupportedOperation(_))));
-    assert!(matches!(engine.set_volume(1.0), Err(PlaybackError::UnsupportedOperation(_))));
-    assert!(matches!(engine.set_muted(false), Err(PlaybackError::UnsupportedOperation(_))));
+    assert!(matches!(
+        engine.load(track),
+        Err(PlaybackError::UnsupportedOperation(_))
+    ));
+    assert!(matches!(
+        engine.play(),
+        Err(PlaybackError::UnsupportedOperation(_))
+    ));
+    assert!(matches!(
+        engine.pause(),
+        Err(PlaybackError::UnsupportedOperation(_))
+    ));
+    assert!(matches!(
+        engine.resume(),
+        Err(PlaybackError::UnsupportedOperation(_))
+    ));
+    assert!(matches!(
+        engine.stop(),
+        Err(PlaybackError::UnsupportedOperation(_))
+    ));
+    assert!(matches!(
+        engine.seek(0),
+        Err(PlaybackError::UnsupportedOperation(_))
+    ));
+    assert!(matches!(
+        engine.set_volume(1.0),
+        Err(PlaybackError::UnsupportedOperation(_))
+    ));
+    assert!(matches!(
+        engine.set_muted(false),
+        Err(PlaybackError::UnsupportedOperation(_))
+    ));
 }
 
 #[test]
@@ -80,7 +119,16 @@ fn buffer_smoke_boundary_still_does_not_start_by_default() {
 
     let report = probe_buffer();
 
-    assert!(!report.started_audio_client, "buffer smoke should never call Start");
-    assert!(!report.stopped_audio_client, "buffer smoke should never call Stop");
-    assert!(!report.reset_audio_client, "buffer smoke should never call Reset");
+    assert!(
+        !report.started_audio_client,
+        "buffer smoke should never call Start"
+    );
+    assert!(
+        !report.stopped_audio_client,
+        "buffer smoke should never call Stop"
+    );
+    assert!(
+        !report.reset_audio_client,
+        "buffer smoke should never call Reset"
+    );
 }

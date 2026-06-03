@@ -23,7 +23,8 @@ use super::report::WasapiStartStopSmokeReport;
 
 /// Create an IMMDeviceEnumerator via CoCreateInstance.
 #[allow(clippy::result_large_err)]
-pub(super) fn create_device_enumerator() -> Result<IMMDeviceEnumerator, WasapiStartStopSmokeReport> {
+pub(super) fn create_device_enumerator() -> Result<IMMDeviceEnumerator, WasapiStartStopSmokeReport>
+{
     unsafe { CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL) }.map_err(|e| {
         WasapiStartStopSmokeReport::skipped_with_error(
             "device enumerator creation failed",
@@ -75,16 +76,8 @@ pub(super) fn initialize_shared_client(
     audio_client: &IAudioClient,
     format_ptr: *mut windows::Win32::Media::Audio::WAVEFORMATEX,
 ) -> Result<(), String> {
-    let hr = unsafe {
-        audio_client.Initialize(
-            AUDCLNT_SHAREMODE_SHARED,
-            0,
-            0,
-            0,
-            format_ptr,
-            None,
-        )
-    };
+    let hr =
+        unsafe { audio_client.Initialize(AUDCLNT_SHAREMODE_SHARED, 0, 0, 0, format_ptr, None) };
     if hr.is_err() {
         Err(format!("IAudioClient::Initialize failed: {hr:?}"))
     } else {

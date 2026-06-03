@@ -12,8 +12,14 @@ fn wasapi_output_sink_still_stub() {
     // Verify it's still a stub by checking status returns default
     let status = sink.status();
     // The stub should not have opened any real device
-    assert!(!status.is_open, "WasapiOutputSink status should not be open");
-    assert!(!status.is_active, "WasapiOutputSink status should not be active");
+    assert!(
+        !status.is_open,
+        "WasapiOutputSink status should not be open"
+    );
+    assert!(
+        !status.is_active,
+        "WasapiOutputSink status should not be active"
+    );
 }
 
 #[test]
