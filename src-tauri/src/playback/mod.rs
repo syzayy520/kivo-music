@@ -132,7 +132,7 @@ mod output_frame_tests;
 mod output_sink_tests;
 
 #[cfg(test)]
-mod output_wasapi_tests;
+mod output_wasapi_root_tests;
 
 #[cfg(test)]
 mod queue_policy_tests;
