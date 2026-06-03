@@ -16,9 +16,16 @@ impl NativePipeline {
             PlaybackError::Backend("pipeline buffer is empty, no frame to drain".to_string())
         })?;
 
+        let drained_position_ms = frame.position_ms;
+
         match self.output.submit_frame(frame) {
             Ok(status) => {
                 self.state.output_status = status;
+                if self.clock.is_started() {
+                    self.clock.set_position(drained_position_ms);
+                } else {
+                    self.clock.start_at(drained_position_ms);
+                }
                 Ok(())
             }
             Err(error) => {

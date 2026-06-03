@@ -18,19 +18,16 @@ impl NativePipelineClock {
         Self::default()
     }
 
-    #[allow(dead_code)]
     pub(in crate::playback) fn start_at(&mut self, position_ms: u64) {
         self.position_ms = position_ms;
         self.is_started = true;
         self.is_paused = false;
     }
 
-    #[allow(dead_code)]
     pub(in crate::playback) fn pause(&mut self) {
         self.is_paused = true;
     }
 
-    #[allow(dead_code)]
     pub(in crate::playback) fn resume(&mut self) {
         self.is_paused = false;
     }
@@ -41,7 +38,6 @@ impl NativePipelineClock {
         self.is_paused = false;
     }
 
-    #[allow(dead_code)]
     pub(in crate::playback) fn set_position(&mut self, position_ms: u64) {
         self.position_ms = position_ms;
     }
@@ -50,7 +46,6 @@ impl NativePipelineClock {
         self.position_ms
     }
 
-    #[allow(dead_code)]
     pub(in crate::playback) fn is_started(&self) -> bool {
         self.is_started
     }

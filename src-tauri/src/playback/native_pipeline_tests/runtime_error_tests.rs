@@ -12,6 +12,8 @@ fn start_opens_null_sink_output_boundary() {
     assert!(state.output_status.is_open);
     assert!(state.output_status.is_active);
     assert!(state.output_status.last_error.is_none());
+    assert!(pipeline.clock.is_started());
+    assert_eq!(pipeline.clock.position_ms(), 0);
 }
 
 #[test]
@@ -82,6 +84,9 @@ fn shutdown_closes_empty_pipeline_without_fake_runtime_error() {
     assert!(state.decoder_session.is_none());
     assert!(state.last_decoded_frame.is_none());
     assert!(!state.output_status.is_open);
+    assert_eq!(pipeline.clock.position_ms(), 0);
+    assert!(!pipeline.clock.is_started());
+    assert!(!pipeline.clock.is_paused());
 }
 
 #[test]
@@ -130,6 +135,8 @@ fn worker_load_opens_decoder_decodes_first_frame_and_submits_to_null_sink() {
     assert_eq!(frame.stream.channels, 2);
     assert_eq!(state.output_status.pending_frames, 1);
     assert!(state.output_status.last_error.is_none());
+    assert_eq!(pipeline.clock.position_ms(), frame.position_ms);
+    assert!(pipeline.clock.is_started());
 
     pipeline.shutdown().expect("shutdown pipeline");
     std::fs::remove_file(path).expect("remove wav test file");

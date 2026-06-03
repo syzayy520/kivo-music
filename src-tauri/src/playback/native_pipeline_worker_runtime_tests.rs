@@ -41,6 +41,8 @@ fn worker_play_opens_null_sink_output_boundary() {
     assert!(state.output_status.is_open);
     assert!(state.output_status.is_active);
     assert!(state.output_status.last_error.is_none());
+    assert!(pipeline.clock.is_started());
+    assert_eq!(pipeline.clock.position_ms(), 0);
 }
 
 #[test]
@@ -53,6 +55,7 @@ fn worker_pause_output_succeeds_via_null_sink() {
 
     let state = pipeline.snapshot();
     assert!(state.output_status.last_error.is_none());
+    assert!(pipeline.clock.is_paused());
 }
 
 #[test]
@@ -65,6 +68,7 @@ fn worker_resume_output_succeeds_via_null_sink() {
 
     let state = pipeline.snapshot();
     assert!(state.output_status.last_error.is_none());
+    assert!(!pipeline.clock.is_paused());
 }
 
 #[test]
@@ -77,6 +81,9 @@ fn worker_stop_output_succeeds_via_null_sink() {
 
     let state = pipeline.snapshot();
     assert!(state.output_status.last_error.is_none());
+    assert_eq!(pipeline.clock.position_ms(), 0);
+    assert!(!pipeline.clock.is_started());
+    assert!(!pipeline.clock.is_paused());
 }
 
 #[test]

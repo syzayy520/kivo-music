@@ -55,6 +55,7 @@ mod native_pipeline_clock;
 mod native_pipeline_decoder;
 mod native_pipeline_drain;
 mod native_pipeline_output;
+mod native_pipeline_progress;
 mod native_pipeline_runtime;
 mod native_pipeline_state;
 mod native_pipeline_worker;
@@ -103,6 +104,9 @@ mod native_pipeline_clock_tests;
 
 #[cfg(test)]
 mod native_pipeline_drain_tests;
+
+#[cfg(test)]
+mod native_pipeline_progress_tests;
 
 #[cfg(test)]
 mod native_pipeline_tests;

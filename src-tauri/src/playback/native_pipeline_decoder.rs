@@ -113,6 +113,7 @@ impl NativePipeline {
         self.update_decoder_position(position_ms);
         self.state.last_decoded_frame = None;
         self.clear_buffer();
+        self.clock.set_position(position_ms);
         Ok(())
     }
 

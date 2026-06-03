@@ -7,6 +7,7 @@ impl NativePipeline {
         match self.output.open(&self.state.output_settings) {
             Ok(status) => {
                 self.state.output_status = status;
+                self.clock.start_at(self.clock.position_ms());
                 Ok(())
             }
             Err(error) => {
@@ -28,6 +29,7 @@ impl NativePipeline {
         match self.output.pause() {
             Ok(status) => {
                 self.state.output_status = status;
+                self.clock.pause();
                 Ok(())
             }
             Err(error) => {
@@ -41,6 +43,7 @@ impl NativePipeline {
         match self.output.resume() {
             Ok(status) => {
                 self.state.output_status = status;
+                self.clock.resume();
                 Ok(())
             }
             Err(error) => {
@@ -55,6 +58,7 @@ impl NativePipeline {
         match self.output.stop() {
             Ok(status) => {
                 self.state.output_status = status;
+                self.clock.reset();
                 Ok(())
             }
             Err(error) => {

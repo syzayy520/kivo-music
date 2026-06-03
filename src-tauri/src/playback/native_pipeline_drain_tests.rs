@@ -101,6 +101,70 @@ fn drain_submits_frame_to_null_sink_and_updates_pending() {
 }
 
 #[test]
+fn drain_success_updates_clock_position_to_drained_frame_position() {
+    let mut pipeline = NativePipeline::new();
+    pipeline.start().expect("open null sink");
+
+    pipeline.enqueue_decoded_frame(test_frame(500));
+    pipeline
+        .drain_next_frame_to_output()
+        .expect("drain should succeed");
+
+    assert_eq!(pipeline.clock.position_ms(), 500);
+    assert!(pipeline.clock.is_started());
+}
+
+#[test]
+fn drain_success_starts_clock_if_not_started() {
+    let mut pipeline = NativePipeline::new();
+    pipeline.enqueue_decoded_frame(test_frame(1200));
+    pipeline
+        .drain_next_frame_to_output()
+        .expect("drain should succeed");
+
+    assert_eq!(pipeline.clock.position_ms(), 1200);
+    assert!(pipeline.clock.is_started());
+    assert!(!pipeline.clock.is_paused());
+}
+
+#[test]
+fn drain_empty_buffer_does_not_change_clock() {
+    let mut pipeline = NativePipeline::new();
+    pipeline.start().expect("open null sink");
+
+    let result = pipeline.drain_next_frame_to_output();
+    assert!(result.is_err());
+
+    assert_eq!(pipeline.clock.position_ms(), 0);
+    assert!(pipeline.clock.is_started());
+    assert!(!pipeline.clock.is_paused());
+}
+
+#[test]
+fn drain_sequential_drains_update_clock_position() {
+    let mut pipeline = NativePipeline::new();
+    pipeline.start().expect("open null sink");
+
+    pipeline.enqueue_decoded_frame(test_frame(100));
+    pipeline
+        .drain_next_frame_to_output()
+        .expect("first drain should succeed");
+    assert_eq!(pipeline.clock.position_ms(), 100);
+
+    pipeline.enqueue_decoded_frame(test_frame(200));
+    pipeline
+        .drain_next_frame_to_output()
+        .expect("second drain should succeed");
+    assert_eq!(pipeline.clock.position_ms(), 200);
+
+    pipeline.enqueue_decoded_frame(test_frame(500));
+    pipeline
+        .drain_next_frame_to_output()
+        .expect("third drain should succeed");
+    assert_eq!(pipeline.clock.position_ms(), 500);
+}
+
+#[test]
 fn schedule_decode_step_pushes_frame_to_buffer() {
     let path = write_test_wav();
     let mut pipeline = NativePipeline::new();
@@ -139,13 +203,14 @@ fn seek_decoder_clears_buffer() {
 
     pipeline.seek_decoder(2).expect("seek decoder");
     assert_eq!(pipeline.buffered_frame_count(), 0);
+    assert_eq!(pipeline.clock.position_ms(), 2);
 
     pipeline.shutdown().expect("shutdown pipeline");
     fs::remove_file(path).expect("remove wav test file");
 }
 
 #[test]
-fn shutdown_clears_buffer() {
+fn shutdown_clears_buffer_and_resets_clock() {
     let path = write_test_wav();
     let mut pipeline = NativePipeline::new();
     let request = super::decoder_request::AudioDecoderOpenRequest {
@@ -161,32 +226,48 @@ fn shutdown_clears_buffer() {
 
     pipeline.shutdown().expect("shutdown pipeline");
     assert_eq!(pipeline.buffered_frame_count(), 0);
+    assert_eq!(pipeline.clock.position_ms(), 0);
+    assert!(!pipeline.clock.is_started());
+    assert!(!pipeline.clock.is_paused());
 
     fs::remove_file(path).expect("remove wav test file");
 }
 
 #[test]
-fn stop_output_clears_buffer() {
+fn stop_output_clears_buffer_and_resets_clock() {
     let mut pipeline = NativePipeline::new();
     pipeline.start().expect("open null sink");
 
     pipeline.enqueue_decoded_frame(test_frame(0));
-    assert_eq!(pipeline.buffered_frame_count(), 1);
+    pipeline
+        .drain_next_frame_to_output()
+        .expect("drain should succeed");
+    assert_eq!(pipeline.clock.position_ms(), 0);
 
+    pipeline.enqueue_decoded_frame(test_frame(500));
     pipeline.stop_output().expect("stop output");
     assert_eq!(pipeline.buffered_frame_count(), 0);
+    assert_eq!(pipeline.clock.position_ms(), 0);
+    assert!(!pipeline.clock.is_started());
+    assert!(!pipeline.clock.is_paused());
 }
 
 #[test]
-fn flush_output_clears_buffer() {
+fn flush_output_clears_buffer_but_keeps_clock_position() {
     let mut pipeline = NativePipeline::new();
     pipeline.start().expect("open null sink");
 
-    pipeline.enqueue_decoded_frame(test_frame(0));
-    assert_eq!(pipeline.buffered_frame_count(), 1);
+    pipeline.enqueue_decoded_frame(test_frame(300));
+    pipeline
+        .drain_next_frame_to_output()
+        .expect("drain should succeed");
+    assert_eq!(pipeline.clock.position_ms(), 300);
 
+    pipeline.enqueue_decoded_frame(test_frame(600));
     pipeline.flush_output().expect("flush output");
     assert_eq!(pipeline.buffered_frame_count(), 0);
+    assert_eq!(pipeline.clock.position_ms(), 300);
+    assert!(pipeline.clock.is_started());
 }
 
 #[test]
@@ -210,6 +291,8 @@ fn worker_load_decodes_buffer_drains_to_null_sink() {
     assert_eq!(state.output_status.pending_frames, 1);
     assert!(state.output_status.last_error.is_none());
     assert_eq!(pipeline.buffered_frame_count(), 0);
+    assert!(pipeline.clock.is_started());
+    assert!(!pipeline.clock.is_paused());
 
     pipeline.shutdown().expect("shutdown pipeline");
     fs::remove_file(path).expect("remove wav test file");
