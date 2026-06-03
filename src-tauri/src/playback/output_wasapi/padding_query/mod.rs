@@ -26,7 +26,10 @@ pub mod padding_query_steps;
 pub mod report;
 pub mod report_builders;
 pub mod report_defaults;
+pub mod report_failure_buffer_builders;
 pub mod report_failure_builders;
+pub mod report_failure_padding_builders;
+pub mod report_failure_prereq_builders;
 pub mod report_skipped_builders;
 pub mod report_success_builders;
 
