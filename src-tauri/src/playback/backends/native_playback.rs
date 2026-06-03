@@ -1,11 +1,10 @@
 use super::super::errors::PlaybackResult;
 use super::super::types::{PlaybackStatus, PlaybackTrack};
-use super::native_backend::KivoNativeBackend;
 use super::native_unsupported::unsupported_operation;
 
 #[derive(Clone, Debug)]
 pub struct KivoNativePlayback {
-    backend: KivoNativeBackend,
+    current_track: Option<PlaybackTrack>,
     status: PlaybackStatus,
 }
 
@@ -15,12 +14,13 @@ impl KivoNativePlayback {
     }
 
     pub fn load_track(&mut self, track: PlaybackTrack) -> PlaybackStatus {
-        self.status = self.backend.attach_track(track);
+        self.current_track = Some(track);
+        self.status = PlaybackStatus::Idle;
         self.status.clone()
     }
 
     pub fn current_track(&self) -> Option<PlaybackTrack> {
-        self.backend.current_track()
+        self.current_track.clone()
     }
 
     pub fn current_status(&self) -> PlaybackStatus {
@@ -51,7 +51,7 @@ impl KivoNativePlayback {
 impl Default for KivoNativePlayback {
     fn default() -> Self {
         Self {
-            backend: KivoNativeBackend::new(),
+            current_track: None,
             status: PlaybackStatus::Idle,
         }
     }
