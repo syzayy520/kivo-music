@@ -8,6 +8,7 @@ pub mod initialize;
 pub mod padding_query;
 pub mod platform;
 pub mod render_client;
+pub mod silent_loop;
 pub mod sink;
 pub mod start_stop;
 pub mod status;
@@ -32,6 +33,9 @@ mod padding_query_tests;
 
 #[cfg(test)]
 mod render_client_tests;
+
+#[cfg(test)]
+mod silent_loop_tests;
 
 #[cfg(test)]
 mod start_stop_tests;
