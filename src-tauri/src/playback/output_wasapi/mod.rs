@@ -8,6 +8,7 @@ pub mod initialize;
 pub mod platform;
 pub mod render_client;
 pub mod sink;
+pub mod start_stop;
 pub mod status;
 
 #[cfg(test)]
@@ -27,3 +28,6 @@ mod initialize_tests;
 
 #[cfg(test)]
 mod render_client_tests;
+
+#[cfg(test)]
+mod start_stop_tests;
