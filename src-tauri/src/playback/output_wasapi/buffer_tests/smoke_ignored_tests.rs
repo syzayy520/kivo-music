@@ -138,8 +138,8 @@ fn buffer_smoke_windows_ignored_opt_in() {
         "buffer_size_frames should be Some on success"
     );
     assert!(
-        report.buffer_size_frames.unwrap() > 0,
-        "buffer_size_frames should be > 0 on success"
+        report.buffer_size_frames.unwrap() >= 1,
+        "buffer_size_frames should be >= 1 on success"
     );
     assert!(
         report.get_buffer_attempted,
@@ -161,13 +161,16 @@ fn buffer_smoke_windows_ignored_opt_in() {
         report.used_silent_flag,
         "should have used silent flag on success"
     );
-    assert!(
-        report.requested_frames.is_some(),
-        "requested_frames should be Some on success"
+    // Key assertions: requested_frames = 1
+    assert_eq!(
+        report.requested_frames,
+        Some(1),
+        "requested_frames should be Some(1) - only 1 frame requested"
     );
-    assert!(
-        report.released_frames.is_some(),
-        "released_frames should be Some on success"
+    assert_eq!(
+        report.released_frames,
+        Some(1),
+        "released_frames should be Some(1) - only 1 frame released"
     );
     // Prohibited operations
     assert!(
@@ -203,7 +206,7 @@ fn buffer_smoke_windows_ignored_opt_in() {
         "should not have error message on success"
     );
     eprintln!(
-        "buffer smoke passed: GetBuffer + ReleaseBuffer(silent) succeeded, buffer_size={} frames",
+        "buffer smoke passed: GetBuffer(1) + ReleaseBuffer(1, SILENT) succeeded, buffer_size={} frames",
         report.buffer_size_frames.unwrap()
     );
 }

@@ -7,8 +7,8 @@
 // minimal smoke probe: get the default audio render endpoint, activate
 // IAudioClient, call GetMixFormat, call Initialize in shared mode,
 // call GetService to obtain IAudioRenderClient, call GetBufferSize,
-// call GetBuffer, call ReleaseBuffer with AUDCLNT_BUFFERFLAGS_SILENT,
-// then drop everything.
+// call GetBuffer(1 frame), call ReleaseBuffer(1 frame) with
+// AUDCLNT_BUFFERFLAGS_SILENT, then drop everything.
 //
 // **PROHIBITED** (not implemented here):
 //   - IAudioClient::IsFormatSupported
@@ -36,8 +36,8 @@ use super::report::WasapiBufferSmokeReport;
 /// 8. Calls IAudioClient::Initialize in shared mode
 /// 9. Calls IAudioClient::GetService to obtain IAudioRenderClient
 /// 10. Calls IAudioClient::GetBufferSize
-/// 11. Calls IAudioRenderClient::GetBuffer with buffer_size frames
-/// 12. Calls IAudioRenderClient::ReleaseBuffer with AUDCLNT_BUFFERFLAGS_SILENT
+/// 11. Calls IAudioRenderClient::GetBuffer with requested_frames = 1
+/// 12. Calls IAudioRenderClient::ReleaseBuffer(1, AUDCLNT_BUFFERFLAGS_SILENT)
 /// 13. Drops BufferGuard (RAII safety net)
 /// 14. Drops IAudioRenderClient (RAII)
 /// 15. Drops IAudioClient (RAII)
@@ -120,10 +120,11 @@ pub fn probe_buffer() -> WasapiBufferSmokeReport {
         return WasapiBufferSmokeReport::buffer_size_zero(fields);
     }
 
-    // Step 11: Call IAudioRenderClient::GetBuffer
+    // Step 11: Call IAudioRenderClient::GetBuffer with requested_frames = 1
+    let requested_frames = 1;
     let mut buffer_guard = match buffer_steps::get_buffer(
         &render_client,
-        buffer_size_frames,
+        requested_frames,
         buffer_size_frames,
         fields,
     ) {
@@ -135,7 +136,7 @@ pub fn probe_buffer() -> WasapiBufferSmokeReport {
     if let Err(report) = buffer_steps::release_buffer_silent(
         &mut buffer_guard,
         buffer_size_frames,
-        buffer_size_frames,
+        requested_frames,
         fields,
     ) {
         return report;
@@ -147,5 +148,5 @@ pub fn probe_buffer() -> WasapiBufferSmokeReport {
     // audio_client dropped here (IAudioClient).
     // MixFormatGuard releases format pointer.
     // COM cleanup via ComApartment::drop.
-    WasapiBufferSmokeReport::success(fields, buffer_size_frames, buffer_size_frames)
+    WasapiBufferSmokeReport::success(fields, buffer_size_frames, requested_frames)
 }
