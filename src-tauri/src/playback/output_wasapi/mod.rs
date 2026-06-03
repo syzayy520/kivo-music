@@ -1,3 +1,4 @@
+pub mod buffer;
 pub mod client;
 pub mod config;
 pub mod device;
@@ -8,6 +9,9 @@ pub mod platform;
 pub mod render_client;
 pub mod sink;
 pub mod status;
+
+#[cfg(test)]
+mod buffer_tests;
 
 #[cfg(test)]
 mod client_tests;
