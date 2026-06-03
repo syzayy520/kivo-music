@@ -6,13 +6,13 @@ use super::decoder_session::DecoderSession;
 use super::output::{AudioOutputFrame, OutputRuntimeStatus, OutputSettings};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct NativePipelineState {
-    pub decoder_request: Option<AudioDecoderOpenRequest>,
-    pub decoder_session: Option<DecoderSession>,
-    pub decoder_state: DecoderRuntimeState,
-    pub output_settings: OutputSettings,
-    pub output_status: OutputRuntimeStatus,
-    pub last_decoded_frame: Option<AudioOutputFrame>,
+pub(in crate::playback) struct NativePipelineState {
+    pub(in crate::playback) decoder_request: Option<AudioDecoderOpenRequest>,
+    pub(in crate::playback) decoder_session: Option<DecoderSession>,
+    pub(in crate::playback) decoder_state: DecoderRuntimeState,
+    pub(in crate::playback) output_settings: OutputSettings,
+    pub(in crate::playback) output_status: OutputRuntimeStatus,
+    pub(in crate::playback) last_decoded_frame: Option<AudioOutputFrame>,
 }
 
 impl Default for NativePipelineState {

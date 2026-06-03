@@ -2,7 +2,7 @@ use std::fmt;
 
 use super::decoder::AudioDecoder;
 use super::native_output::KivoNativeOutputSink;
-pub use super::native_pipeline_state::NativePipelineState;
+pub(in crate::playback) use super::native_pipeline_state::NativePipelineState;
 use super::output::OutputSink;
 
 #[derive(Default)]
@@ -28,7 +28,8 @@ impl NativePipeline {
         Self::default()
     }
 
-    pub fn state(&self) -> NativePipelineState {
+    #[cfg(test)]
+    pub(in crate::playback) fn snapshot(&self) -> NativePipelineState {
         self.state.clone()
     }
 }

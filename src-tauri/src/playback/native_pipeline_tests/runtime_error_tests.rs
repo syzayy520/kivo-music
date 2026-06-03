@@ -8,7 +8,7 @@ fn start_opens_null_sink_output_boundary() {
 
     pipeline.start().expect("null sink open should succeed");
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     assert!(state.output_status.is_open);
     assert!(state.output_status.is_active);
     assert!(state.output_status.last_error.is_none());
@@ -77,7 +77,7 @@ fn shutdown_closes_empty_pipeline_without_fake_runtime_error() {
 
     pipeline.shutdown().expect("shutdown empty pipeline");
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     assert_eq!(state.decoder_state.phase, DecoderRuntimePhase::Closed);
     assert!(state.decoder_session.is_none());
     assert!(state.last_decoded_frame.is_none());
@@ -95,7 +95,7 @@ fn worker_set_volume_and_set_muted_update_output_controls() {
         .handle_worker_command(&PlaybackWorkerCommand::SetMuted { muted: true })
         .expect("worker set muted");
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     assert_eq!(state.output_status.controls.volume_level, 0.8);
     assert!(state.output_status.controls.muted);
     assert!(state.output_status.last_error.is_none());
@@ -116,7 +116,7 @@ fn worker_load_opens_decoder_decodes_first_frame_and_submits_to_null_sink() {
         .handle_worker_command(&PlaybackWorkerCommand::Load { track })
         .expect("worker load wav");
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     let session = state
         .decoder_session
         .expect("worker load should keep decoder session");
@@ -143,7 +143,7 @@ fn worker_shutdown_closes_pipeline_resources() {
         .handle_worker_command(&PlaybackWorkerCommand::Shutdown)
         .expect("worker shutdown");
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     assert_eq!(state.decoder_state.phase, DecoderRuntimePhase::Closed);
     assert!(state.decoder_session.is_none());
     assert!(state.last_decoded_frame.is_none());

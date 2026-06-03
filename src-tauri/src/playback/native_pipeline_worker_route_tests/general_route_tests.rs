@@ -18,10 +18,10 @@ fn route_worker_command_does_not_mutate_pipeline_snapshot() {
     let mut pipeline = NativePipeline::new();
     let state = PlaybackWorkerState::idle();
     let command = PlaybackWorkerCommand::Pause;
-    let before = pipeline.state();
+    let before = pipeline.snapshot();
 
     let _ = pipeline.route_worker_command(&state, &command);
-    let after = pipeline.state();
+    let after = pipeline.snapshot();
 
     assert_eq!(before.decoder_state.phase, after.decoder_state.phase);
     assert_eq!(
@@ -54,7 +54,7 @@ fn route_worker_command_records_runtime_error_context() {
     let command = PlaybackWorkerCommand::Seek { position_ms: 88 };
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Idle);
     assert!(snapshot.output_status.last_error.is_some());

@@ -8,7 +8,7 @@ fn route_pause_from_loaded_keeps_track_and_updates_phase() {
     let command = PlaybackWorkerCommand::Pause;
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Paused);
     assert_eq!(next.active_track_id.as_deref(), Some("route-track-2"));

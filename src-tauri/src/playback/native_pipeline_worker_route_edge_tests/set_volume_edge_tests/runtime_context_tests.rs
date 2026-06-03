@@ -7,7 +7,7 @@ fn route_set_volume_from_idle_updates_output_controls() {
     let command = PlaybackWorkerCommand::SetVolume { level: 0.2 };
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Idle);
     assert!(snapshot.output_status.last_error.is_none());
@@ -22,7 +22,7 @@ fn route_set_volume_from_playing_updates_output_controls() {
     let command = PlaybackWorkerCommand::SetVolume { level: 0.3 };
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert!(snapshot.output_status.last_error.is_none());
@@ -37,7 +37,7 @@ fn route_set_volume_from_paused_updates_output_controls() {
     let command = PlaybackWorkerCommand::SetVolume { level: 0.4 };
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Paused);
     assert!(snapshot.output_status.last_error.is_none());
@@ -52,7 +52,7 @@ fn route_set_volume_from_stopped_updates_output_controls() {
     let command = PlaybackWorkerCommand::SetVolume { level: 0.5 };
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert!(snapshot.output_status.last_error.is_none());
@@ -67,7 +67,7 @@ fn route_set_volume_from_failed_updates_output_controls() {
     let command = PlaybackWorkerCommand::SetVolume { level: 0.6 };
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Failed);
     assert!(snapshot.output_status.last_error.is_none());

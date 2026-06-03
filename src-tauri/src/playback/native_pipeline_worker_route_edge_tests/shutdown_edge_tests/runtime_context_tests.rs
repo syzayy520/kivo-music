@@ -7,7 +7,7 @@ fn route_shutdown_from_idle_records_runtime_unsupported_context() {
     let command = PlaybackWorkerCommand::Shutdown;
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(snapshot.output_status.last_error.as_deref(), None);
@@ -22,7 +22,7 @@ fn route_shutdown_from_playing_records_runtime_unsupported_context() {
     let command = PlaybackWorkerCommand::Shutdown;
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(snapshot.output_status.last_error.as_deref(), None);
@@ -37,7 +37,7 @@ fn route_shutdown_from_paused_records_runtime_unsupported_context() {
     let command = PlaybackWorkerCommand::Shutdown;
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(snapshot.output_status.last_error.as_deref(), None);
@@ -52,7 +52,7 @@ fn route_shutdown_from_stopped_records_runtime_unsupported_context() {
     let command = PlaybackWorkerCommand::Shutdown;
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(snapshot.output_status.last_error.as_deref(), None);
@@ -67,7 +67,7 @@ fn route_shutdown_from_failed_records_runtime_unsupported_context() {
     let command = PlaybackWorkerCommand::Shutdown;
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(snapshot.output_status.last_error.as_deref(), None);

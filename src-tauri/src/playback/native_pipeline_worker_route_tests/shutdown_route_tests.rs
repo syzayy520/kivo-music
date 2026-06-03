@@ -9,7 +9,7 @@ fn route_shutdown_from_playing_moves_to_stopped() {
     let command = PlaybackWorkerCommand::Shutdown;
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(next.active_track_id.as_deref(), Some("route-track-5"));

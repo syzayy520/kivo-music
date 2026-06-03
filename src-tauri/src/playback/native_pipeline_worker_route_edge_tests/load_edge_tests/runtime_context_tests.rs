@@ -14,7 +14,7 @@ fn route_load_records_runtime_backend_error_context() {
     };
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Loaded);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-load-6"));
@@ -32,7 +32,7 @@ fn route_load_from_playing_records_runtime_backend_error_context() {
     };
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Loaded);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-load-ctx-1"));
@@ -50,7 +50,7 @@ fn route_load_from_paused_records_runtime_backend_error_context() {
     };
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Loaded);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-load-ctx-2"));
@@ -68,7 +68,7 @@ fn route_load_from_stopped_records_runtime_backend_error_context() {
     };
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Loaded);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-load-ctx-3"));
@@ -86,7 +86,7 @@ fn route_load_from_failed_records_runtime_backend_error_context() {
     };
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Loaded);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-load-ctx-4"));

@@ -8,7 +8,7 @@ fn route_play_from_loaded_moves_to_playing() {
     let command = PlaybackWorkerCommand::Play;
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id.as_deref(), Some("route-track-6"));

@@ -11,7 +11,7 @@ fn route_set_volume_from_stopped_keeps_stopped_phase() {
         &state,
         &PlaybackWorkerCommand::SetVolume { level: 0.25 },
     );
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-7"));
@@ -29,7 +29,7 @@ fn route_set_volume_from_failed_keeps_failed_phase() {
         &state,
         &PlaybackWorkerCommand::SetVolume { level: 0.66 },
     );
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Failed);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-19"));
@@ -45,7 +45,7 @@ fn route_set_volume_from_idle_keeps_idle_phase() {
         &state,
         &PlaybackWorkerCommand::SetVolume { level: 0.9 },
     );
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Idle);
     assert_eq!(next.active_track_id, None);
@@ -63,7 +63,7 @@ fn route_set_volume_from_paused_keeps_paused_phase() {
         &state,
         &PlaybackWorkerCommand::SetVolume { level: 0.33 },
     );
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Paused);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-21"));
@@ -81,7 +81,7 @@ fn route_set_volume_from_playing_keeps_playing_phase() {
         &state,
         &PlaybackWorkerCommand::SetVolume { level: 0.44 },
     );
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-23"));

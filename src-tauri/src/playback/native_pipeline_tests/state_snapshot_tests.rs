@@ -3,7 +3,7 @@ use super::*;
 #[test]
 fn new_pipeline_starts_with_default_state() {
     let pipeline = NativePipeline::new();
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
 
     assert!(state.decoder_request.is_none());
     assert!(state.decoder_session.is_none());
@@ -23,7 +23,7 @@ fn pipeline_can_store_request_and_state() {
     pipeline.set_decoder_state(decoder_state.clone());
     pipeline.set_output_settings(output_settings.clone());
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     assert_eq!(
         state
             .decoder_request
@@ -50,11 +50,11 @@ fn state_snapshot_is_cloned_and_does_not_mutate_pipeline() {
     let mut pipeline = NativePipeline::new();
     pipeline.set_decoder_request(request());
 
-    let mut snapshot = pipeline.state();
+    let mut snapshot = pipeline.snapshot();
     snapshot.decoder_request = None;
     snapshot.output_settings.selected_device_id = Some("modified".to_string());
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     assert_eq!(
         state
             .decoder_request

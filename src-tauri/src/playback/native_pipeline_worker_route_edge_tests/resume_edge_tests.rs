@@ -9,7 +9,7 @@ fn route_resume_from_playing_keeps_playing_phase() {
 
     let next =
         pipeline.route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Resume);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-4"));
@@ -25,7 +25,7 @@ fn route_resume_from_stopped_moves_to_playing_phase() {
 
     let next =
         pipeline.route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Resume);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-11"));
@@ -41,7 +41,7 @@ fn route_resume_from_failed_moves_to_playing_phase() {
 
     let next =
         pipeline.route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Resume);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-14"));
@@ -55,7 +55,7 @@ fn route_resume_from_idle_moves_to_playing_phase() {
 
     let next =
         pipeline.route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Resume);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id, None);
@@ -71,7 +71,7 @@ fn route_resume_from_paused_moves_to_playing_phase() {
 
     let next =
         pipeline.route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Resume);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-28"));
@@ -85,7 +85,7 @@ fn route_resume_from_idle_records_runtime_unsupported_context() {
     let command = PlaybackWorkerCommand::Resume;
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert!(snapshot.output_status.last_error.is_none());
@@ -100,7 +100,7 @@ fn route_resume_from_playing_records_runtime_unsupported_context() {
     let command = PlaybackWorkerCommand::Resume;
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert!(snapshot.output_status.last_error.is_none());
@@ -115,7 +115,7 @@ fn route_resume_from_paused_records_runtime_unsupported_context() {
     let command = PlaybackWorkerCommand::Resume;
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert!(snapshot.output_status.last_error.is_none());
@@ -130,7 +130,7 @@ fn route_resume_from_stopped_records_runtime_unsupported_context() {
     let command = PlaybackWorkerCommand::Resume;
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert!(snapshot.output_status.last_error.is_none());
@@ -145,7 +145,7 @@ fn route_resume_from_failed_records_runtime_unsupported_context() {
     let command = PlaybackWorkerCommand::Resume;
 
     let next = pipeline.route_worker_command_record_runtime_error(&state, &command);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert!(snapshot.output_status.last_error.is_none());

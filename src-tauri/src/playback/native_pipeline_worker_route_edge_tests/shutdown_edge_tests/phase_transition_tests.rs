@@ -9,7 +9,7 @@ fn route_shutdown_from_stopped_keeps_stopped_phase() {
 
     let next = pipeline
         .route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Shutdown);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-5"));
@@ -25,7 +25,7 @@ fn route_shutdown_from_failed_moves_to_stopped_phase() {
 
     let next = pipeline
         .route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Shutdown);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-17"));
@@ -39,7 +39,7 @@ fn route_shutdown_from_idle_moves_to_stopped_phase() {
 
     let next = pipeline
         .route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Shutdown);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(next.active_track_id, None);
@@ -55,7 +55,7 @@ fn route_shutdown_from_paused_moves_to_stopped_phase() {
 
     let next = pipeline
         .route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Shutdown);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-30"));
@@ -71,7 +71,7 @@ fn route_shutdown_from_playing_moves_to_stopped_phase() {
 
     let next = pipeline
         .route_worker_command_record_runtime_error(&state, &PlaybackWorkerCommand::Shutdown);
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-32"));

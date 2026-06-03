@@ -8,7 +8,7 @@ fn configure_decoder_open_creates_session_and_marks_open() {
     pipeline.update_decoder_position(4_500);
     pipeline.count_decoded_frame();
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     let session = state
         .decoder_session
         .as_ref()

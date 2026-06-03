@@ -13,7 +13,7 @@ fn output_settings_and_status_are_stored_in_pipeline_state() {
     pipeline.set_output_settings(settings.clone());
     pipeline.set_output_status(status.clone());
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     assert_eq!(
         state.output_settings.selected_device_id,
         settings.selected_device_id
@@ -37,7 +37,7 @@ fn note_frame_submitted_updates_output_runtime_counters() {
     pipeline.note_frame_submitted(&frame);
     pipeline.note_frame_submitted(&frame);
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     assert!(state.output_status.is_active);
     assert_eq!(state.output_status.pending_frames, 2);
 }

@@ -38,8 +38,8 @@ impl KivoNativeEngine {
     }
 
     #[cfg(test)]
-    pub fn pipeline_state(&self) -> NativePipelineState {
-        self.pipeline.state()
+    pub(in crate::playback) fn pipeline_state(&self) -> NativePipelineState {
+        self.pipeline.snapshot()
     }
 }
 

@@ -23,7 +23,7 @@ fn worker_set_volume_and_set_muted_update_output_controls() {
         .handle_worker_command(&PlaybackWorkerCommand::SetMuted { muted: true })
         .expect("set output muted");
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     assert_eq!(state.output_status.controls.volume_level, 1.0);
     assert!(state.output_status.controls.muted);
     assert!(state.output_status.last_error.is_none());
@@ -37,7 +37,7 @@ fn worker_play_opens_null_sink_output_boundary() {
         .handle_worker_command(&PlaybackWorkerCommand::Play)
         .expect("worker play should open null sink");
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     assert!(state.output_status.is_open);
     assert!(state.output_status.is_active);
     assert!(state.output_status.last_error.is_none());
@@ -51,7 +51,7 @@ fn worker_pause_output_succeeds_via_null_sink() {
         .handle_worker_command(&PlaybackWorkerCommand::Pause)
         .expect("null sink pause should succeed");
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     assert!(state.output_status.last_error.is_none());
 }
 
@@ -63,7 +63,7 @@ fn worker_resume_output_succeeds_via_null_sink() {
         .handle_worker_command(&PlaybackWorkerCommand::Resume)
         .expect("null sink resume should succeed");
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     assert!(state.output_status.last_error.is_none());
 }
 
@@ -75,7 +75,7 @@ fn worker_stop_output_succeeds_via_null_sink() {
         .handle_worker_command(&PlaybackWorkerCommand::Stop)
         .expect("null sink stop should succeed");
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     assert!(state.output_status.last_error.is_none());
 }
 

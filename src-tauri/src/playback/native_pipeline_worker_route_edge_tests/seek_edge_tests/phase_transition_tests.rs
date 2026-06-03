@@ -11,7 +11,7 @@ fn route_seek_from_playing_keeps_playing_phase() {
         &state,
         &PlaybackWorkerCommand::Seek { position_ms: 9_999 },
     );
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Playing);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-1"));
@@ -35,7 +35,7 @@ fn route_seek_from_stopped_keeps_stopped_phase() {
         &state,
         &PlaybackWorkerCommand::Seek { position_ms: 2048 },
     );
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Stopped);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-9"));
@@ -59,7 +59,7 @@ fn route_seek_from_failed_keeps_failed_phase() {
         &state,
         &PlaybackWorkerCommand::Seek { position_ms: 8080 },
     );
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Failed);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-18"));
@@ -81,7 +81,7 @@ fn route_seek_from_idle_keeps_idle_phase() {
         &state,
         &PlaybackWorkerCommand::Seek { position_ms: 1 },
     );
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Idle);
     assert_eq!(next.active_track_id, None);
@@ -105,7 +105,7 @@ fn route_seek_from_paused_keeps_paused_phase() {
         &state,
         &PlaybackWorkerCommand::Seek { position_ms: 555 },
     );
-    let snapshot = pipeline.state();
+    let snapshot = pipeline.snapshot();
 
     assert_eq!(next.phase, PlaybackWorkerPhase::Paused);
     assert_eq!(next.active_track_id.as_deref(), Some("edge-track-29"));

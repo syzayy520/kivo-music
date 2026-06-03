@@ -17,7 +17,7 @@ fn schedule_decode_step_records_first_wav_frame() {
         .schedule_decode_step()
         .expect("schedule decode step");
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     let session = state
         .decoder_session
         .expect("decoder session should stay open");
@@ -53,7 +53,7 @@ fn schedule_output_submit_step_routes_decoded_frame_to_null_sink_boundary() {
         .schedule_output_submit_step()
         .expect("null sink should accept decoded frame");
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     assert!(state.output_status.last_error.is_none());
     assert_eq!(state.output_status.pending_frames, 1);
 
@@ -77,7 +77,7 @@ fn seek_decoder_moves_session_position_and_clears_decoded_frame() {
 
     pipeline.seek_decoder(2).expect("seek decoder");
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     let session = state
         .decoder_session
         .expect("decoder session should stay open");
@@ -104,7 +104,7 @@ fn shutdown_closes_open_decoder_and_output_state() {
         .expect("schedule decode step");
     pipeline.shutdown().expect("shutdown pipeline");
 
-    let state = pipeline.state();
+    let state = pipeline.snapshot();
     assert_eq!(state.decoder_state.phase, DecoderRuntimePhase::Closed);
     assert!(state.decoder_session.is_none());
     assert!(state.last_decoded_frame.is_none());
