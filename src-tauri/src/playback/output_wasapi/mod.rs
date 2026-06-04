@@ -7,6 +7,7 @@ pub mod format;
 pub mod frame_bridge;
 pub mod initialize;
 pub mod output_thread_boundary;
+pub(crate) mod output_thread_state;
 pub mod padding_query;
 pub mod platform;
 pub mod render_client;
@@ -69,6 +70,9 @@ mod sink_ring_buffer_tests;
 
 #[cfg(test)]
 mod sink_silent_helper_tests;
+
+#[cfg(test)]
+mod output_thread_state_tests;
 
 #[cfg(test)]
 mod frame_bridge_tests;
