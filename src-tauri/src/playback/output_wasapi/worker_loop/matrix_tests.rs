@@ -1,4 +1,4 @@
-use super::output_thread_worker_loop_matrix::{
+use super::matrix::{
     worker_loop_scenario_matrix, OutputThreadWorkerLoopScenarioKind,
 };
 

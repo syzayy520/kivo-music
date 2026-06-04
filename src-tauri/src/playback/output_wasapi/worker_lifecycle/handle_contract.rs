@@ -3,7 +3,7 @@
 //! Describes ownership and capability of a future worker handle
 //! without referencing real thread or sync primitives.
 
-use super::output_thread_worker_lifecycle::OutputThreadWorkerLifecycleStage;
+use super::lifecycle::OutputThreadWorkerLifecycleStage;
 
 #[allow(dead_code)]
 #[allow(clippy::enum_variant_names)]

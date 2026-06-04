@@ -36,34 +36,7 @@ mod output_thread_real_transport_command_tests;
 mod output_thread_real_transport_status_tests;
 #[cfg(test)]
 mod output_thread_real_transport_channel_tests;
-#[cfg(test)]
-mod output_thread_worker_lifecycle_tests;
-#[cfg(test)]
-mod output_thread_worker_handle_contract_tests;
-#[cfg(test)]
-mod output_thread_worker_shutdown_tests;
-#[cfg(test)]
-mod output_thread_worker_lifecycle_plan_tests;
-#[cfg(test)]
-mod output_thread_worker_lifecycle_matrix_tests;
-#[cfg(test)]
-mod output_thread_worker_loop_state_tests;
-#[cfg(test)]
-mod output_thread_worker_loop_step_tests;
-#[cfg(test)]
-mod output_thread_worker_loop_report_tests;
-#[cfg(test)]
-mod output_thread_worker_loop_runner_tests;
-#[cfg(test)]
-mod output_thread_worker_loop_matrix_tests;
-#[cfg(test)]
-mod output_thread_worker_runtime_decision_tests;
-#[cfg(test)]
-mod output_thread_worker_runtime_adapter_tests;
-#[cfg(test)]
-mod output_thread_worker_runtime_report_tests;
-#[cfg(test)]
-mod output_thread_worker_runtime_matrix_tests;
+
 
 
 

@@ -1,21 +1,21 @@
-use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
-use super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState;
-use super::output_thread_worker_loop_report::OutputThreadWorkerLoopReport;
-use super::output_thread_worker_loop_state::OutputThreadWorkerLoopState;
-use super::output_thread_worker_loop_step::{
+use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState;
+use super::super::worker_loop::report::OutputThreadWorkerLoopReport;
+use super::super::worker_loop::state::OutputThreadWorkerLoopState;
+use super::super::worker_loop::step::{
     OutputThreadWorkerLoopStepDecision, OutputThreadWorkerLoopStepKind,
 };
-use super::output_thread_worker_runtime_adapter::adapt_worker_step_to_runtime_loop;
-use super::output_thread_worker_runtime_decision::{
+use super::adapter::adapt_worker_step_to_runtime_loop;
+use super::decision::{
     OutputThreadWorkerRuntimeDecision, OutputThreadWorkerRuntimeDecisionKind,
 };
-use super::output_thread_worker_runtime_report::OutputThreadWorkerRuntimeReport;
-use super::output_thread_worker_shutdown::OutputThreadWorkerShutdownRequest;
+use super::report::OutputThreadWorkerRuntimeReport;
+use super::super::worker_lifecycle::shutdown::OutputThreadWorkerShutdownRequest;
 
 fn make_adapter_result(
     kind: OutputThreadWorkerRuntimeDecisionKind,
     intent: Option<OutputThreadRuntimeIntent>,
-) -> super::output_thread_worker_runtime_adapter::OutputThreadWorkerRuntimeAdapterResult {
+) -> super::adapter::OutputThreadWorkerRuntimeAdapterResult {
     let wr_decision = OutputThreadWorkerRuntimeDecision {
         kind,
         worker_kind: OutputThreadWorkerLoopStepKind::NoCommand,
@@ -36,7 +36,7 @@ fn make_adapter_result(
         OutputThreadRuntimeLoopState::Idle,
     );
     // Override the worker_runtime_decision with our test-specific one.
-    super::output_thread_worker_runtime_adapter::OutputThreadWorkerRuntimeAdapterResult {
+    super::adapter::OutputThreadWorkerRuntimeAdapterResult {
         worker_runtime_decision: wr_decision,
         runtime_loop_decision: result.runtime_loop_decision,
         queue_bridge_used: false,

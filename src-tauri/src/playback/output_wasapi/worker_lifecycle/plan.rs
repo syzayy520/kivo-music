@@ -5,9 +5,9 @@
 //!
 //! Does not reference real transport channels, threads, or sync primitives.
 
-use super::output_thread_worker_handle_contract::OutputThreadWorkerHandleContract;
-use super::output_thread_worker_lifecycle::OutputThreadWorkerLifecycleStage;
-use super::output_thread_worker_shutdown::{
+use super::handle_contract::OutputThreadWorkerHandleContract;
+use super::lifecycle::OutputThreadWorkerLifecycleStage;
+use super::shutdown::{
     OutputThreadWorkerShutdownOutcome, OutputThreadWorkerShutdownRequest,
 };
 

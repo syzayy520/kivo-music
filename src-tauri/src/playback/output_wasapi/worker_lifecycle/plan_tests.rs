@@ -1,7 +1,7 @@
-use super::output_thread_worker_handle_contract::*;
-use super::output_thread_worker_lifecycle::*;
-use super::output_thread_worker_lifecycle_plan::*;
-use super::output_thread_worker_shutdown::*;
+use super::handle_contract::*;
+use super::lifecycle::*;
+use super::plan::*;
+use super::shutdown::*;
 
 #[test]
 fn none_keeps_current_stage() {

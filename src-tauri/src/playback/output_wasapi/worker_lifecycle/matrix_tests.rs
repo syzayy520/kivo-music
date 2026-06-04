@@ -1,5 +1,5 @@
-use super::output_thread_worker_lifecycle_matrix::*;
-use super::output_thread_worker_lifecycle_plan::plan_worker_lifecycle;
+use super::matrix::*;
+use super::plan::plan_worker_lifecycle;
 
 #[test]
 fn matrix_contains_five_scenarios() {

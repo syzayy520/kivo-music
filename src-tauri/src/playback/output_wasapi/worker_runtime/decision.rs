@@ -4,8 +4,8 @@
 //! into a runtime-aware decision. Does not reference transport
 //! channels, queue bridge, or audio/output primitives.
 
-use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
-use super::output_thread_worker_loop_step::OutputThreadWorkerLoopStepKind;
+use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::worker_loop::step::OutputThreadWorkerLoopStepKind;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

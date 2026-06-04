@@ -1,19 +1,19 @@
-use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
-use super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState;
-use super::output_thread_runtime_loop_step::OutputThreadRuntimeLoopStepAction;
-use super::output_thread_worker_loop_step::{
+use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState;
+use super::super::output_thread_runtime_loop_step::OutputThreadRuntimeLoopStepAction;
+use super::super::worker_loop::step::{
     OutputThreadWorkerLoopStepDecision, OutputThreadWorkerLoopStepKind,
 };
-use super::output_thread_worker_runtime_adapter::{
+use super::adapter::{
     adapt_worker_step_to_runtime_loop, OutputThreadWorkerRuntimeAdapterResult,
 };
-use super::output_thread_worker_runtime_decision::OutputThreadWorkerRuntimeDecisionKind;
-use super::output_thread_worker_shutdown::OutputThreadWorkerShutdownRequest;
+use super::decision::OutputThreadWorkerRuntimeDecisionKind;
+use super::super::worker_lifecycle::shutdown::OutputThreadWorkerShutdownRequest;
 
 fn make_worker_decision(kind: OutputThreadWorkerLoopStepKind) -> OutputThreadWorkerLoopStepDecision {
     OutputThreadWorkerLoopStepDecision {
         kind,
-        next_state: super::output_thread_worker_loop_state::OutputThreadWorkerLoopState::Polling,
+        next_state: super::super::worker_loop::state::OutputThreadWorkerLoopState::Polling,
         shutdown_request: OutputThreadWorkerShutdownRequest::None,
         should_continue: true,
     }

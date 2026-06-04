@@ -1,9 +1,9 @@
-use super::output_thread_worker_loop_report::OutputThreadWorkerLoopReport;
-use super::output_thread_worker_loop_state::OutputThreadWorkerLoopState;
-use super::output_thread_worker_loop_step::{
+use super::report::OutputThreadWorkerLoopReport;
+use super::state::OutputThreadWorkerLoopState;
+use super::step::{
     OutputThreadWorkerLoopStepDecision, OutputThreadWorkerLoopStepKind,
 };
-use super::output_thread_worker_shutdown::OutputThreadWorkerShutdownRequest;
+use super::super::worker_lifecycle::shutdown::OutputThreadWorkerShutdownRequest;
 
 fn make_decision(kind: OutputThreadWorkerLoopStepKind) -> OutputThreadWorkerLoopStepDecision {
     OutputThreadWorkerLoopStepDecision {

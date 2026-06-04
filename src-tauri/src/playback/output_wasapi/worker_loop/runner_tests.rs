@@ -1,10 +1,10 @@
-use super::output_thread_real_transport_channel::OutputThreadRealTransportChannel;
-use super::output_thread_real_transport_command::OutputThreadRealTransportCommand;
-use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
-use super::output_thread_worker_loop_runner::{
+use super::super::output_thread_real_transport_channel::OutputThreadRealTransportChannel;
+use super::super::output_thread_real_transport_command::OutputThreadRealTransportCommand;
+use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::runner::{
     run_worker_loop_skeleton, OutputThreadWorkerLoopRunConfig,
 };
-use super::output_thread_worker_loop_state::OutputThreadWorkerLoopState;
+use super::state::OutputThreadWorkerLoopState;
 
 fn config(max_steps: usize) -> OutputThreadWorkerLoopRunConfig {
     OutputThreadWorkerLoopRunConfig {

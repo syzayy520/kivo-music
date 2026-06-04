@@ -1,4 +1,4 @@
-use super::output_thread_worker_lifecycle::*;
+use super::lifecycle::*;
 
 #[test]
 fn contract_only_has_no_live_worker() {

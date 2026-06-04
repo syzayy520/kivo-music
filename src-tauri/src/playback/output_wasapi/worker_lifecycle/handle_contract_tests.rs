@@ -1,5 +1,5 @@
-use super::output_thread_worker_handle_contract::*;
-use super::output_thread_worker_lifecycle::OutputThreadWorkerLifecycleStage;
+use super::handle_contract::*;
+use super::lifecycle::OutputThreadWorkerLifecycleStage;
 
 #[test]
 fn contract_only_has_no_handle() {

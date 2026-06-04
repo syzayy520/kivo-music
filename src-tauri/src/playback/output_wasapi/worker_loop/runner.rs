@@ -5,10 +5,10 @@
 //!
 //! Does not spawn threads, create workers, or reference audio APIs.
 
-use super::output_thread_real_transport_channel::OutputThreadRealTransportChannel;
-use super::output_thread_worker_loop_report::OutputThreadWorkerLoopReport;
-use super::output_thread_worker_loop_state::OutputThreadWorkerLoopState;
-use super::output_thread_worker_loop_step::plan_worker_loop_step;
+use super::super::output_thread_real_transport_channel::OutputThreadRealTransportChannel;
+use super::report::OutputThreadWorkerLoopReport;
+use super::state::OutputThreadWorkerLoopState;
+use super::step::plan_worker_loop_step;
 
 /// Configuration for a bounded worker loop run.
 #[allow(dead_code)]

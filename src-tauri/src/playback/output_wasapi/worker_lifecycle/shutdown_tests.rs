@@ -1,4 +1,4 @@
-use super::output_thread_worker_shutdown::*;
+use super::shutdown::*;
 
 #[test]
 fn none_does_not_request_stop() {

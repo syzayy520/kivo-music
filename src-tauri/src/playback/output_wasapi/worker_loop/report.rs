@@ -3,8 +3,8 @@
 //! Accumulates step counters for a bounded worker loop run.
 //! Does not store command payloads, audio state, or buffer data.
 
-use super::output_thread_worker_loop_state::OutputThreadWorkerLoopState;
-use super::output_thread_worker_loop_step::{
+use super::state::OutputThreadWorkerLoopState;
+use super::step::{
     OutputThreadWorkerLoopStepDecision, OutputThreadWorkerLoopStepKind,
 };
 

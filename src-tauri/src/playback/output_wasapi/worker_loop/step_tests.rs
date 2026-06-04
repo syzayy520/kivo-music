@@ -1,11 +1,11 @@
-use super::output_thread_real_transport_channel::OutputThreadRealTransportRecvResult;
-use super::output_thread_real_transport_command::OutputThreadRealTransportCommand;
-use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
-use super::output_thread_worker_loop_state::OutputThreadWorkerLoopState;
-use super::output_thread_worker_loop_step::{
+use super::super::output_thread_real_transport_channel::OutputThreadRealTransportRecvResult;
+use super::super::output_thread_real_transport_command::OutputThreadRealTransportCommand;
+use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::state::OutputThreadWorkerLoopState;
+use super::step::{
     plan_worker_loop_step, OutputThreadWorkerLoopStepKind,
 };
-use super::output_thread_worker_shutdown::OutputThreadWorkerShutdownRequest;
+use super::super::worker_lifecycle::shutdown::OutputThreadWorkerShutdownRequest;
 
 #[test]
 fn empty_recv_yields_no_command() {

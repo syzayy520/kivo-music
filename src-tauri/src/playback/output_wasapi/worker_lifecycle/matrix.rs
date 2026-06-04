@@ -3,10 +3,10 @@
 //! Provides a fixed set of preflight scenarios covering
 //! pure lifecycle planning without real workers or transport.
 
-use super::output_thread_worker_handle_contract::OutputThreadWorkerHandleContract;
-use super::output_thread_worker_lifecycle::OutputThreadWorkerLifecycleStage;
-use super::output_thread_worker_lifecycle_plan::OutputThreadWorkerLifecycleInput;
-use super::output_thread_worker_shutdown::OutputThreadWorkerShutdownRequest;
+use super::handle_contract::OutputThreadWorkerHandleContract;
+use super::lifecycle::OutputThreadWorkerLifecycleStage;
+use super::plan::OutputThreadWorkerLifecycleInput;
+use super::shutdown::OutputThreadWorkerShutdownRequest;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

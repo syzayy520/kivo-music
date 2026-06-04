@@ -1,4 +1,4 @@
-use super::output_thread_worker_loop_state::OutputThreadWorkerLoopState;
+use super::state::OutputThreadWorkerLoopState;
 
 #[test]
 fn transport_closed_is_terminal() {

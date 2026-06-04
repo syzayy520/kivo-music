@@ -3,7 +3,7 @@
 //! Provides a fixed array of scenarios exercising the worker-runtime
 //! adapter. Does not hold transport channels or queue bridge state.
 
-use super::output_thread_worker_loop_step::OutputThreadWorkerLoopStepKind;
+use super::super::worker_loop::step::OutputThreadWorkerLoopStepKind;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

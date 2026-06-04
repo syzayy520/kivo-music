@@ -6,17 +6,17 @@
 //! Does not poll transport channels, construct queue bridge results,
 //! or reference audio/output primitives.
 
-use super::output_thread_render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
-use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
-use super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState;
-use super::output_thread_runtime_loop_plan::plan_runtime_loop_step;
-use super::output_thread_runtime_loop_step::{
+use super::super::output_thread_render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
+use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState;
+use super::super::output_thread_runtime_loop_plan::plan_runtime_loop_step;
+use super::super::output_thread_runtime_loop_step::{
     OutputThreadRuntimeLoopStepDecision, OutputThreadRuntimeLoopStepInput,
 };
-use super::output_thread_worker_loop_step::{
+use super::super::worker_loop::step::{
     OutputThreadWorkerLoopStepDecision, OutputThreadWorkerLoopStepKind,
 };
-use super::output_thread_worker_runtime_decision::OutputThreadWorkerRuntimeDecision;
+use super::decision::OutputThreadWorkerRuntimeDecision;
 
 /// Result of adapting a single worker step into a runtime loop step.
 #[allow(dead_code)]

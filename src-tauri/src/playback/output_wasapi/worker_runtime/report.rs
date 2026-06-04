@@ -3,9 +3,9 @@
 //! Accumulates counters for a worker-runtime adapter run.
 //! Does not store command payloads, queue state, or buffer data.
 
-use super::output_thread_worker_loop_report::OutputThreadWorkerLoopReport;
-use super::output_thread_worker_runtime_adapter::OutputThreadWorkerRuntimeAdapterResult;
-use super::output_thread_worker_runtime_decision::OutputThreadWorkerRuntimeDecisionKind;
+use super::super::worker_loop::report::OutputThreadWorkerLoopReport;
+use super::adapter::OutputThreadWorkerRuntimeAdapterResult;
+use super::decision::OutputThreadWorkerRuntimeDecisionKind;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
