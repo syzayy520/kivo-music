@@ -175,5 +175,14 @@ mod output_thread_runtime_queue_plan_tests;
 mod output_thread_runtime_queue_validation_tests;
 #[cfg(test)]
 mod output_thread_runtime_queue_bridge_tests;
+#[cfg(test)]
+mod output_thread_runtime_loop_state_tests;
+#[cfg(test)]
+mod output_thread_runtime_loop_step_tests;
+#[cfg(test)]
+mod output_thread_runtime_loop_plan_tests;
+
+
+
 
 
