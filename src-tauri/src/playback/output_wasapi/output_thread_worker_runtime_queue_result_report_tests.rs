@@ -5,9 +5,9 @@ use super::output_thread_runtime_queue_bridge_result::{
     OutputThreadRuntimeQueueBridgeAccepted, OutputThreadRuntimeQueueBridgeRejected,
     OutputThreadRuntimeQueueBridgeResult,
 };
-use super::output_thread_runtime_queue_entry::OutputThreadRuntimeQueueEntry;
-use super::output_thread_runtime_queue_result::OutputThreadRuntimeQueueRejectReason;
-use super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState;
+use super::runtime_queue::entry::OutputThreadRuntimeQueueEntry;
+use super::runtime_queue::result::OutputThreadRuntimeQueueRejectReason;
+use super::runtime_queue::state::OutputThreadRuntimeQueueState;
 use super::output_thread_worker_runtime_queue_result_adapter::adapt_queue_bridge_result_to_runtime_loop_step;
 use super::output_thread_worker_runtime_queue_result_report::OutputThreadWorkerRuntimeQueueResultReport;
 

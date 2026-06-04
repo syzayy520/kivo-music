@@ -11,9 +11,9 @@ use super::output_thread_runtime_queue_bridge::{
     OutputThreadRuntimeQueueBridgeAccepted, OutputThreadRuntimeQueueBridgeProjection,
     OutputThreadRuntimeQueueBridgeRejected, OutputThreadRuntimeQueueBridgeResult,
 };
-use super::output_thread_runtime_queue_entry::OutputThreadRuntimeQueueEntry;
-use super::output_thread_runtime_queue_result::OutputThreadRuntimeQueueRejectReason;
-use super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState;
+use super::runtime_queue::entry::OutputThreadRuntimeQueueEntry;
+use super::runtime_queue::result::OutputThreadRuntimeQueueRejectReason;
+use super::runtime_queue::state::OutputThreadRuntimeQueueState;
 fn default_projection() -> OutputThreadRuntimeQueueBridgeProjection {
     OutputThreadRuntimeQueueBridgeProjection {
         runtime_state: super::output_thread_state::OutputThreadState::Created,

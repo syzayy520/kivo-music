@@ -1,11 +1,11 @@
-use super::output_thread_runtime_id::OutputThreadRuntimeGeneration;
-use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
-use super::output_thread_runtime_queue_entry::OutputThreadRuntimeQueueEntry;
-use super::output_thread_runtime_queue_result::{
+use super::super::output_thread_runtime_id::OutputThreadRuntimeGeneration;
+use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::entry::OutputThreadRuntimeQueueEntry;
+use super::result::{
     OutputThreadRuntimeQueueAcceptResult, OutputThreadRuntimeQueuePlanResult,
     OutputThreadRuntimeQueueRejectReason, OutputThreadRuntimeQueueRejectResult,
 };
-use super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState;
+use super::state::OutputThreadRuntimeQueueState;
 
 #[test]
 fn accepted_result_reports_accepted() {

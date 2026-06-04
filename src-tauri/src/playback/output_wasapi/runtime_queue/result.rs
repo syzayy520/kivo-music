@@ -1,5 +1,5 @@
-use super::output_thread_runtime_queue_entry::OutputThreadRuntimeQueueEntry;
-use super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState;
+use super::entry::OutputThreadRuntimeQueueEntry;
+use super::state::OutputThreadRuntimeQueueState;
 
 /// Reason a queue entry was rejected.
 #[allow(dead_code)]

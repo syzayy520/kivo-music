@@ -1,5 +1,5 @@
 use super::output_thread_runtime_queue_bridge_input::OutputThreadRuntimeQueueBridgeInput;
-use super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState;
+use super::runtime_queue::state::OutputThreadRuntimeQueueState;
 use super::output_thread_state::OutputThreadState;
 
 /// Projection of runtime queue bridge state.

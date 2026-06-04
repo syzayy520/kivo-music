@@ -1,5 +1,5 @@
-use super::output_thread_runtime_id::OutputThreadRuntimeGeneration;
-use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::output_thread_runtime_id::OutputThreadRuntimeGeneration;
+use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
 
 /// A single entry in the runtime command queue.
 ///

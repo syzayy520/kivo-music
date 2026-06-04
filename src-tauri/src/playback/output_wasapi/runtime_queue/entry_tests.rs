@@ -1,6 +1,6 @@
-use super::output_thread_runtime_id::OutputThreadRuntimeGeneration;
-use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
-use super::output_thread_runtime_queue_entry::OutputThreadRuntimeQueueEntry;
+use super::super::output_thread_runtime_id::OutputThreadRuntimeGeneration;
+use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::entry::OutputThreadRuntimeQueueEntry;
 
 #[test]
 fn entry_new_preserves_fields() {

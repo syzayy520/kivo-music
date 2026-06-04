@@ -2,10 +2,10 @@ use super::output_thread_runtime_handle::OutputThreadRuntimeHandle;
 use super::output_thread_runtime_id::{OutputThreadRuntimeGeneration, OutputThreadRuntimeId};
 use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
 use super::output_thread_runtime_queue_bridge::*;
-use super::output_thread_runtime_queue_config::OutputThreadRuntimeQueueConfig;
-use super::output_thread_runtime_queue_result::OutputThreadRuntimeQueueRejectReason;
-use super::output_thread_runtime_queue_snapshot::OutputThreadRuntimeQueueSnapshot;
-use super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState;
+use super::runtime_queue::config::OutputThreadRuntimeQueueConfig;
+use super::runtime_queue::result::OutputThreadRuntimeQueueRejectReason;
+use super::runtime_queue::snapshot::OutputThreadRuntimeQueueSnapshot;
+use super::runtime_queue::state::OutputThreadRuntimeQueueState;
 use super::output_thread_runtime_status::OutputThreadRuntimeStatus;
 use super::output_thread_state::OutputThreadState;
 

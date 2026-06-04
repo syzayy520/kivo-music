@@ -9,8 +9,8 @@ use super::output_thread_runtime_queue_bridge::{
     OutputThreadRuntimeQueueBridgeAccepted, OutputThreadRuntimeQueueBridgeProjection,
     OutputThreadRuntimeQueueBridgeResult,
 };
-use super::output_thread_runtime_queue_entry::OutputThreadRuntimeQueueEntry;
-use super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState;
+use super::runtime_queue::entry::OutputThreadRuntimeQueueEntry;
+use super::runtime_queue::state::OutputThreadRuntimeQueueState;
 
 fn default_projection() -> OutputThreadRuntimeQueueBridgeProjection {
     OutputThreadRuntimeQueueBridgeProjection {

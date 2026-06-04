@@ -1,4 +1,4 @@
-use super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState;
+use super::state::OutputThreadRuntimeQueueState;
 
 #[test]
 fn empty_state_has_no_pending() {

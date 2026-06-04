@@ -1,8 +1,8 @@
-use super::super::output_thread_runtime_queue_config::OutputThreadRuntimeQueueConfig;
+use super::super::runtime_queue::config::OutputThreadRuntimeQueueConfig;
 use super::state::{
     OutputThreadRuntimeQueueOwnerState, OutputThreadRuntimeQueueOwnerTransitionKind,
 };
-use super::super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState;
+use super::super::runtime_queue::state::OutputThreadRuntimeQueueState;
 
 fn make_state() -> OutputThreadRuntimeQueueOwnerState {
     OutputThreadRuntimeQueueOwnerState::contract_only(

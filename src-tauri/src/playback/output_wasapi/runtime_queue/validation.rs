@@ -1,6 +1,6 @@
-use super::output_thread_runtime_id::OutputThreadRuntimeGeneration;
-use super::output_thread_runtime_queue_entry::OutputThreadRuntimeQueueEntry;
-use super::output_thread_runtime_status::OutputThreadRuntimeStatus;
+use super::super::output_thread_runtime_id::OutputThreadRuntimeGeneration;
+use super::entry::OutputThreadRuntimeQueueEntry;
+use super::super::output_thread_runtime_status::OutputThreadRuntimeStatus;
 
 /// Validation error for a queue entry against the current runtime.
 #[allow(dead_code)]

@@ -1,4 +1,4 @@
-use super::output_thread_runtime_queue_config::OutputThreadRuntimeQueueConfig;
+use super::config::OutputThreadRuntimeQueueConfig;
 
 #[test]
 fn default_config_accepts_zero_pending() {

@@ -1,5 +1,5 @@
-use super::output_thread_runtime_queue_config::OutputThreadRuntimeQueueConfig;
-use super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState;
+use super::config::OutputThreadRuntimeQueueConfig;
+use super::state::OutputThreadRuntimeQueueState;
 
 /// Immutable snapshot of the runtime command queue.
 ///

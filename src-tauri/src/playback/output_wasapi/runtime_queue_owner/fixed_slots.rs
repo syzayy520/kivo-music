@@ -3,7 +3,7 @@
 //! Uses a hard-coded fixed array to hold queue entries.
 //! Does not use dynamic collections, apply bridge results, or connect adapters.
 
-use super::super::output_thread_runtime_queue_entry::OutputThreadRuntimeQueueEntry;
+use super::super::runtime_queue::entry::OutputThreadRuntimeQueueEntry;
 
 /// Fixed slot capacity for the runtime queue owner.
 #[allow(dead_code)]

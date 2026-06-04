@@ -9,12 +9,12 @@ use super::output_thread_worker_queue_bridge_decision::{
 
 fn make_accepted_result() -> OutputThreadRuntimeQueueBridgeResult {
     OutputThreadRuntimeQueueBridgeResult::Accepted(OutputThreadRuntimeQueueBridgeAccepted {
-        entry: super::output_thread_runtime_queue_entry::OutputThreadRuntimeQueueEntry::new(
+        entry: super::runtime_queue::entry::OutputThreadRuntimeQueueEntry::new(
             super::output_thread_runtime_id::OutputThreadRuntimeGeneration::default(),
             OutputThreadRuntimeIntent::Start,
             1,
         ),
-        queue_state: super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState::empty(),
+        queue_state: super::runtime_queue::state::OutputThreadRuntimeQueueState::empty(),
         projection: super::output_thread_runtime_queue_bridge_projection::OutputThreadRuntimeQueueBridgeProjection {
             runtime_state: super::output_thread_state::OutputThreadState::Created,
             pending_count: 0,
@@ -31,8 +31,8 @@ fn make_accepted_result() -> OutputThreadRuntimeQueueBridgeResult {
 
 fn make_rejected_result() -> OutputThreadRuntimeQueueBridgeResult {
     OutputThreadRuntimeQueueBridgeResult::Rejected(OutputThreadRuntimeQueueBridgeRejected {
-        reason: super::output_thread_runtime_queue_result::OutputThreadRuntimeQueueRejectReason::Full,
-        queue_state: super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState::empty(),
+        reason: super::runtime_queue::result::OutputThreadRuntimeQueueRejectReason::Full,
+        queue_state: super::runtime_queue::state::OutputThreadRuntimeQueueState::empty(),
         projection: super::output_thread_runtime_queue_bridge_projection::OutputThreadRuntimeQueueBridgeProjection {
             runtime_state: super::output_thread_state::OutputThreadState::Running,
             pending_count: 32,

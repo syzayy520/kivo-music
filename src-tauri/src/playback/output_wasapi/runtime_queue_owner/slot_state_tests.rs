@@ -20,7 +20,7 @@ fn state_from_empty_slots_reports_capacity() {
 fn state_from_full_slots_has_no_availability() {
     let mut slots_arr = [None; RUNTIME_QUEUE_OWNER_FIXED_SLOT_CAPACITY];
     for i in 0..RUNTIME_QUEUE_OWNER_FIXED_SLOT_CAPACITY {
-        slots_arr[i] = Some(super::super::output_thread_runtime_queue_entry::OutputThreadRuntimeQueueEntry::new(
+        slots_arr[i] = Some(super::super::runtime_queue::entry::OutputThreadRuntimeQueueEntry::new(
             super::super::output_thread_runtime_id::OutputThreadRuntimeGeneration::default(),
             super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent::Start,
             i as u64 + 1,
@@ -34,7 +34,7 @@ fn state_from_full_slots_has_no_availability() {
 #[test]
 fn state_from_partial_slots_has_availability() {
     let mut slots_arr = [None; RUNTIME_QUEUE_OWNER_FIXED_SLOT_CAPACITY];
-    slots_arr[0] = Some(super::super::output_thread_runtime_queue_entry::OutputThreadRuntimeQueueEntry::new(
+    slots_arr[0] = Some(super::super::runtime_queue::entry::OutputThreadRuntimeQueueEntry::new(
         super::super::output_thread_runtime_id::OutputThreadRuntimeGeneration::default(),
         super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent::Start,
         1,

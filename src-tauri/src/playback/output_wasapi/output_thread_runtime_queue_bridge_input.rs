@@ -1,8 +1,8 @@
 use super::output_thread_runtime_handle::OutputThreadRuntimeHandle;
 use super::output_thread_runtime_id::OutputThreadRuntimeGeneration;
-use super::output_thread_runtime_queue_config::OutputThreadRuntimeQueueConfig;
-use super::output_thread_runtime_queue_snapshot::OutputThreadRuntimeQueueSnapshot;
-use super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState;
+use super::runtime_queue::config::OutputThreadRuntimeQueueConfig;
+use super::runtime_queue::snapshot::OutputThreadRuntimeQueueSnapshot;
+use super::runtime_queue::state::OutputThreadRuntimeQueueState;
 use super::output_thread_runtime_status::OutputThreadRuntimeStatus;
 use super::output_thread_state::OutputThreadState;
 

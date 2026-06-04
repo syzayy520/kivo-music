@@ -6,16 +6,16 @@ use super::output_thread_runtime_queue_bridge_result::{
     OutputThreadRuntimeQueueBridgeResult,
 };
 use super::output_thread_runtime_queue_bridge_policy::validate_reset_policy_for_bridge;
-use super::output_thread_runtime_queue_plan::plan_queue_intent;
-use super::output_thread_runtime_queue_result::{
+use super::runtime_queue::plan::plan_queue_intent;
+use super::runtime_queue::result::{
     OutputThreadRuntimeQueuePlanResult, OutputThreadRuntimeQueueRejectReason,
 };
-use super::output_thread_runtime_queue_validation::validate_queue_entry_for_runtime;
+use super::runtime_queue::validation::validate_queue_entry_for_runtime;
 
 fn reject_bridge(
     input: OutputThreadRuntimeQueueBridgeInput,
     reason: OutputThreadRuntimeQueueRejectReason,
-    queue_state: super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState,
+    queue_state: super::runtime_queue::state::OutputThreadRuntimeQueueState,
 ) -> OutputThreadRuntimeQueueBridgeResult {
     let projection = projection_with_queue_state(input, queue_state);
     OutputThreadRuntimeQueueBridgeResult::Rejected(OutputThreadRuntimeQueueBridgeRejected {

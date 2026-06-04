@@ -1,6 +1,6 @@
-use super::output_thread_runtime_queue_config::OutputThreadRuntimeQueueConfig;
-use super::output_thread_runtime_queue_snapshot::OutputThreadRuntimeQueueSnapshot;
-use super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState;
+use super::config::OutputThreadRuntimeQueueConfig;
+use super::snapshot::OutputThreadRuntimeQueueSnapshot;
+use super::state::OutputThreadRuntimeQueueState;
 
 #[test]
 fn empty_snapshot_uses_config() {

@@ -1,4 +1,4 @@
-use super::super::output_thread_runtime_queue_config::OutputThreadRuntimeQueueConfig;
+use super::super::runtime_queue::config::OutputThreadRuntimeQueueConfig;
 use super::fixed_slots::OutputThreadRuntimeQueueOwnerFixedSlots;
 use super::slot_projection::project_fixed_slots_snapshot;
 
@@ -14,12 +14,12 @@ fn projection_creates_snapshot() {
 fn projection_state_matches_slot_occupancy() {
     let config = OutputThreadRuntimeQueueConfig::default();
     let mut slots_arr = [None; 8];
-    slots_arr[0] = Some(super::super::output_thread_runtime_queue_entry::OutputThreadRuntimeQueueEntry::new(
+    slots_arr[0] = Some(super::super::runtime_queue::entry::OutputThreadRuntimeQueueEntry::new(
         super::super::output_thread_runtime_id::OutputThreadRuntimeGeneration::default(),
         super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent::Start,
         1,
     ));
-    slots_arr[1] = Some(super::super::output_thread_runtime_queue_entry::OutputThreadRuntimeQueueEntry::new(
+    slots_arr[1] = Some(super::super::runtime_queue::entry::OutputThreadRuntimeQueueEntry::new(
         super::super::output_thread_runtime_id::OutputThreadRuntimeGeneration::default(),
         super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent::Stop,
         2,
