@@ -166,3 +166,35 @@ fn idle_state_gets_stay_idle_action() {
     );
     assert!(result.runtime_loop_decision.should_continue);
 }
+
+#[test]
+fn runtime_intent_handled_without_observed_intent_does_not_default_to_start() {
+    let result = adapt_worker_step_to_runtime_loop(
+        make_worker_decision(OutputThreadWorkerLoopStepKind::RuntimeIntentHandled),
+        None,
+        OutputThreadRuntimeLoopState::Idle,
+    );
+    assert_eq!(
+        result.worker_runtime_decision.kind,
+        OutputThreadWorkerRuntimeDecisionKind::NoRuntimeIntent
+    );
+    assert_eq!(result.worker_runtime_decision.observed_runtime_intent, None);
+    assert!(!result.queue_bridge_used);
+    assert!(!result.has_output_behavior);
+}
+
+#[test]
+fn stop_requested_without_observed_intent_does_not_default_to_stop() {
+    let result = adapt_worker_step_to_runtime_loop(
+        make_worker_decision(OutputThreadWorkerLoopStepKind::StopRequested),
+        None,
+        OutputThreadRuntimeLoopState::Active,
+    );
+    assert_eq!(
+        result.worker_runtime_decision.kind,
+        OutputThreadWorkerRuntimeDecisionKind::NoRuntimeIntent
+    );
+    assert_eq!(result.worker_runtime_decision.observed_runtime_intent, None);
+    assert!(!result.queue_bridge_used);
+    assert!(!result.has_output_behavior);
+}

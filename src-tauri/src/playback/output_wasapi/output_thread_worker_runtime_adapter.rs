@@ -66,28 +66,38 @@ fn classify_worker_decision(
             ),
             idle_render_plan(runtime_state),
         ),
-        OutputThreadWorkerLoopStepKind::RuntimeIntentHandled => {
-            let intent = observed_runtime_intent
-                .unwrap_or(OutputThreadRuntimeIntent::Start);
-            (
+        OutputThreadWorkerLoopStepKind::RuntimeIntentHandled => match observed_runtime_intent {
+            Some(intent) => (
                 OutputThreadWorkerRuntimeDecision::runtime_intent_observed(
                     intent,
                     worker_decision.kind,
                 ),
                 idle_render_plan(runtime_state),
-            )
-        }
-        OutputThreadWorkerLoopStepKind::StopRequested => {
-            let intent = observed_runtime_intent
-                .unwrap_or(OutputThreadRuntimeIntent::Stop);
-            (
+            ),
+            None => (
+                OutputThreadWorkerRuntimeDecision::no_runtime_intent(
+                    worker_decision.kind,
+                    worker_decision.should_continue,
+                ),
+                idle_render_plan(runtime_state),
+            ),
+        },
+        OutputThreadWorkerLoopStepKind::StopRequested => match observed_runtime_intent {
+            Some(intent) => (
                 OutputThreadWorkerRuntimeDecision::shutdown_observed(
                     intent,
                     worker_decision.kind,
                 ),
                 idle_render_plan(runtime_state),
-            )
-        }
+            ),
+            None => (
+                OutputThreadWorkerRuntimeDecision::no_runtime_intent(
+                    worker_decision.kind,
+                    worker_decision.should_continue,
+                ),
+                idle_render_plan(runtime_state),
+            ),
+        },
         OutputThreadWorkerLoopStepKind::TransportClosed
         | OutputThreadWorkerLoopStepKind::Disconnected => (
             OutputThreadWorkerRuntimeDecision::transport_closed(worker_decision.kind),
