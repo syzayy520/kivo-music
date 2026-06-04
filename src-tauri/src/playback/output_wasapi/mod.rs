@@ -11,8 +11,15 @@ pub(crate) mod output_thread_buffer_snapshot;
 pub(crate) mod output_thread_consumer_plan;
 pub(crate) mod output_thread_control;
 pub(crate) mod output_thread_errors;
+pub(crate) mod output_thread_mock_assertions;
 pub(crate) mod output_thread_mock_buffer;
+pub(crate) mod output_thread_mock_coverage;
+pub(crate) mod output_thread_mock_expectation;
+pub(crate) mod output_thread_mock_expected_behavior;
+pub(crate) mod output_thread_mock_golden;
 pub(crate) mod output_thread_mock_harness;
+pub(crate) mod output_thread_mock_regression;
+pub(crate) mod output_thread_mock_regression_matrix;
 pub(crate) mod output_thread_mock_renderer;
 pub(crate) mod output_thread_mock_result;
 pub(crate) mod output_thread_mock_scenario;
@@ -22,6 +29,7 @@ pub(crate) mod output_thread_mock_scenario_runner;
 pub(crate) mod output_thread_mock_scenario_summary;
 pub(crate) mod output_thread_mock_scenarios;
 pub(crate) mod output_thread_mock_sequence;
+pub(crate) mod output_thread_mock_smoke;
 pub(crate) mod output_thread_plan_invariants;
 pub(crate) mod output_thread_plan_projection;
 pub(crate) mod output_thread_plan_validation;
@@ -153,6 +161,30 @@ mod output_thread_mock_scenarios_tests;
 
 #[cfg(test)]
 mod output_thread_mock_scenario_matrix_tests;
+
+#[cfg(test)]
+mod output_thread_mock_assertions_tests;
+
+#[cfg(test)]
+mod output_thread_mock_coverage_tests;
+
+#[cfg(test)]
+mod output_thread_mock_expected_behavior_tests;
+
+#[cfg(test)]
+mod output_thread_mock_expectation_tests;
+
+#[cfg(test)]
+mod output_thread_mock_golden_tests;
+
+#[cfg(test)]
+mod output_thread_mock_regression_tests;
+
+#[cfg(test)]
+mod output_thread_mock_regression_matrix_tests;
+
+#[cfg(test)]
+mod output_thread_mock_smoke_tests;
 
 #[cfg(test)]
 mod frame_bridge_tests;
