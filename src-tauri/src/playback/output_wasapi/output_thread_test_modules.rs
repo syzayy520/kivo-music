@@ -159,3 +159,18 @@ mod output_thread_runtime_intent_tests;
 
 #[cfg(test)]
 mod output_thread_runtime_report_tests;
+#[cfg(test)]
+mod output_thread_runtime_queue_config_tests;
+#[cfg(test)]
+mod output_thread_runtime_queue_entry_tests;
+#[cfg(test)]
+mod output_thread_runtime_queue_state_tests;
+#[cfg(test)]
+mod output_thread_runtime_queue_snapshot_tests;
+#[cfg(test)]
+mod output_thread_runtime_queue_result_tests;
+#[cfg(test)]
+mod output_thread_runtime_queue_plan_tests;
+#[cfg(test)]
+mod output_thread_runtime_queue_validation_tests;
+
