@@ -11,6 +11,7 @@ pub mod platform;
 pub mod render_client;
 pub mod reset_boundary;
 pub mod ring_buffer;
+pub mod ring_buffer_output_thread;
 pub mod silent_loop;
 pub mod sink;
 pub mod start_stop;
@@ -48,6 +49,9 @@ mod start_stop_tests;
 
 #[cfg(test)]
 mod output_thread_boundary_tests;
+
+#[cfg(test)]
+mod ring_buffer_output_thread_tests;
 
 #[cfg(test)]
 mod ring_buffer_tests;
