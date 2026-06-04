@@ -42,3 +42,5 @@ mod output_thread_runtime_loop_scenario_tests;
 mod output_thread_runtime_loop_scenario_runner_tests;
 #[cfg(test)]
 mod output_thread_runtime_loop_scenario_matrix_tests;
+#[cfg(test)]
+mod output_thread_real_transport_contract_tests;
