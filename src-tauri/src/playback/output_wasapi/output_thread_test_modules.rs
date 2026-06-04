@@ -181,6 +181,15 @@ mod output_thread_runtime_loop_state_tests;
 mod output_thread_runtime_loop_step_tests;
 #[cfg(test)]
 mod output_thread_runtime_loop_plan_tests;
+#[cfg(test)]
+mod output_thread_runtime_loop_scenario_tests;
+#[cfg(test)]
+mod output_thread_runtime_loop_scenario_runner_tests;
+#[cfg(test)]
+mod output_thread_runtime_loop_scenario_matrix_tests;
+
+
+
 
 
 
