@@ -7,11 +7,11 @@ use crate::playback::output::OutputSink;
 use crate::playback::output_wasapi::sink::WasapiOutputSink;
 
 #[test]
-fn wasapi_output_sink_still_unsupported() {
+fn wasapi_output_sink_scaffold_succeeds() {
     let mut sink = WasapiOutputSink::new();
-    // All methods should return UnsupportedOperation
+    // Scaffold open should succeed
     let settings = crate::playback::output::OutputSettings::default();
-    assert!(sink.open(&settings).is_err());
+    assert!(sink.open(&settings).is_ok());
 }
 
 #[test]

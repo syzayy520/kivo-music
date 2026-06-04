@@ -6,45 +6,46 @@ use super::errors::wasapi_unsupported;
 use super::platform::WasapiCompileBoundary;
 use super::status::WasapiOutputStatus;
 
-/// WASAPI output sink stub for the native audio pipeline.
+/// WASAPI output sink scaffold for the native audio pipeline.
 ///
-/// This is a placeholder implementation that does NOT:
+/// This is a lifecycle-only scaffold that does NOT:
 /// - Open real audio devices
 /// - Produce audible output
 /// - Create output threads
 /// - Use Windows audio APIs
-/// - Claim that Kivo can genuinely play audio via WASAPI
+/// - Write to ring buffers
 ///
-/// All methods return `PlaybackError::UnsupportedOperation` except `close()` and `status()`.
+/// State-transition methods (`open`, `stop`, `flush`, `close`, `set_volume`,
+/// `set_muted`) succeed and update internal lifecycle state.
+/// `submit_frame` returns typed `UnsupportedOperation` — this sink cannot
+/// accept audio frames until a real WASAPI backend is wired in.
 #[derive(Clone, Debug, Default)]
 pub struct WasapiOutputSink {
-    /// Current stub configuration.
+    /// Configuration populated by `open`.
     config: WasapiOutputConfig,
-    /// Current stub status.
+    /// WASAPI-specific metadata.
     status: WasapiOutputStatus,
+    /// Generic lifecycle state for `OutputSink` trait contract.
+    runtime: OutputRuntimeStatus,
 }
 
 impl WasapiOutputSink {
-    /// Create a new WASAPI output sink stub.
+    /// Create a new WASAPI output sink scaffold.
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// Get current stub configuration.
+    /// Get current configuration.
     pub fn config(&self) -> &WasapiOutputConfig {
         &self.config
     }
 
-    /// Get current stub status.
+    /// Get WASAPI-specific status.
     pub fn wasapi_status(&self) -> &WasapiOutputStatus {
         &self.status
     }
 
     /// Get the WASAPI compile boundary for this platform.
-    ///
-    /// Returns a `WasapiCompileBoundary` that confirms whether
-    /// Windows WASAPI types are linked on this target platform.
-    /// This does NOT perform any real audio operations.
     pub fn compile_boundary(&self) -> WasapiCompileBoundary {
         super::platform::wasapi_compile_boundary()
     }
@@ -54,77 +55,62 @@ impl OutputSink for WasapiOutputSink {
     fn open(&mut self, settings: &OutputSettings) -> PlaybackResult<OutputRuntimeStatus> {
         self.config = WasapiOutputConfig::from_output_settings(settings);
         self.status.is_open_attempted = true;
-        self.status.last_error = Some(wasapi_unsupported("open"));
-
-        Err(PlaybackError::UnsupportedOperation(wasapi_unsupported(
-            "open",
-        )))
+        self.status.is_real_device_open = false;
+        self.runtime.active_device_id = settings.selected_device_id.clone();
+        self.runtime.is_open = true;
+        self.runtime.is_active = true;
+        self.runtime.last_error = None;
+        Ok(self.runtime.clone())
     }
 
     fn submit_frame(&mut self, _frame: AudioOutputFrame) -> PlaybackResult<OutputRuntimeStatus> {
-        self.status.last_error = Some(wasapi_unsupported("submit_frame"));
-
+        self.runtime.last_error = Some(wasapi_unsupported("submit_frame"));
         Err(PlaybackError::UnsupportedOperation(wasapi_unsupported(
             "submit_frame",
         )))
     }
 
     fn pause(&mut self) -> PlaybackResult<OutputRuntimeStatus> {
-        self.status.last_error = Some(wasapi_unsupported("pause"));
-
-        Err(PlaybackError::UnsupportedOperation(wasapi_unsupported(
-            "pause",
-        )))
+        self.runtime.last_error = None;
+        Ok(self.runtime.clone())
     }
 
     fn resume(&mut self) -> PlaybackResult<OutputRuntimeStatus> {
-        self.status.last_error = Some(wasapi_unsupported("resume"));
-
-        Err(PlaybackError::UnsupportedOperation(wasapi_unsupported(
-            "resume",
-        )))
+        self.runtime.last_error = None;
+        Ok(self.runtime.clone())
     }
 
     fn flush(&mut self) -> PlaybackResult<OutputRuntimeStatus> {
-        self.status.last_error = Some(wasapi_unsupported("flush"));
-
-        Err(PlaybackError::UnsupportedOperation(wasapi_unsupported(
-            "flush",
-        )))
+        self.runtime.pending_frames = 0;
+        self.runtime.last_error = None;
+        Ok(self.runtime.clone())
     }
 
     fn stop(&mut self) -> PlaybackResult<OutputRuntimeStatus> {
-        self.status.last_error = Some(wasapi_unsupported("stop"));
-
-        Err(PlaybackError::UnsupportedOperation(wasapi_unsupported(
-            "stop",
-        )))
+        self.runtime.is_active = false;
+        self.runtime.pending_frames = 0;
+        self.runtime.last_error = None;
+        Ok(self.runtime.clone())
     }
 
-    fn set_volume(&mut self, _level: f32) -> PlaybackResult<OutputRuntimeStatus> {
-        self.status.last_error = Some(wasapi_unsupported("set_volume"));
-
-        Err(PlaybackError::UnsupportedOperation(wasapi_unsupported(
-            "set_volume",
-        )))
+    fn set_volume(&mut self, level: f32) -> PlaybackResult<OutputRuntimeStatus> {
+        self.runtime.controls.volume_level = level.clamp(0.0, 1.0);
+        self.runtime.last_error = None;
+        Ok(self.runtime.clone())
     }
 
-    fn set_muted(&mut self, _muted: bool) -> PlaybackResult<OutputRuntimeStatus> {
-        self.status.last_error = Some(wasapi_unsupported("set_muted"));
-
-        Err(PlaybackError::UnsupportedOperation(wasapi_unsupported(
-            "set_muted",
-        )))
+    fn set_muted(&mut self, muted: bool) -> PlaybackResult<OutputRuntimeStatus> {
+        self.runtime.controls.muted = muted;
+        self.runtime.last_error = None;
+        Ok(self.runtime.clone())
     }
 
     fn status(&self) -> OutputRuntimeStatus {
-        self.status
-            .to_output_runtime_status(&self.config.selected_device_id)
+        self.runtime.clone()
     }
 
     fn close(&mut self) -> PlaybackResult<()> {
-        // Close is idempotent and always succeeds for the stub.
-        // Does not interact with real devices.
+        self.runtime = OutputRuntimeStatus::default();
         self.status = WasapiOutputStatus::default();
         self.config = WasapiOutputConfig::default();
         Ok(())

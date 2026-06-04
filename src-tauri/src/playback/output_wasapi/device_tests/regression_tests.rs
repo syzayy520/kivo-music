@@ -12,23 +12,23 @@ use crate::playback::output::{OutputSettings, OutputSink};
 use crate::playback::output_wasapi::sink::WasapiOutputSink;
 
 #[test]
-fn endpoint_smoke_does_not_change_wasapi_sink_stub() {
+fn endpoint_smoke_does_not_change_wasapi_sink_scaffold() {
     let mut sink = WasapiOutputSink::new();
 
     let result = sink.open(&OutputSettings::default());
     assert!(
-        matches!(result, Err(PlaybackError::UnsupportedOperation(_))),
-        "WasapiOutputSink.open() should still return UnsupportedOperation"
+        result.is_ok(),
+        "WasapiOutputSink.open() scaffold should succeed"
     );
 
-    let status = sink.status();
+    let status = result.unwrap();
     assert!(
-        !status.is_open,
-        "WasapiOutputSink status should not be open"
+        status.is_open,
+        "WasapiOutputSink scaffold should report is_open after open"
     );
     assert!(
-        !status.is_active,
-        "WasapiOutputSink status should not be active"
+        status.is_active,
+        "WasapiOutputSink scaffold should report is_active after open"
     );
 }
 

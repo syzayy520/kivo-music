@@ -14,23 +14,23 @@ use crate::playback::output_wasapi::render_client::probe_render_client;
 use crate::playback::output_wasapi::sink::WasapiOutputSink;
 
 #[test]
-fn wasapi_output_sink_still_unsupported_after_buffer_boundary() {
+fn wasapi_output_sink_scaffold_succeeds_after_buffer_boundary() {
     let mut sink = WasapiOutputSink::new();
 
     let result = sink.open(&OutputSettings::default());
     assert!(
-        matches!(result, Err(PlaybackError::UnsupportedOperation(_))),
-        "WasapiOutputSink.open() should still return UnsupportedOperation"
+        result.is_ok(),
+        "WasapiOutputSink.open() scaffold should succeed"
     );
 
-    let status = sink.status();
+    let status = result.unwrap();
     assert!(
-        !status.is_open,
-        "WasapiOutputSink status should not be open"
+        status.is_open,
+        "WasapiOutputSink scaffold should report is_open after open"
     );
     assert!(
-        !status.is_active,
-        "WasapiOutputSink status should not be active"
+        status.is_active,
+        "WasapiOutputSink scaffold should report is_active after open"
     );
 }
 

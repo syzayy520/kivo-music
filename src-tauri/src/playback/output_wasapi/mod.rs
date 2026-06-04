@@ -55,3 +55,6 @@ mod ring_buffer_output_thread_tests;
 
 #[cfg(test)]
 mod ring_buffer_tests;
+
+#[cfg(test)]
+mod sink_tests;

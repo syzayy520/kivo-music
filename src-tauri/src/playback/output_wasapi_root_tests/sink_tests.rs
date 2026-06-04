@@ -7,15 +7,15 @@ use crate::playback::output::{OutputSettings, OutputSink};
 use crate::playback::output_wasapi::sink::WasapiOutputSink;
 
 #[test]
-fn wasapi_stub_open_returns_typed_unsupported() {
+fn wasapi_scaffold_open_returns_ok() {
     let mut sink = WasapiOutputSink::new();
 
     let result = sink.open(&OutputSettings::default());
-    assert_unsupported(result, "open");
+    assert!(result.is_ok(), "scaffold open should succeed");
 
-    let status = sink.status();
-    assert!(!status.is_open, "stub should not report is_open");
-    assert!(!status.is_active, "stub should not report is_active");
+    let status = result.unwrap();
+    assert!(status.is_open, "scaffold should report is_open after open");
+    assert!(status.is_active, "scaffold should report is_active after open");
 }
 
 #[test]
@@ -34,26 +34,20 @@ fn wasapi_stub_submit_frame_returns_typed_unsupported() {
 }
 
 #[test]
-fn wasapi_stub_pause_resume_flush_stop_are_typed_unsupported() {
+fn wasapi_scaffold_state_transitions_succeed() {
     let mut sink = WasapiOutputSink::new();
+    sink.open(&OutputSettings::default()).unwrap();
 
-    assert_unsupported(sink.pause(), "pause");
-    assert_unsupported(sink.resume(), "resume");
-    assert_unsupported(sink.flush(), "flush");
-    assert_unsupported(sink.stop(), "stop");
-    assert_unsupported(sink.set_volume(0.5), "set_volume");
-    assert_unsupported(sink.set_muted(true), "set_muted");
+    // Scaffold state transitions should all succeed
+    assert!(sink.pause().is_ok());
+    assert!(sink.resume().is_ok());
+    assert!(sink.flush().is_ok());
+    assert!(sink.set_volume(0.5).is_ok());
+    assert!(sink.set_muted(true).is_ok());
 
-    // Status should remain not-open after all operations
-    let status = sink.status();
-    assert!(
-        !status.is_open,
-        "stub should not report is_open after operations"
-    );
-    assert!(
-        !status.is_active,
-        "stub should not report is_active after operations"
-    );
+    // stop sets inactive
+    let status = sink.stop().unwrap();
+    assert!(!status.is_active, "stop should set inactive");
 }
 
 #[test]
