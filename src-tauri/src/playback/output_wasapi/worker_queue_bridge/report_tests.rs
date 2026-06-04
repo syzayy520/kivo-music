@@ -1,14 +1,14 @@
-use super::output_thread_runtime_handle::OutputThreadRuntimeHandle;
-use super::output_thread_runtime_id::OutputThreadRuntimeGeneration;
-use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
-use super::runtime_queue_bridge::input::OutputThreadRuntimeQueueBridgeInput;
-use super::runtime_queue::config::OutputThreadRuntimeQueueConfig;
-use super::runtime_queue::snapshot::OutputThreadRuntimeQueueSnapshot;
-use super::runtime_queue::state::OutputThreadRuntimeQueueState;
-use super::output_thread_runtime_status::OutputThreadRuntimeStatus;
-use super::output_thread_state::OutputThreadState;
-use super::output_thread_worker_queue_bridge_adapter::adapt_worker_intent_to_queue_bridge;
-use super::output_thread_worker_queue_bridge_report::OutputThreadWorkerQueueBridgeReport;
+use super::super::output_thread_runtime_handle::OutputThreadRuntimeHandle;
+use super::super::output_thread_runtime_id::OutputThreadRuntimeGeneration;
+use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::runtime_queue_bridge::input::OutputThreadRuntimeQueueBridgeInput;
+use super::super::runtime_queue::config::OutputThreadRuntimeQueueConfig;
+use super::super::runtime_queue::snapshot::OutputThreadRuntimeQueueSnapshot;
+use super::super::runtime_queue::state::OutputThreadRuntimeQueueState;
+use super::super::output_thread_runtime_status::OutputThreadRuntimeStatus;
+use super::super::output_thread_state::OutputThreadState;
+use super::adapter::adapt_worker_intent_to_queue_bridge;
+use super::report::OutputThreadWorkerQueueBridgeReport;
 
 fn make_bridge_input(
     state: OutputThreadState,
@@ -17,7 +17,7 @@ fn make_bridge_input(
     let config = OutputThreadRuntimeQueueConfig::default();
     let status = OutputThreadRuntimeStatus::new(state, true, true, false, false);
     let handle = OutputThreadRuntimeHandle::new(
-        super::output_thread_runtime_id::OutputThreadRuntimeId::default(),
+        super::super::output_thread_runtime_id::OutputThreadRuntimeId::default(),
         OutputThreadRuntimeGeneration::default(),
         status,
     );

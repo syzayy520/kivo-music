@@ -1,4 +1,4 @@
-use super::output_thread_worker_queue_bridge_matrix::{
+use super::matrix::{
     worker_queue_bridge_scenario_matrix, OutputThreadWorkerQueueBridgeScenarioKind,
 };
 

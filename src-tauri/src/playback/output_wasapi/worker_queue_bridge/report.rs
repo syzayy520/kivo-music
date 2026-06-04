@@ -3,8 +3,8 @@
 //! Accumulates counters for a worker queue bridge adapter run.
 //! Does not store command payloads, queue state, or buffer data.
 
-use super::output_thread_worker_queue_bridge_adapter::OutputThreadWorkerQueueBridgeAdapterResult;
-use super::output_thread_worker_queue_bridge_decision::OutputThreadWorkerQueueBridgeDecisionKind;
+use super::adapter::OutputThreadWorkerQueueBridgeAdapterResult;
+use super::decision::OutputThreadWorkerQueueBridgeDecisionKind;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

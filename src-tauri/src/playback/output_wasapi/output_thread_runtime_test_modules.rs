@@ -64,14 +64,7 @@ mod output_thread_worker_runtime_adapter_tests;
 mod output_thread_worker_runtime_report_tests;
 #[cfg(test)]
 mod output_thread_worker_runtime_matrix_tests;
-#[cfg(test)]
-mod output_thread_worker_queue_bridge_decision_tests;
-#[cfg(test)]
-mod output_thread_worker_queue_bridge_adapter_tests;
-#[cfg(test)]
-mod output_thread_worker_queue_bridge_report_tests;
-#[cfg(test)]
-mod output_thread_worker_queue_bridge_matrix_tests;
+
 
 #[cfg(test)]
 mod output_thread_worker_runtime_queue_result_adapter_tests;

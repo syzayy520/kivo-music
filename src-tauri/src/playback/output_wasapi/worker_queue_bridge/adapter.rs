@@ -4,11 +4,11 @@
 //! and classifies the result. Does not pass results to runtime loop,
 //! poll transport channels, or reference audio/output primitives.
 
-use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
-use super::runtime_queue_bridge::plan::plan_runtime_queue_bridge_intent;
-use super::runtime_queue_bridge::input::OutputThreadRuntimeQueueBridgeInput;
-use super::runtime_queue_bridge::result::OutputThreadRuntimeQueueBridgeResult;
-use super::output_thread_worker_queue_bridge_decision::OutputThreadWorkerQueueBridgeDecision;
+use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::runtime_queue_bridge::plan::plan_runtime_queue_bridge_intent;
+use super::super::runtime_queue_bridge::input::OutputThreadRuntimeQueueBridgeInput;
+use super::super::runtime_queue_bridge::result::OutputThreadRuntimeQueueBridgeResult;
+use super::decision::OutputThreadWorkerQueueBridgeDecision;
 
 /// Result of adapting an observed intent through the queue bridge plan.
 #[allow(dead_code)]
