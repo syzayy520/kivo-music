@@ -135,7 +135,10 @@ fn merge_from_copies_thread_lifecycle() {
 
     target.merge_from(source);
 
-    assert!(target.thread_report_recv_attempted, "recv_attempted set by merge");
+    assert!(
+        target.thread_report_recv_attempted,
+        "recv_attempted set by merge"
+    );
     assert!(target.thread_report_received);
     assert!(target.output_thread_join_attempted);
     assert!(target.output_thread_joined);

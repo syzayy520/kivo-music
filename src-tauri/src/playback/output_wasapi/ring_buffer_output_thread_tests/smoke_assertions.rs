@@ -107,7 +107,10 @@ pub fn assert_no_real_playback(report: &WasapiRingBufferOutputThreadSmokeReport)
         "no playback capability"
     );
     assert!(!report.output_sink_connected, "no OutputSink connected");
-    assert!(!report.capability_exposed, "no PlaybackCapabilities exposed");
+    assert!(
+        !report.capability_exposed,
+        "no PlaybackCapabilities exposed"
+    );
 }
 
 /// Assert ring buffer silence behavior on success path.

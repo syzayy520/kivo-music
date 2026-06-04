@@ -42,8 +42,8 @@ pub(super) fn activate_audio_client(
 
 /// Get the mix format pointer and wrap in RAII guard.
 pub(super) fn get_mix_format(audio_client: &IAudioClient) -> Result<MixFormatGuard, String> {
-    let format_ptr = unsafe { audio_client.GetMixFormat() }
-        .map_err(|e| format!("GetMixFormat failed: {e}"))?;
+    let format_ptr =
+        unsafe { audio_client.GetMixFormat() }.map_err(|e| format!("GetMixFormat failed: {e}"))?;
     Ok(MixFormatGuard { ptr: format_ptr })
 }
 

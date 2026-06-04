@@ -20,26 +20,53 @@ pub fn run_ring_buffer_output_thread_flow() -> WasapiRingBufferOutputThreadSmoke
 
     // COM initialization
     let _com = match ComApartment::initialize() {
-        Ok(c) => { r.com_initialized = true; c }
-        Err(e) => { r.error_message = Some(format!("COM init: {e}")); return r; }
+        Ok(c) => {
+            r.com_initialized = true;
+            c
+        }
+        Err(e) => {
+            r.error_message = Some(format!("COM init: {e}"));
+            return r;
+        }
     };
 
     // Device → endpoint → client → format
     let enumerator = match output_thread_steps::create_device_enumerator() {
         Ok(v) => v,
-        Err(e) => { r.error_message = Some(e); return r; }
+        Err(e) => {
+            r.error_message = Some(e);
+            return r;
+        }
     };
     let endpoint = match output_thread_steps::get_default_render_endpoint(&enumerator) {
-        Ok(v) => { r.endpoint_available = true; v }
-        Err(e) => { r.error_message = Some(e); return r; }
+        Ok(v) => {
+            r.endpoint_available = true;
+            v
+        }
+        Err(e) => {
+            r.error_message = Some(e);
+            return r;
+        }
     };
     let audio_client = match output_thread_steps::activate_audio_client(&endpoint) {
-        Ok(v) => { r.client_activated = true; v }
-        Err(e) => { r.error_message = Some(e); return r; }
+        Ok(v) => {
+            r.client_activated = true;
+            v
+        }
+        Err(e) => {
+            r.error_message = Some(e);
+            return r;
+        }
     };
     let guard = match output_thread_steps::get_mix_format(&audio_client) {
-        Ok(v) => { r.mix_format_available = true; v }
-        Err(e) => { r.error_message = Some(e); return r; }
+        Ok(v) => {
+            r.mix_format_available = true;
+            v
+        }
+        Err(e) => {
+            r.error_message = Some(e);
+            return r;
+        }
     };
 
     let fields = unsafe { extract_format_fields(guard.ptr) };
@@ -58,14 +85,26 @@ pub fn run_ring_buffer_output_thread_flow() -> WasapiRingBufferOutputThreadSmoke
 
     r.get_service_attempted = true;
     let render_client = match output_thread_steps::get_render_client_service(&audio_client) {
-        Ok(v) => { r.render_client_obtained = true; v }
-        Err(e) => { r.error_message = Some(format!("GetService: {e}")); return r; }
+        Ok(v) => {
+            r.render_client_obtained = true;
+            v
+        }
+        Err(e) => {
+            r.error_message = Some(format!("GetService: {e}"));
+            return r;
+        }
     };
 
     r.get_buffer_size_attempted = true;
     let buffer_size = match output_thread_steps::get_buffer_size(&audio_client) {
-        Ok(v) => { r.buffer_size_frames = Some(v); v }
-        Err(e) => { r.error_message = Some(format!("GetBufferSize: {e}")); return r; }
+        Ok(v) => {
+            r.buffer_size_frames = Some(v);
+            v
+        }
+        Err(e) => {
+            r.error_message = Some(format!("GetBufferSize: {e}"));
+            return r;
+        }
     };
     if buffer_size == 0 {
         r.error_message = Some("buffer size is zero".into());
@@ -85,14 +124,18 @@ pub fn run_ring_buffer_output_thread_flow() -> WasapiRingBufferOutputThreadSmoke
             r.ring_buffer_capacity_frames = Some(v.capacity_frames());
             v
         }
-        Err(e) => { r.error_message = Some(format!("RingBuffer: {e:?}")); return r; }
+        Err(e) => {
+            r.error_message = Some(format!("RingBuffer: {e:?}"));
+            return r;
+        }
     };
 
     let frame_bytes = (buffer_size as usize) * (fields.block_align as usize);
     let mut silence = vec![0u8; frame_bytes];
     if let Err(e) = rb.read_frames_or_silence(&mut silence) {
         r.error_message = Some(format!("read_frames_or_silence: {e:?}"));
-        rb.close(); r.ring_buffer_closed = true;
+        rb.close();
+        r.ring_buffer_closed = true;
         r.apply_ring_buffer_stats(&rb.stats());
         return r;
     }
@@ -101,17 +144,22 @@ pub fn run_ring_buffer_output_thread_flow() -> WasapiRingBufferOutputThreadSmoke
 
     // GetBuffer + ReleaseBuffer(SILENT)
     let mut buf = match output_thread_steps::get_buffer_sized(&render_client, buffer_size) {
-        Ok(v) => { r.wasapi_buffer_obtained = true; v }
+        Ok(v) => {
+            r.wasapi_buffer_obtained = true;
+            v
+        }
         Err(e) => {
             r.error_message = Some(e);
-            rb.close(); r.ring_buffer_closed = true;
+            rb.close();
+            r.ring_buffer_closed = true;
             return r;
         }
     };
     r.used_silent_flag = true;
     if let Err(e) = buf.release_silent() {
         r.error_message = Some(e);
-        rb.close(); r.ring_buffer_closed = true;
+        rb.close();
+        r.ring_buffer_closed = true;
         return r;
     }
     r.wasapi_buffer_released = true;
@@ -120,7 +168,8 @@ pub fn run_ring_buffer_output_thread_flow() -> WasapiRingBufferOutputThreadSmoke
     r.start_attempted = true;
     if let Err(e) = output_thread_steps::start_audio_client(&audio_client) {
         r.error_message = Some(format!("Start: {e}"));
-        rb.close(); r.ring_buffer_closed = true;
+        rb.close();
+        r.ring_buffer_closed = true;
         return r;
     }
     r.started_audio_client = true;
@@ -129,12 +178,15 @@ pub fn run_ring_buffer_output_thread_flow() -> WasapiRingBufferOutputThreadSmoke
 
     r.get_current_padding_attempted = true;
     match output_thread_steps::get_current_padding(&audio_client) {
-        Ok(p) => { r.current_padding_frames = Some(p); }
+        Ok(p) => {
+            r.current_padding_frames = Some(p);
+        }
         Err(e) => {
             r.error_message = Some(format!("Padding: {e}"));
             let _ = stop_guard.stop();
             r.stopped_audio_client = stop_guard.is_stopped();
-            rb.close(); r.ring_buffer_closed = true;
+            rb.close();
+            r.ring_buffer_closed = true;
             return r;
         }
     }
@@ -142,7 +194,8 @@ pub fn run_ring_buffer_output_thread_flow() -> WasapiRingBufferOutputThreadSmoke
     r.stop_attempted = true;
     if let Err(e) = stop_guard.stop() {
         r.error_message = Some(format!("Stop: {e}"));
-        rb.close(); r.ring_buffer_closed = true;
+        rb.close();
+        r.ring_buffer_closed = true;
         return r;
     }
     r.stopped_audio_client = true;
@@ -150,7 +203,8 @@ pub fn run_ring_buffer_output_thread_flow() -> WasapiRingBufferOutputThreadSmoke
     r.reset_attempted = true;
     if let Err((_, e)) = output_thread_steps::reset_audio_client(&audio_client) {
         r.error_message = Some(format!("Reset: {e}"));
-        rb.close(); r.ring_buffer_closed = true;
+        rb.close();
+        r.ring_buffer_closed = true;
         return r;
     }
     r.reset_succeeded = true;

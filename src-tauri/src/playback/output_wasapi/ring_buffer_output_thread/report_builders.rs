@@ -2,8 +2,8 @@
 //
 // Builder methods for WasapiRingBufferOutputThreadSmokeReport.
 
-use crate::playback::output_wasapi::ring_buffer::RingBufferStats;
 use super::report::WasapiRingBufferOutputThreadSmokeReport;
+use crate::playback::output_wasapi::ring_buffer::RingBufferStats;
 
 impl WasapiRingBufferOutputThreadSmokeReport {
     pub fn skipped_env_missing() -> Self {

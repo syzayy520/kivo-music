@@ -80,9 +80,8 @@ pub fn recv_timeout_and_join(
                     ThreadReport::Success(report)
                 }
                 ThreadReport::Panic(panic_message) => {
-                    let mut report = Box::new(
-                        super::report::WasapiRingBufferOutputThreadSmokeReport::default(),
-                    );
+                    let mut report =
+                        Box::new(super::report::WasapiRingBufferOutputThreadSmokeReport::default());
                     report.thread_report_received = true;
                     report.thread_recv_timeout_ms = Some(elapsed.as_millis() as u64);
                     report.thread_panic_caught = true;
@@ -109,9 +108,7 @@ pub fn recv_timeout_and_join(
             Ok(()) => ThreadReport::JoinFailed(
                 "channel disconnected, thread exited without report".to_string(),
             ),
-            Err(_) => {
-                ThreadReport::Panic("thread panicked without sending report".to_string())
-            }
+            Err(_) => ThreadReport::Panic("thread panicked without sending report".to_string()),
         },
     }
 }

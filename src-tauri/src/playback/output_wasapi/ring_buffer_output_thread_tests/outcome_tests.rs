@@ -5,8 +5,7 @@
 // or running WASAPI.
 
 use crate::playback::output_wasapi::ring_buffer_output_thread::{
-    output_thread_outcome::apply_thread_outcome,
-    report::WasapiRingBufferOutputThreadSmokeReport,
+    output_thread_outcome::apply_thread_outcome, report::WasapiRingBufferOutputThreadSmokeReport,
     thread_report::ThreadReport,
 };
 
@@ -29,13 +28,20 @@ fn outcome_success_merges_report() {
     source.stopped_audio_client = true;
     source.reset_succeeded = true;
 
-    apply_thread_outcome(&mut report, ThreadReport::Success(Box::new(source)), TIMEOUT_MS);
+    apply_thread_outcome(
+        &mut report,
+        ThreadReport::Success(Box::new(source)),
+        TIMEOUT_MS,
+    );
 
     assert!(report.thread_report_recv_attempted, "recv attempted");
     assert!(report.attempted, "attempted merged");
     assert!(report.ring_buffer_created, "ring buffer merged");
     assert!(report.used_silent_flag, "silent flag merged");
-    assert_eq!(report.total_silence_frames_filled, 4800, "silence filled merged");
+    assert_eq!(
+        report.total_silence_frames_filled, 4800,
+        "silence filled merged"
+    );
     assert!(report.com_initialized, "COM merged");
     assert!(report.started_audio_client, "started merged");
     assert!(report.reset_succeeded, "reset merged");
@@ -51,13 +57,21 @@ fn outcome_timeout_sets_timeout_fields() {
     assert!(report.thread_report_recv_attempted, "recv attempted");
     assert!(!report.thread_report_received, "not received");
     assert!(report.thread_recv_timed_out, "timed out");
-    assert_eq!(report.thread_recv_timeout_ms, Some(TIMEOUT_MS), "timeout ms set");
+    assert_eq!(
+        report.thread_recv_timeout_ms,
+        Some(TIMEOUT_MS),
+        "timeout ms set"
+    );
     assert!(!report.output_thread_join_attempted, "join not attempted");
     assert!(!report.output_thread_joined, "not joined");
     assert!(!report.output_thread_join_failed, "join not failed");
     assert!(!report.thread_panic_caught, "no panic");
     assert!(
-        report.error_message.as_deref().unwrap().contains("timed out"),
+        report
+            .error_message
+            .as_deref()
+            .unwrap()
+            .contains("timed out"),
         "error mentions timeout"
     );
     smoke_assertions::assert_prohibited_always_false(&report);
@@ -81,7 +95,11 @@ fn outcome_panic_sets_panic_fields() {
         "panic message preserved"
     );
     assert!(
-        report.error_message.as_deref().unwrap().contains("panicked"),
+        report
+            .error_message
+            .as_deref()
+            .unwrap()
+            .contains("panicked"),
         "error mentions panic"
     );
     smoke_assertions::assert_prohibited_always_false(&report);
@@ -102,7 +120,11 @@ fn outcome_join_failed_sets_join_failed_fields() {
     assert!(!report.output_thread_joined, "not joined");
     assert!(report.output_thread_join_failed, "join failed");
     assert!(
-        report.error_message.as_deref().unwrap().contains("join failed"),
+        report
+            .error_message
+            .as_deref()
+            .unwrap()
+            .contains("join failed"),
         "error mentions join failed"
     );
     smoke_assertions::assert_prohibited_always_false(&report);
