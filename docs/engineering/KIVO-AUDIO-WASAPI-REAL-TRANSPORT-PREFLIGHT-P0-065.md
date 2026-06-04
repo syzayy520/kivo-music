@@ -106,3 +106,21 @@ P0-065 is accepted when:
 - [ ] cargo clippy passes
 - [ ] All existing tests still pass
 - [ ] New contract tests pass
+
+## 8. P0-066 transport scaffold note
+
+P0-066 creates a typed mpsc command channel for real transport scaffold:
+
+- Creates `OutputThreadRealTransportCommand` enum (RuntimeIntent / CloseTransport)
+- Creates `OutputThreadRealTransportStatus` enum and `StatusReport` struct
+- Creates `OutputThreadRealTransportChannel` with mpsc Sender/Receiver pair
+- Provides `send_command` and non-blocking `try_recv_command`
+- Does NOT spawn a worker thread
+- Does NOT create JoinHandle
+- Does NOT touch RingBuffer
+- Does NOT touch WASAPI
+- Does NOT change submit_frame
+- Does NOT integrate NativePipeline
+- Does NOT unlock PlaybackCapabilities
+- `std::sync::mpsc` is imported only in the channel file
+- All transport types remain scaffolding with `#[allow(dead_code)]`

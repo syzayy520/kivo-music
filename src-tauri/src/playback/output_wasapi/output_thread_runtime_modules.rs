@@ -26,6 +26,9 @@ pub(crate) mod output_thread_runtime_loop_scenario;
 pub(crate) mod output_thread_runtime_loop_scenario_runner;
 pub(crate) mod output_thread_runtime_loop_scenario_matrix;
 pub(crate) mod output_thread_real_transport_contract;
+pub(crate) mod output_thread_real_transport_command;
+pub(crate) mod output_thread_real_transport_status;
+pub(crate) mod output_thread_real_transport_channel;
 
 
 
