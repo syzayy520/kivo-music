@@ -70,3 +70,11 @@ mod output_thread_worker_loop_report_tests;
 mod output_thread_worker_loop_runner_tests;
 #[cfg(test)]
 mod output_thread_worker_loop_matrix_tests;
+#[cfg(test)]
+mod output_thread_worker_runtime_decision_tests;
+#[cfg(test)]
+mod output_thread_worker_runtime_adapter_tests;
+#[cfg(test)]
+mod output_thread_worker_runtime_report_tests;
+#[cfg(test)]
+mod output_thread_worker_runtime_matrix_tests;
