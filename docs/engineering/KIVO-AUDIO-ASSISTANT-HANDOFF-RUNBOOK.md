@@ -4,7 +4,7 @@ This is the required entry document for any assistant taking over Kivo Music bac
 
 The assistant is the design reviewer, acceptance gatekeeper, and CodeBuddy task dispatcher. The assistant must not skip audits, must not relax file boundaries, and must not treat scaffold work as completed playback.
 
-Do not treat a hard-coded commit in this document as a permanent Base. Before writing any task, verify the latest accepted safety point from the most recent acceptance note and by comparing that commit against the branch.
+Before writing any task, verify the latest accepted safety point from the most recent acceptance note and by comparing that commit against the branch. Do not treat any hard-coded commit in this document as a permanent Base.
 
 ---
 
@@ -12,7 +12,7 @@ Do not treat a hard-coded commit in this document as a permanent Base. Before wr
 
 - Repo: `syzayy520/kivo-music`
 - Branch: `kivo-audio-native-decode-pipeline-p0-009`
-- Last accepted safety point before this runbook refresh: `91a53a44`
+- Last accepted safety point before this runbook refresh: `924e5afe`
 - Governance document: `docs/engineering/KIVO-AUDIO-WASAPI-SCAFFOLD-GOVERNANCE.md`
 - Current stage: WASAPI scaffold only
 - `submit_frame`: must remain `UnsupportedOperation` unless a dedicated audit ticket approves a change
@@ -74,20 +74,28 @@ WASAPI scaffold placement:
 
 ---
 
-## 3. File Responsibility And Size Rules
+## 3. Single-File Single-Function Rule
 
-- One file, one responsibility.
-- One folder, one responsibility group.
-- One module, one layer.
+This section is authoritative for line limits. If any older audio document mentions a 260-line buffer, ignore that older wording. There is no 260-line buffer.
+
+Hard rules:
+
+- Single file = single function slice = single responsibility.
+- One file may not contain multiple unrelated domains or responsibilities.
+- One file may not mix lifecycle, state machine, format conversion, error mapping, test helpers, and production behavior.
+- One folder = one responsibility group.
+- One module = one layer.
 - Do not pile unrelated helpers into `sink.rs`.
 - Do not pile output logic into pipeline modules.
 - Do not pile decoder logic into manager modules.
-- Do not mix production logic, test helper logic, error mapping, state management, and format conversion in one file.
-- A modified source file over 220 lines requires split or explicit justification before implementation.
-- A modified source file over 260 lines fails implementation acceptance unless the ticket is read-only.
-- Future implementation tickets must report line counts for every modified source/test file.
+- If a feature needs multiple responsibilities, split it into multiple files before implementation.
+- Every modified or new source/test file must be at most 220 lines.
+- 220 lines is the hard maximum, not a soft target.
+- If a file would exceed 220 lines, stop, split, or redesign before continuing.
+- Any modified or new source/test file over 220 lines is not accepted.
+- Every implementation ticket must report line counts for every modified or new source/test file.
 
-If a proposed change would push `sink.rs`, `sink_tests.rs`, or any module over the limit, the next ticket must be a split/refactor audit or a narrow test split ticket before implementation.
+If a proposed change would push `sink.rs`, `sink_tests.rs`, or any module over 220 lines, the next ticket must be a narrow split ticket before implementation.
 
 ---
 
@@ -108,7 +116,7 @@ P0-058A      submit_frame silent write audit       accepted
   -> P0-059B      possible submit_frame silent-only behavior
 ```
 
-`P0-058B-PRE` is mandatory before `P0-058B` because `sink_tests.rs` is too close to the 220 / 260 line limit and helper tests would push it over the hard limit.
+`P0-058B-PRE` is mandatory before `P0-058B` because `sink_tests.rs` is too close to the 220-line hard limit and helper tests would push it over the limit.
 
 ---
 
@@ -171,7 +179,7 @@ For test split tickets:
 - Confirm production files did not change.
 - Confirm `submit_frame` did not change.
 - Confirm assertions and coverage were preserved, not weakened.
-- Confirm each modified/new test file reports line count and stays within limits.
+- Confirm every modified/new test file is at most 220 lines.
 - Confirm cargo tests and clippy gates were run or failures were honestly reported.
 
 For implementation tickets:
@@ -198,7 +206,7 @@ Reject if:
 - `NativePipeline` was connected to WASAPI.
 - Cargo or package files changed without permission.
 - Source or tests were piled into oversized files.
-- A modified implementation file exceeds 260 lines.
+- Any modified/new source or test file exceeds 220 lines.
 - Gates were not run or failures were hidden.
 - Commit / push is missing when required.
 
@@ -222,4 +230,4 @@ Then the assistant should provide the CodeBuddy task for `P0-058B-PRE` only.
 
 ## 8. One-Sentence Safety Summary
 
-Kivo Music backend audio is still in WASAPI scaffold stage; governance, NAS / SMB boundary, and assistant handoff rules are documented; `submit_frame` must remain `UnsupportedOperation`; `NativePipeline` must not connect to `WasapiOutputSink`; `PlaybackCapabilities` must remain closed; `P0-058B-A` found that `sink_tests.rs` must be split first, so the next required task is `P0-058B-PRE` before any helper implementation.
+Kivo Music backend audio is still in WASAPI scaffold stage; governance, NAS / SMB boundary, and assistant handoff rules are documented; `submit_frame` must remain `UnsupportedOperation`; `NativePipeline` must not connect to `WasapiOutputSink`; `PlaybackCapabilities` must remain closed; `P0-058B-A` found that `sink_tests.rs` must be split first, so the next required task is `P0-058B-PRE` before any helper implementation. All modified/new source and test files must be at most 220 lines.
