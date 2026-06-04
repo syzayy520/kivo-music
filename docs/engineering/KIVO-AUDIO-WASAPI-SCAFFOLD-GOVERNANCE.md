@@ -23,10 +23,17 @@ Kivo Music is a local desktop music player. It plays audio files from the user's
 
 **Forbidden product semantics** (must not appear as positive features):
 - Resource search, download, or aggregation
-- Cloud storage, network drive, or remote file access
+- Cloud-drive resource search or automatic cloud transfer
 - Magnet links, torrents, or peer-to-peer distribution
 - External platform aggregation or scraping
-- Online resource discovery or streaming from third-party services
+- Online resource discovery or streaming from unauthorized third-party services
+
+**Allowed local ownership semantics**:
+- User-owned local files
+- User-selected local folders
+- User-owned local NAS / SMB / network shares
+- Local network storage indexing, when explicitly assigned
+- Local-first library management for user-controlled storage
 
 These terms may only appear in negative guardrails (e.g., "this feature is not supported").
 
