@@ -4,6 +4,7 @@ pub mod config;
 pub mod device;
 pub mod errors;
 pub mod format;
+pub mod frame_bridge;
 pub mod initialize;
 pub mod output_thread_boundary;
 pub mod padding_query;
@@ -58,3 +59,6 @@ mod ring_buffer_tests;
 
 #[cfg(test)]
 mod sink_tests;
+
+#[cfg(test)]
+mod frame_bridge_tests;

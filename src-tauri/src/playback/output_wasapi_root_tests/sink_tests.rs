@@ -15,7 +15,10 @@ fn wasapi_scaffold_open_returns_ok() {
 
     let status = result.unwrap();
     assert!(status.is_open, "scaffold should report is_open after open");
-    assert!(status.is_active, "scaffold should report is_active after open");
+    assert!(
+        status.is_active,
+        "scaffold should report is_active after open"
+    );
 }
 
 #[test]
