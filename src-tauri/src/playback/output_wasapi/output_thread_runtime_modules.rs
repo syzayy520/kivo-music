@@ -34,6 +34,11 @@ pub(crate) mod output_thread_worker_handle_contract;
 pub(crate) mod output_thread_worker_shutdown;
 pub(crate) mod output_thread_worker_lifecycle_plan;
 pub(crate) mod output_thread_worker_lifecycle_matrix;
+pub(crate) mod output_thread_worker_loop_state;
+pub(crate) mod output_thread_worker_loop_step;
+pub(crate) mod output_thread_worker_loop_report;
+pub(crate) mod output_thread_worker_loop_runner;
+pub(crate) mod output_thread_worker_loop_matrix;
 
 
 

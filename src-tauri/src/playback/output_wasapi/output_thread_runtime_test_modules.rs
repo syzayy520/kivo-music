@@ -60,3 +60,13 @@ mod output_thread_worker_shutdown_tests;
 mod output_thread_worker_lifecycle_plan_tests;
 #[cfg(test)]
 mod output_thread_worker_lifecycle_matrix_tests;
+#[cfg(test)]
+mod output_thread_worker_loop_state_tests;
+#[cfg(test)]
+mod output_thread_worker_loop_step_tests;
+#[cfg(test)]
+mod output_thread_worker_loop_report_tests;
+#[cfg(test)]
+mod output_thread_worker_loop_runner_tests;
+#[cfg(test)]
+mod output_thread_worker_loop_matrix_tests;
