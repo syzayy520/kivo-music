@@ -7,8 +7,11 @@ pub mod format;
 pub mod frame_bridge;
 pub mod initialize;
 pub mod output_thread_boundary;
+pub(crate) mod output_thread_buffer_snapshot;
+pub(crate) mod output_thread_consumer_plan;
 pub(crate) mod output_thread_control;
 pub(crate) mod output_thread_errors;
+pub(crate) mod output_thread_render_plan;
 pub(crate) mod output_thread_state;
 pub mod padding_query;
 pub mod platform;
@@ -81,6 +84,15 @@ mod output_thread_control_tests;
 
 #[cfg(test)]
 mod output_thread_errors_tests;
+
+#[cfg(test)]
+mod output_thread_buffer_snapshot_tests;
+
+#[cfg(test)]
+mod output_thread_render_plan_tests;
+
+#[cfg(test)]
+mod output_thread_consumer_plan_tests;
 
 #[cfg(test)]
 mod frame_bridge_tests;
