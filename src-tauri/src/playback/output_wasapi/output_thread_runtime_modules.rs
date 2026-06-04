@@ -29,6 +29,11 @@ pub(crate) mod output_thread_real_transport_contract;
 pub(crate) mod output_thread_real_transport_command;
 pub(crate) mod output_thread_real_transport_status;
 pub(crate) mod output_thread_real_transport_channel;
+pub(crate) mod output_thread_worker_lifecycle;
+pub(crate) mod output_thread_worker_handle_contract;
+pub(crate) mod output_thread_worker_shutdown;
+pub(crate) mod output_thread_worker_lifecycle_plan;
+pub(crate) mod output_thread_worker_lifecycle_matrix;
 
 
 

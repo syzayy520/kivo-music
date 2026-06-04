@@ -122,5 +122,29 @@ P0-066 creates a typed mpsc command channel for real transport scaffold:
 - Does NOT change submit_frame
 - Does NOT integrate NativePipeline
 - Does NOT unlock PlaybackCapabilities
+- All transport types remain scaffolding with `#[allow(dead_code)]`
+
+## 9. P0-067 worker lifecycle preflight note
+
+P0-067 creates worker lifecycle preflight contracts:
+
+- Creates `OutputThreadWorkerLifecycleStage` enum (NotCreated, ContractOnly, HandleNotStarted, StopRequested, Stopped, Failed)
+- Creates `OutputThreadWorkerLifecycleReason` enum (NotStarted, StopRequested, ClosedTransport, FailedPreflight, WorkerUnavailable)
+- Creates `OutputThreadWorkerHandleOwnership` enum (NotOwned, TransportOwned, FutureWorkerOwned)
+- Creates `OutputThreadWorkerHandleContract` struct with lifecycle, ownership, handle, join, stop, worker loop flags
+- Creates `OutputThreadWorkerShutdownRequest` enum (None, RequestStop, CloseTransport)
+- Creates `OutputThreadWorkerShutdownOutcome` enum (NoWorker, StopMarked, AlreadyStopped, TransportClosed, Unsupported)
+- Creates `OutputThreadWorkerLifecycleInput` and `OutputThreadWorkerLifecycleDecision` structs
+- Creates `plan_worker_lifecycle` pure function with decision rules
+- Creates scenario matrix with 5 fixed scenarios
+- Does NOT spawn a worker thread
+- Does NOT create JoinHandle
+- Does NOT touch RingBuffer
+- Does NOT touch WASAPI
+- Does NOT change submit_frame
+- Does NOT integrate NativePipeline
+- Does NOT unlock PlaybackCapabilities
+- `std::sync::mpsc` remains only in channel file
+- All worker types remain scaffolding with `#[allow(dead_code)]`
 - `std::sync::mpsc` is imported only in the channel file
 - All transport types remain scaffolding with `#[allow(dead_code)]`
