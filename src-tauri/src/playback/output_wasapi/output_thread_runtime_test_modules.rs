@@ -95,5 +95,3 @@ mod output_thread_worker_runtime_queue_result_decision_tests;
 mod output_thread_worker_runtime_queue_result_report_tests;
 #[cfg(test)]
 mod output_thread_worker_runtime_queue_result_matrix_tests;
-
-
