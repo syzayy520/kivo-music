@@ -58,6 +58,13 @@ pub(crate) mod output_thread_runtime_queue_owner_state;
 pub(crate) mod output_thread_runtime_queue_owner_report;
 pub(crate) mod output_thread_runtime_queue_owner_matrix;
 
+pub(crate) mod output_thread_runtime_queue_owner_fixed_slots;
+pub(crate) mod output_thread_runtime_queue_owner_slot_state;
+pub(crate) mod output_thread_runtime_queue_owner_slot_projection;
+pub(crate) mod output_thread_runtime_queue_owner_slot_report;
+pub(crate) mod output_thread_runtime_queue_owner_slot_matrix;
+
+
 
 
 

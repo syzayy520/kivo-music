@@ -104,3 +104,14 @@ mod output_thread_runtime_queue_owner_state_tests;
 mod output_thread_runtime_queue_owner_report_tests;
 #[cfg(test)]
 mod output_thread_runtime_queue_owner_matrix_tests;
+
+#[cfg(test)]
+mod output_thread_runtime_queue_owner_fixed_slots_tests;
+#[cfg(test)]
+mod output_thread_runtime_queue_owner_slot_state_tests;
+#[cfg(test)]
+mod output_thread_runtime_queue_owner_slot_projection_tests;
+#[cfg(test)]
+mod output_thread_runtime_queue_owner_slot_report_tests;
+#[cfg(test)]
+mod output_thread_runtime_queue_owner_slot_matrix_tests;
