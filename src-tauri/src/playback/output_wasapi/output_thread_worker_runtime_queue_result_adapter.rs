@@ -10,7 +10,7 @@ use super::output_thread_runtime_loop_step::{
     OutputThreadRuntimeLoopStepDecision, OutputThreadRuntimeLoopStepInput,
 };
 use super::output_thread_runtime_loop_plan::plan_runtime_loop_step;
-use super::output_thread_runtime_queue_bridge_result::OutputThreadRuntimeQueueBridgeResult;
+use super::runtime_queue_bridge::result::OutputThreadRuntimeQueueBridgeResult;
 use super::output_thread_worker_runtime_queue_result_decision::OutputThreadWorkerRuntimeQueueResultDecision;
 
 /// Result of adapting a queue bridge result through the runtime loop plan.

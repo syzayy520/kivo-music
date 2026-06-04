@@ -7,7 +7,7 @@ use super::output_thread_runtime_loop_scenario::{
 use super::output_thread_runtime_loop_scenario_runner::plan_runtime_loop_scenario;
 use super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState;
 use super::output_thread_runtime_loop_step::OutputThreadRuntimeLoopStepAction;
-use super::output_thread_runtime_queue_bridge::{
+use super::runtime_queue_bridge::bridge::{
     OutputThreadRuntimeQueueBridgeAccepted, OutputThreadRuntimeQueueBridgeProjection,
     OutputThreadRuntimeQueueBridgeRejected, OutputThreadRuntimeQueueBridgeResult,
 };

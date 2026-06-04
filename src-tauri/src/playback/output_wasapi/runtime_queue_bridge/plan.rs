@@ -1,21 +1,21 @@
-use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
-use super::output_thread_runtime_queue_bridge_input::OutputThreadRuntimeQueueBridgeInput;
-use super::output_thread_runtime_queue_bridge_projection::projection_with_queue_state;
-use super::output_thread_runtime_queue_bridge_result::{
+use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::input::OutputThreadRuntimeQueueBridgeInput;
+use super::projection::projection_with_queue_state;
+use super::result::{
     OutputThreadRuntimeQueueBridgeAccepted, OutputThreadRuntimeQueueBridgeRejected,
     OutputThreadRuntimeQueueBridgeResult,
 };
-use super::output_thread_runtime_queue_bridge_policy::validate_reset_policy_for_bridge;
-use super::runtime_queue::plan::plan_queue_intent;
-use super::runtime_queue::result::{
+use super::policy::validate_reset_policy_for_bridge;
+use super::super::runtime_queue::plan::plan_queue_intent;
+use super::super::runtime_queue::result::{
     OutputThreadRuntimeQueuePlanResult, OutputThreadRuntimeQueueRejectReason,
 };
-use super::runtime_queue::validation::validate_queue_entry_for_runtime;
+use super::super::runtime_queue::validation::validate_queue_entry_for_runtime;
 
 fn reject_bridge(
     input: OutputThreadRuntimeQueueBridgeInput,
     reason: OutputThreadRuntimeQueueRejectReason,
-    queue_state: super::runtime_queue::state::OutputThreadRuntimeQueueState,
+    queue_state: super::super::runtime_queue::state::OutputThreadRuntimeQueueState,
 ) -> OutputThreadRuntimeQueueBridgeResult {
     let projection = projection_with_queue_state(input, queue_state);
     OutputThreadRuntimeQueueBridgeResult::Rejected(OutputThreadRuntimeQueueBridgeRejected {

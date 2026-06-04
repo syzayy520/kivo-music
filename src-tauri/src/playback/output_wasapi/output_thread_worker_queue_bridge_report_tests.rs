@@ -1,7 +1,7 @@
 use super::output_thread_runtime_handle::OutputThreadRuntimeHandle;
 use super::output_thread_runtime_id::OutputThreadRuntimeGeneration;
 use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
-use super::output_thread_runtime_queue_bridge_input::OutputThreadRuntimeQueueBridgeInput;
+use super::runtime_queue_bridge::input::OutputThreadRuntimeQueueBridgeInput;
 use super::runtime_queue::config::OutputThreadRuntimeQueueConfig;
 use super::runtime_queue::snapshot::OutputThreadRuntimeQueueSnapshot;
 use super::runtime_queue::state::OutputThreadRuntimeQueueState;

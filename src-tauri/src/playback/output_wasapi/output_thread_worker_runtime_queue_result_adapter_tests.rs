@@ -2,7 +2,7 @@ use super::output_thread_runtime_id::OutputThreadRuntimeGeneration;
 use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
 use super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState;
 use super::output_thread_runtime_loop_step::OutputThreadRuntimeLoopStepAction;
-use super::output_thread_runtime_queue_bridge_result::{
+use super::runtime_queue_bridge::result::{
     OutputThreadRuntimeQueueBridgeAccepted, OutputThreadRuntimeQueueBridgeRejected,
     OutputThreadRuntimeQueueBridgeResult,
 };
@@ -19,7 +19,7 @@ fn make_accepted_result(intent: OutputThreadRuntimeIntent) -> OutputThreadRuntim
             1,
         ),
         queue_state: OutputThreadRuntimeQueueState::empty(),
-        projection: super::output_thread_runtime_queue_bridge_projection::OutputThreadRuntimeQueueBridgeProjection {
+        projection: super::runtime_queue_bridge::projection::OutputThreadRuntimeQueueBridgeProjection {
             runtime_state: super::output_thread_state::OutputThreadState::Created,
             pending_count: 0,
             accepted_count: 0,
@@ -37,7 +37,7 @@ fn make_rejected_result() -> OutputThreadRuntimeQueueBridgeResult {
     OutputThreadRuntimeQueueBridgeResult::Rejected(OutputThreadRuntimeQueueBridgeRejected {
         reason: OutputThreadRuntimeQueueRejectReason::Full,
         queue_state: OutputThreadRuntimeQueueState::empty(),
-        projection: super::output_thread_runtime_queue_bridge_projection::OutputThreadRuntimeQueueBridgeProjection {
+        projection: super::runtime_queue_bridge::projection::OutputThreadRuntimeQueueBridgeProjection {
             runtime_state: super::output_thread_state::OutputThreadState::Running,
             pending_count: 32,
             accepted_count: 0,

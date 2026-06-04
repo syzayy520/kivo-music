@@ -5,7 +5,7 @@
 //! channels, runtime loop, or audio/output primitives.
 
 use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
-use super::output_thread_runtime_queue_bridge_result::OutputThreadRuntimeQueueBridgeResult;
+use super::runtime_queue_bridge::result::OutputThreadRuntimeQueueBridgeResult;
 
 #[allow(dead_code)]
 #[allow(clippy::enum_variant_names)]

@@ -5,7 +5,7 @@ use super::output_thread_runtime_loop_step::{
     OutputThreadRuntimeLoopStepAction, OutputThreadRuntimeLoopStepDecision,
     OutputThreadRuntimeLoopStepInput,
 };
-use super::output_thread_runtime_queue_bridge::OutputThreadRuntimeQueueBridgeResult;
+use super::runtime_queue_bridge::bridge::OutputThreadRuntimeQueueBridgeResult;
 
 /// Plan a single runtime loop step.
 #[allow(dead_code)]

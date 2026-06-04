@@ -5,9 +5,9 @@
 //! poll transport channels, or reference audio/output primitives.
 
 use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
-use super::output_thread_runtime_queue_bridge::plan_runtime_queue_bridge_intent;
-use super::output_thread_runtime_queue_bridge_input::OutputThreadRuntimeQueueBridgeInput;
-use super::output_thread_runtime_queue_bridge_result::OutputThreadRuntimeQueueBridgeResult;
+use super::runtime_queue_bridge::plan::plan_runtime_queue_bridge_intent;
+use super::runtime_queue_bridge::input::OutputThreadRuntimeQueueBridgeInput;
+use super::runtime_queue_bridge::result::OutputThreadRuntimeQueueBridgeResult;
 use super::output_thread_worker_queue_bridge_decision::OutputThreadWorkerQueueBridgeDecision;
 
 /// Result of adapting an observed intent through the queue bridge plan.

@@ -1,6 +1,6 @@
 use super::output_thread_render_plan::OutputThreadRenderPlan;
 use super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState;
-use super::output_thread_runtime_queue_bridge::OutputThreadRuntimeQueueBridgeResult;
+use super::runtime_queue_bridge::bridge::OutputThreadRuntimeQueueBridgeResult;
 
 /// Mock-only scenario data. It does not own production runtime resources.
 #[allow(dead_code)]

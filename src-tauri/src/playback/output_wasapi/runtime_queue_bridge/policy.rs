@@ -1,6 +1,6 @@
-use super::output_thread_runtime_queue_bridge_input::OutputThreadRuntimeQueueBridgeInput;
-use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
-use super::output_thread_state::OutputThreadState;
+use super::input::OutputThreadRuntimeQueueBridgeInput;
+use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::output_thread_state::OutputThreadState;
 
 /// Validate reset policy for bridge.
 #[allow(dead_code)]

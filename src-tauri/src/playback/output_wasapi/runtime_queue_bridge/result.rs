@@ -1,7 +1,7 @@
-use super::output_thread_runtime_queue_bridge_projection::OutputThreadRuntimeQueueBridgeProjection;
-use super::runtime_queue::entry::OutputThreadRuntimeQueueEntry;
-use super::runtime_queue::result::OutputThreadRuntimeQueueRejectReason;
-use super::runtime_queue::state::OutputThreadRuntimeQueueState;
+use super::projection::OutputThreadRuntimeQueueBridgeProjection;
+use super::super::runtime_queue::entry::OutputThreadRuntimeQueueEntry;
+use super::super::runtime_queue::result::OutputThreadRuntimeQueueRejectReason;
+use super::super::runtime_queue::state::OutputThreadRuntimeQueueState;
 
 /// Accepted bridge result.
 #[allow(dead_code)]
