@@ -13,4 +13,6 @@ pub(crate) mod output_thread_runtime_queue_snapshot;
 pub(crate) mod output_thread_runtime_queue_result;
 pub(crate) mod output_thread_runtime_queue_plan;
 pub(crate) mod output_thread_runtime_queue_validation;
+pub(crate) mod output_thread_runtime_queue_bridge;
+
 
