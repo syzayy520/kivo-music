@@ -10,7 +10,7 @@ pub(crate) struct OutputThreadRuntimeStatus {
     pub state: OutputThreadState,
     /// Whether a runtime handle descriptor is attached.
     pub has_handle: bool,
-    /// Whether a command queue/channel is attached.
+    /// Whether a command queue is attached.
     pub has_queue: bool,
     /// Whether a report receiver is attached.
     pub has_report_receiver: bool,

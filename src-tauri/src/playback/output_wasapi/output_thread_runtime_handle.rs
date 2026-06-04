@@ -5,7 +5,7 @@ use super::output_thread_state::OutputThreadState;
 /// Descriptor for the output thread runtime handle.
 ///
 /// This is a pure descriptor — not a real thread handle.
-/// No thread primitives, no channels, no Arc/Mutex.
+/// No thread primitives.
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct OutputThreadRuntimeHandle {

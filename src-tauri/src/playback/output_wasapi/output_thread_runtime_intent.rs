@@ -4,7 +4,7 @@ use super::output_thread_state::OutputThreadState;
 
 /// Intent to perform an operation on the output thread runtime.
 ///
-/// Pure intent mapping — no command sending, no channel usage.
+/// Pure intent mapping — no command sending.
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum OutputThreadRuntimeIntent {
