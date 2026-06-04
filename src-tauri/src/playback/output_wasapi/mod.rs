@@ -61,4 +61,10 @@ mod ring_buffer_tests;
 mod sink_tests;
 
 #[cfg(test)]
+mod sink_lifecycle_tests;
+
+#[cfg(test)]
+mod sink_ring_buffer_tests;
+
+#[cfg(test)]
 mod frame_bridge_tests;
