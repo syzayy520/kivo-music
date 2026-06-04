@@ -1,10 +1,35 @@
+use crate::playback::decoder::AudioStreamInfo;
 use crate::playback::errors::{PlaybackError, PlaybackResult};
 use crate::playback::output::{AudioOutputFrame, OutputRuntimeStatus, OutputSettings, OutputSink};
 
 use super::config::WasapiOutputConfig;
 use super::errors::wasapi_unsupported;
+use super::frame_bridge::{ring_buffer_format_from_stream, FrameBridgeError};
 use super::platform::WasapiCompileBoundary;
+use super::ring_buffer::buffer::RingBuffer;
+use super::ring_buffer::errors::RingBufferError;
 use super::status::WasapiOutputStatus;
+
+/// Errors from preparing a ring buffer for a stream.
+#[derive(Debug)]
+pub enum WasapiRingBufferPrepareError {
+    /// Frame bridge format-mapping failed.
+    Bridge(FrameBridgeError),
+    /// Ring buffer creation failed.
+    Buffer(RingBufferError),
+}
+
+impl From<FrameBridgeError> for WasapiRingBufferPrepareError {
+    fn from(value: FrameBridgeError) -> Self {
+        Self::Bridge(value)
+    }
+}
+
+impl From<RingBufferError> for WasapiRingBufferPrepareError {
+    fn from(value: RingBufferError) -> Self {
+        Self::Buffer(value)
+    }
+}
 
 /// WASAPI output sink scaffold for the native audio pipeline.
 ///
@@ -19,7 +44,7 @@ use super::status::WasapiOutputStatus;
 /// `set_muted`) succeed and update internal lifecycle state.
 /// `submit_frame` returns typed `UnsupportedOperation` — this sink cannot
 /// accept audio frames until a real WASAPI backend is wired in.
-#[derive(Clone, Debug, Default)]
+#[derive(Debug, Default)]
 pub struct WasapiOutputSink {
     /// Configuration populated by `open`.
     config: WasapiOutputConfig,
@@ -27,6 +52,8 @@ pub struct WasapiOutputSink {
     status: WasapiOutputStatus,
     /// Generic lifecycle state for `OutputSink` trait contract.
     runtime: OutputRuntimeStatus,
+    /// Optional ring buffer owned by this sink.
+    ring_buffer: Option<RingBuffer>,
 }
 
 impl WasapiOutputSink {
@@ -48,6 +75,36 @@ impl WasapiOutputSink {
     /// Get the WASAPI compile boundary for this platform.
     pub fn compile_boundary(&self) -> WasapiCompileBoundary {
         super::platform::wasapi_compile_boundary()
+    }
+
+    /// Prepare a ring buffer for the given stream format.
+    ///
+    /// If a ring buffer already exists, it is closed and dropped before
+    /// creating the new one. The ring buffer is NOT populated with data.
+    pub fn prepare_ring_buffer_for_stream(
+        &mut self,
+        stream: &AudioStreamInfo,
+        capacity_frames: u32,
+    ) -> Result<(), WasapiRingBufferPrepareError> {
+        if let Some(mut rb) = self.ring_buffer.take() {
+            rb.close();
+        }
+        let format = ring_buffer_format_from_stream(stream)?;
+        let rb = RingBuffer::new(format, capacity_frames)?;
+        self.ring_buffer = Some(rb);
+        Ok(())
+    }
+
+    /// Test-only: check if a ring buffer is present.
+    #[cfg(test)]
+    pub(crate) fn has_ring_buffer(&self) -> bool {
+        self.ring_buffer.is_some()
+    }
+
+    /// Test-only: get ring buffer available frames if present.
+    #[cfg(test)]
+    pub(crate) fn ring_buffer_available_frames(&self) -> Option<u32> {
+        self.ring_buffer.as_ref().map(|rb| rb.available_frames())
     }
 }
 
@@ -81,6 +138,9 @@ impl OutputSink for WasapiOutputSink {
     }
 
     fn flush(&mut self) -> PlaybackResult<OutputRuntimeStatus> {
+        if let Some(ref mut rb) = self.ring_buffer {
+            rb.reset();
+        }
         self.runtime.pending_frames = 0;
         self.runtime.last_error = None;
         Ok(self.runtime.clone())
@@ -110,6 +170,9 @@ impl OutputSink for WasapiOutputSink {
     }
 
     fn close(&mut self) -> PlaybackResult<()> {
+        if let Some(mut rb) = self.ring_buffer.take() {
+            rb.close();
+        }
         self.runtime = OutputRuntimeStatus::default();
         self.status = WasapiOutputStatus::default();
         self.config = WasapiOutputConfig::default();
