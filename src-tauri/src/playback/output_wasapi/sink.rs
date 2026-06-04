@@ -81,7 +81,8 @@ impl WasapiOutputSink {
     ///
     /// If a ring buffer already exists, it is closed and dropped before
     /// creating the new one. The ring buffer is NOT populated with data.
-    pub fn prepare_ring_buffer_for_stream(
+    #[allow(dead_code)]
+    pub(crate) fn prepare_ring_buffer_for_stream(
         &mut self,
         stream: &AudioStreamInfo,
         capacity_frames: u32,
