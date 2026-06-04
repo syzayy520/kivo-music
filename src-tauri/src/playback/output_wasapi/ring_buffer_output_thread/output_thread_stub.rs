@@ -1,13 +1,12 @@
-use super::env;
+// ring_buffer_output_thread/output_thread_stub.rs
+//
+// Non-Windows stub for ring buffer output thread smoke.
+
 use super::report::WasapiRingBufferOutputThreadSmokeReport;
 
-/// Entry point for ring buffer output thread smoke boundary.
-/// Current scaffold: no WASAPI flow, no thread spawn, no ring buffer creation.
+/// Probe ring buffer output thread on non-Windows platforms.
+///
+/// Always returns a "skipped_non_windows" report since WASAPI is Windows-only.
 pub fn probe_ring_buffer_output_thread_smoke() -> WasapiRingBufferOutputThreadSmokeReport {
-    if !env::is_opt_in_enabled() {
-        return WasapiRingBufferOutputThreadSmokeReport::skipped_env_missing();
-    }
-    // Scaffold: no Windows WASAPI flow yet (P0-051B)
-    // Return scaffold-ready report for both Windows and non-Windows
-    WasapiRingBufferOutputThreadSmokeReport::scaffold_ready_report()
+    WasapiRingBufferOutputThreadSmokeReport::skipped_non_windows()
 }
