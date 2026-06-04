@@ -43,6 +43,10 @@ pub(crate) mod output_thread_worker_runtime_decision;
 pub(crate) mod output_thread_worker_runtime_adapter;
 pub(crate) mod output_thread_worker_runtime_report;
 pub(crate) mod output_thread_worker_runtime_matrix;
+pub(crate) mod output_thread_worker_queue_bridge_decision;
+pub(crate) mod output_thread_worker_queue_bridge_adapter;
+pub(crate) mod output_thread_worker_queue_bridge_report;
+pub(crate) mod output_thread_worker_queue_bridge_matrix;
 
 
 
