@@ -1,4 +1,4 @@
-use super::output_thread_runtime_queue_owner_slot_matrix::{
+use super::slot_matrix::{
     runtime_queue_owner_slot_scenario_matrix, OutputThreadRuntimeQueueOwnerSlotScenarioKind,
 };
 

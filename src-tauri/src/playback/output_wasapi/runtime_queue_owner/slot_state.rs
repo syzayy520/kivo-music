@@ -3,7 +3,7 @@
 //! Describes availability and occupancy of fixed slots.
 //! Does not use dynamic collections or apply bridge results.
 
-use super::output_thread_runtime_queue_owner_fixed_slots::OutputThreadRuntimeQueueOwnerFixedSlots;
+use super::fixed_slots::OutputThreadRuntimeQueueOwnerFixedSlots;
 
 /// Slot state descriptor for the runtime queue owner.
 #[allow(dead_code)]

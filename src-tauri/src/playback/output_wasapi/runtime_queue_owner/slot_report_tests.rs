@@ -1,6 +1,6 @@
-use super::output_thread_runtime_queue_owner_fixed_slots::OutputThreadRuntimeQueueOwnerFixedSlots;
-use super::output_thread_runtime_queue_owner_slot_report::OutputThreadRuntimeQueueOwnerSlotReport;
-use super::output_thread_runtime_queue_owner_slot_state::OutputThreadRuntimeQueueOwnerSlotState;
+use super::fixed_slots::OutputThreadRuntimeQueueOwnerFixedSlots;
+use super::slot_report::OutputThreadRuntimeQueueOwnerSlotReport;
+use super::slot_state::OutputThreadRuntimeQueueOwnerSlotState;
 
 #[test]
 fn empty_report_has_no_output_behavior() {

@@ -1,5 +1,5 @@
-use super::output_thread_runtime_queue_owner_contract::OutputThreadRuntimeQueueOwnerContract;
-use super::output_thread_runtime_queue_owner_report::OutputThreadRuntimeQueueOwnerReport;
+use super::contract::OutputThreadRuntimeQueueOwnerContract;
+use super::report::OutputThreadRuntimeQueueOwnerReport;
 
 #[test]
 fn empty_report_has_no_output_behavior() {

@@ -3,8 +3,8 @@
 //! Records slot state and projection capabilities.
 //! Does not store queue entries, command payloads, or bridge results.
 
-use super::output_thread_runtime_queue_owner_slot_projection::OutputThreadRuntimeQueueOwnerSlotProjection;
-use super::output_thread_runtime_queue_owner_slot_state::OutputThreadRuntimeQueueOwnerSlotState;
+use super::slot_projection::OutputThreadRuntimeQueueOwnerSlotProjection;
+use super::slot_state::OutputThreadRuntimeQueueOwnerSlotState;
 
 /// Report summarizing runtime queue owner slot capabilities.
 #[allow(dead_code)]

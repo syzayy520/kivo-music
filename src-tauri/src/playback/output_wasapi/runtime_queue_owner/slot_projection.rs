@@ -3,10 +3,10 @@
 //! Projects an immutable snapshot from fixed slots.
 //! Does not generate bridge input or apply bridge results.
 
-use super::output_thread_runtime_queue_config::OutputThreadRuntimeQueueConfig;
-use super::output_thread_runtime_queue_owner_fixed_slots::OutputThreadRuntimeQueueOwnerFixedSlots;
-use super::output_thread_runtime_queue_snapshot::OutputThreadRuntimeQueueSnapshot;
-use super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState;
+use super::super::output_thread_runtime_queue_config::OutputThreadRuntimeQueueConfig;
+use super::fixed_slots::OutputThreadRuntimeQueueOwnerFixedSlots;
+use super::super::output_thread_runtime_queue_snapshot::OutputThreadRuntimeQueueSnapshot;
+use super::super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState;
 
 /// Projection result from fixed slots.
 #[allow(dead_code)]

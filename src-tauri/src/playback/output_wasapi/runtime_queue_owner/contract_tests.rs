@@ -1,4 +1,4 @@
-use super::output_thread_runtime_queue_owner_contract::OutputThreadRuntimeQueueOwnerContract;
+use super::contract::OutputThreadRuntimeQueueOwnerContract;
 
 #[test]
 fn contract_only_has_no_entry_collection() {

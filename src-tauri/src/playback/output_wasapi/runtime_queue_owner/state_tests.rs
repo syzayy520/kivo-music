@@ -1,8 +1,8 @@
-use super::output_thread_runtime_queue_config::OutputThreadRuntimeQueueConfig;
-use super::output_thread_runtime_queue_owner_state::{
+use super::super::output_thread_runtime_queue_config::OutputThreadRuntimeQueueConfig;
+use super::state::{
     OutputThreadRuntimeQueueOwnerState, OutputThreadRuntimeQueueOwnerTransitionKind,
 };
-use super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState;
+use super::super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState;
 
 fn make_state() -> OutputThreadRuntimeQueueOwnerState {
     OutputThreadRuntimeQueueOwnerState::contract_only(
@@ -28,7 +28,7 @@ fn state_can_enable_snapshot_projection_stage() {
     let s = make_state().enable_snapshot_projection();
     assert_eq!(
         s.stage,
-        super::output_thread_runtime_queue_owner_contract::OutputThreadRuntimeQueueOwnerStage::SnapshotProjectionOnly
+        super::contract::OutputThreadRuntimeQueueOwnerStage::SnapshotProjectionOnly
     );
     assert_eq!(
         s.last_transition,
@@ -41,7 +41,7 @@ fn state_can_enable_bridge_input_projection_stage() {
     let s = make_state().enable_bridge_input_projection();
     assert_eq!(
         s.stage,
-        super::output_thread_runtime_queue_owner_contract::OutputThreadRuntimeQueueOwnerStage::BridgeInputProjectionOnly
+        super::contract::OutputThreadRuntimeQueueOwnerStage::BridgeInputProjectionOnly
     );
     assert_eq!(
         s.last_transition,

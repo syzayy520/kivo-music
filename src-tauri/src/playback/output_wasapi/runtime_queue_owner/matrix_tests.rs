@@ -1,4 +1,4 @@
-use super::output_thread_runtime_queue_owner_matrix::{
+use super::matrix::{
     runtime_queue_owner_scenario_matrix, OutputThreadRuntimeQueueOwnerScenarioKind,
 };
 

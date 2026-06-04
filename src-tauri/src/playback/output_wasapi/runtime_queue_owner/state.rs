@@ -3,9 +3,9 @@
 //! Combines existing queue config and counter state with owner stage.
 //! Does not hold entry collections, mutable queues, or real resources.
 
-use super::output_thread_runtime_queue_config::OutputThreadRuntimeQueueConfig;
-use super::output_thread_runtime_queue_owner_contract::OutputThreadRuntimeQueueOwnerStage;
-use super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState;
+use super::super::output_thread_runtime_queue_config::OutputThreadRuntimeQueueConfig;
+use super::contract::OutputThreadRuntimeQueueOwnerStage;
+use super::super::output_thread_runtime_queue_state::OutputThreadRuntimeQueueState;
 
 /// Transition kind for the runtime queue owner.
 #[allow(dead_code)]

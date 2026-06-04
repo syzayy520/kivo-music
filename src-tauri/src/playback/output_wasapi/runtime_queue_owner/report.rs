@@ -3,7 +3,7 @@
 //! Records contract creation and capability flags.
 //! Does not store entry collections, mutable queues, or real resources.
 
-use super::output_thread_runtime_queue_owner_contract::OutputThreadRuntimeQueueOwnerContract;
+use super::contract::OutputThreadRuntimeQueueOwnerContract;
 
 /// Report summarizing runtime queue owner capabilities.
 #[allow(dead_code)]
