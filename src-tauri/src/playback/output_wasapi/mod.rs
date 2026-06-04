@@ -11,8 +11,12 @@ pub(crate) mod output_thread_buffer_snapshot;
 pub(crate) mod output_thread_consumer_plan;
 pub(crate) mod output_thread_control;
 pub(crate) mod output_thread_errors;
+pub(crate) mod output_thread_plan_invariants;
+pub(crate) mod output_thread_plan_projection;
+pub(crate) mod output_thread_plan_validation;
 pub(crate) mod output_thread_render_plan;
 pub(crate) mod output_thread_state;
+pub(crate) mod output_thread_transition_validation;
 pub mod padding_query;
 pub mod platform;
 pub mod render_client;
@@ -93,6 +97,18 @@ mod output_thread_render_plan_tests;
 
 #[cfg(test)]
 mod output_thread_consumer_plan_tests;
+
+#[cfg(test)]
+mod output_thread_plan_validation_tests;
+
+#[cfg(test)]
+mod output_thread_plan_projection_tests;
+
+#[cfg(test)]
+mod output_thread_plan_invariants_tests;
+
+#[cfg(test)]
+mod output_thread_transition_validation_tests;
 
 #[cfg(test)]
 mod frame_bridge_tests;
