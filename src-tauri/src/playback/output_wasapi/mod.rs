@@ -11,6 +11,11 @@ pub(crate) mod output_thread_buffer_snapshot;
 pub(crate) mod output_thread_consumer_plan;
 pub(crate) mod output_thread_control;
 pub(crate) mod output_thread_errors;
+pub(crate) mod output_thread_mock_buffer;
+pub(crate) mod output_thread_mock_harness;
+pub(crate) mod output_thread_mock_renderer;
+pub(crate) mod output_thread_mock_result;
+pub(crate) mod output_thread_mock_sequence;
 pub(crate) mod output_thread_plan_invariants;
 pub(crate) mod output_thread_plan_projection;
 pub(crate) mod output_thread_plan_validation;
@@ -109,6 +114,21 @@ mod output_thread_plan_invariants_tests;
 
 #[cfg(test)]
 mod output_thread_transition_validation_tests;
+
+#[cfg(test)]
+mod output_thread_mock_buffer_tests;
+
+#[cfg(test)]
+mod output_thread_mock_renderer_tests;
+
+#[cfg(test)]
+mod output_thread_mock_result_tests;
+
+#[cfg(test)]
+mod output_thread_mock_harness_tests;
+
+#[cfg(test)]
+mod output_thread_mock_sequence_tests;
 
 #[cfg(test)]
 mod frame_bridge_tests;
