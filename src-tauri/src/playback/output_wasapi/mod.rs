@@ -1,4 +1,6 @@
 pub mod buffer;
+#[cfg(test)]
+mod buffer_tests;
 pub mod client;
 pub mod config;
 pub mod device;
@@ -34,6 +36,14 @@ pub(crate) mod output_thread_plan_invariants;
 pub(crate) mod output_thread_plan_projection;
 pub(crate) mod output_thread_plan_validation;
 pub(crate) mod output_thread_render_plan;
+pub(crate) mod output_thread_runtime_config;
+pub(crate) mod output_thread_runtime_handle;
+pub(crate) mod output_thread_runtime_id;
+pub(crate) mod output_thread_runtime_intent;
+pub(crate) mod output_thread_runtime_lifecycle;
+pub(crate) mod output_thread_runtime_report;
+pub(crate) mod output_thread_runtime_snapshot;
+pub(crate) mod output_thread_runtime_status;
 pub(crate) mod output_thread_state;
 pub(crate) mod output_thread_transition_validation;
 pub mod padding_query;
@@ -47,9 +57,6 @@ pub mod sink;
 pub(crate) mod sink_silent_helper;
 pub mod start_stop;
 pub mod status;
-
-#[cfg(test)]
-mod buffer_tests;
 
 #[cfg(test)]
 mod client_tests;
@@ -188,3 +195,25 @@ mod output_thread_mock_smoke_tests;
 
 #[cfg(test)]
 mod frame_bridge_tests;
+#[cfg(test)]
+mod output_thread_runtime_id_tests;
+
+#[cfg(test)]
+mod output_thread_runtime_config_tests;
+
+#[cfg(test)]
+mod output_thread_runtime_status_tests;
+
+#[cfg(test)]
+mod output_thread_runtime_snapshot_tests;
+
+#[cfg(test)]
+mod output_thread_runtime_handle_tests;
+
+#[cfg(test)]
+mod output_thread_runtime_lifecycle_tests;
+
+#[cfg(test)]
+mod output_thread_runtime_intent_tests;
+#[cfg(test)]
+mod output_thread_runtime_report_tests;
