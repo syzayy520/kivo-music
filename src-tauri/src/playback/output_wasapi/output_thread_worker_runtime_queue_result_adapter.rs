@@ -1,7 +1,7 @@
 //! Worker runtime queue result adapter — maps queue bridge result to runtime loop step.
 //!
 //! Calls plan_runtime_loop_step with queue_result=Some(existing bridge result).
-//! Does not call plan_runtime_queue_bridge_intent, poll transport channels,
+//! Does not call the queue bridge planner, poll transport channels,
 //! or reference audio/output primitives.
 
 use super::output_thread_render_plan::OutputThreadRenderPlan;
@@ -26,7 +26,7 @@ pub(crate) struct OutputThreadWorkerRuntimeQueueResultAdapterResult {
 
 /// Adapt a queue bridge result through the runtime loop step plan.
 ///
-/// Does not call plan_runtime_queue_bridge_intent or poll transport channels.
+/// Does not call the queue bridge planner or poll transport channels.
 /// Always returns passes_from_queue_bridge=true, has_queue_ownership=false,
 /// has_output_behavior=false.
 #[allow(dead_code)]
