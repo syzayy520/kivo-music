@@ -15,6 +15,7 @@ pub mod ring_buffer;
 pub mod ring_buffer_output_thread;
 pub mod silent_loop;
 pub mod sink;
+pub(crate) mod sink_silent_helper;
 pub mod start_stop;
 pub mod status;
 
@@ -65,6 +66,9 @@ mod sink_lifecycle_tests;
 
 #[cfg(test)]
 mod sink_ring_buffer_tests;
+
+#[cfg(test)]
+mod sink_silent_helper_tests;
 
 #[cfg(test)]
 mod frame_bridge_tests;
