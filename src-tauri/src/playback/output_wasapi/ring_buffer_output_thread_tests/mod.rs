@@ -1,4 +1,5 @@
 mod env_tests;
+mod outcome_tests;
 mod report_tests;
 mod smoke_assertions;
 mod smoke_ignored_tests;

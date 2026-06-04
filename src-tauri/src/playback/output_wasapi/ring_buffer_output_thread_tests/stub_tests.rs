@@ -2,19 +2,7 @@ use crate::playback::output_wasapi::ring_buffer_output_thread::{
     env, probe_ring_buffer_output_thread_smoke,
 };
 
-fn assert_prohibited_false(
-    r: &crate::playback::output_wasapi::ring_buffer_output_thread::WasapiRingBufferOutputThreadSmokeReport,
-) {
-    assert!(!r.output_sink_connected);
-    assert!(!r.capability_exposed);
-    assert!(!r.decoder_connected);
-    assert!(!r.pipeline_connected);
-    assert!(!r.manager_connected);
-    assert!(!r.real_pcm_produced);
-    assert!(!r.non_silent_data_written);
-    assert!(!r.audio_produced);
-    assert!(!r.playback_capability_enabled);
-}
+use super::smoke_assertions;
 
 #[test]
 fn env_missing_returns_skipped() {
@@ -23,7 +11,7 @@ fn env_missing_returns_skipped() {
     assert!(!r.attempted);
     assert!(r.skipped);
     assert_eq!(r.skipped_reason, Some("env opt-in not enabled"));
-    assert_prohibited_false(&r);
+    smoke_assertions::assert_prohibited_always_false(&r);
 }
 
 #[test]

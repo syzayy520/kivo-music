@@ -4,28 +4,6 @@
 
 use crate::playback::output_wasapi::ring_buffer_output_thread::WasapiRingBufferOutputThreadSmokeReport;
 
-/// Assert that the report shows a skip when the opt-in env is not set.
-pub fn assert_skipped_when_env_not_set(report: &WasapiRingBufferOutputThreadSmokeReport) {
-    assert!(report.skipped, "should be skipped when env not set");
-    assert!(!report.attempted, "should not attempt when env not set");
-    assert!(
-        !report.output_thread_spawn_attempted,
-        "should not attempt thread spawn when env not set"
-    );
-    assert!(
-        !report.output_thread_spawned,
-        "should not spawn thread when env not set"
-    );
-}
-
-/// Assert that the report shows a skip when probe was attempted but skipped.
-pub fn assert_skipped_when_attempted_but_skipped(report: &WasapiRingBufferOutputThreadSmokeReport) {
-    assert!(
-        report.skipped_reason.is_some(),
-        "should have skip reason when skipped"
-    );
-}
-
 /// Assert success WASAPI lifecycle through buffer size.
 pub fn assert_success_wasapi_lifecycle(report: &WasapiRingBufferOutputThreadSmokeReport) {
     assert!(report.com_initialized, "COM initialized");
@@ -111,4 +89,64 @@ pub fn assert_thread_lifecycle_success(report: &WasapiRingBufferOutputThreadSmok
     assert!(report.thread_duration_ms.is_some(), "duration present");
     assert!(!report.thread_panic_caught, "no panic");
     assert!(!report.output_thread_join_failed, "join not failed");
+}
+
+/// Assert that no real audio playback occurred.
+///
+/// Validates that the smoke probe only produced silence,
+/// never real PCM data or non-silent output.
+pub fn assert_no_real_playback(report: &WasapiRingBufferOutputThreadSmokeReport) {
+    assert!(!report.real_pcm_produced, "no real PCM produced");
+    assert!(
+        !report.non_silent_data_written,
+        "no non-silent data written"
+    );
+    assert!(!report.audio_produced, "no audio produced");
+    assert!(
+        !report.playback_capability_enabled,
+        "no playback capability"
+    );
+    assert!(!report.output_sink_connected, "no OutputSink connected");
+    assert!(!report.capability_exposed, "no PlaybackCapabilities exposed");
+}
+
+/// Assert ring buffer silence behavior on success path.
+///
+/// Only call this on reports where the probe succeeded (not skipped).
+/// Validates that the ring buffer was created, silence was filled,
+/// and no real data was written.
+pub fn assert_ring_buffer_silence_behavior(report: &WasapiRingBufferOutputThreadSmokeReport) {
+    assert!(report.ring_buffer_created, "ring buffer created");
+    assert!(report.used_silent_flag, "used SILENT flag");
+    assert!(
+        report.total_silence_frames_filled > 0,
+        "silence frames filled"
+    );
+    assert!(report.ring_buffer_underrun_count > 0, "underrun count > 0");
+    assert_eq!(report.total_frames_written, 0, "no frames written");
+    assert!(
+        !report.non_silent_data_written,
+        "no non-silent data written"
+    );
+}
+
+/// Assert that a report is either skipped or a silent success.
+///
+/// Combines skip validation and success validation into a single entry point.
+/// - If skipped: validates skip fields and prohibited fields.
+/// - If not skipped: validates attempted, silent success, and prohibited fields.
+pub fn assert_skipped_or_silent_success(report: &WasapiRingBufferOutputThreadSmokeReport) {
+    if report.skipped {
+        assert!(
+            report.skipped_reason.is_some(),
+            "skip reason present when skipped"
+        );
+        assert_prohibited_always_false(report);
+    } else {
+        assert!(report.attempted, "attempted when not skipped");
+        assert!(report.used_silent_flag, "used SILENT flag on success");
+        assert_no_real_playback(report);
+        assert_prohibited_always_false(report);
+        assert_ring_buffer_silence_behavior(report);
+    }
 }

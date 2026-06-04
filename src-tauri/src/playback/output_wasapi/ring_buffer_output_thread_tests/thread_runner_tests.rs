@@ -11,6 +11,8 @@ use crate::playback::output_wasapi::ring_buffer_output_thread::report::WasapiRin
 use crate::playback::output_wasapi::ring_buffer_output_thread::thread_report::ThreadReport;
 use crate::playback::output_wasapi::ring_buffer_output_thread::thread_runner::recv_timeout_and_join;
 
+use super::smoke_assertions;
+
 #[test]
 fn recv_timeout_and_join_success() {
     let (tx, rx) = mpsc::channel();
@@ -29,6 +31,7 @@ fn recv_timeout_and_join_success() {
             assert!(report.output_thread_joined);
             assert!(!report.output_thread_join_failed);
             assert!(!report.thread_panic_caught);
+            smoke_assertions::assert_prohibited_always_false(&report);
         }
         other => panic!("Expected Success, got {:?}", other),
     }
@@ -100,6 +103,7 @@ fn recv_timeout_and_join_panic_via_channel() {
             assert_eq!(report.thread_panic_message, Some("test panic".to_string()));
             assert!(report.output_thread_join_attempted);
             assert!(report.output_thread_joined);
+            smoke_assertions::assert_prohibited_always_false(&report);
         }
         other => panic!("Expected Success with panic, got {:?}", other),
     }

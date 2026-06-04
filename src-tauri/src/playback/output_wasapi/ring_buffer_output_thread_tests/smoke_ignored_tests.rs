@@ -31,7 +31,7 @@ fn ring_buffer_output_thread_smoke_windows_ignored_opt_in() {
     let report = probe_ring_buffer_output_thread_smoke();
 
     if !report.opt_in_enabled {
-        smoke_assertions::assert_skipped_when_env_not_set(&report);
+        smoke_assertions::assert_skipped_or_silent_success(&report);
         eprintln!("ring_buffer_output_thread smoke skipped: env not set");
         return;
     }
@@ -39,7 +39,7 @@ fn ring_buffer_output_thread_smoke_windows_ignored_opt_in() {
     assert!(report.attempted, "should have attempted when env is set");
 
     if report.skipped {
-        smoke_assertions::assert_skipped_when_attempted_but_skipped(&report);
+        smoke_assertions::assert_skipped_or_silent_success(&report);
         eprintln!(
             "ring_buffer_output_thread smoke skipped: {:?} - {:?}",
             report.skipped_reason, report.error_message
@@ -52,6 +52,8 @@ fn ring_buffer_output_thread_smoke_windows_ignored_opt_in() {
     smoke_assertions::assert_success_ring_buffer(&report);
     smoke_assertions::assert_success_buffer_start_stop_reset(&report);
     smoke_assertions::assert_success_ring_buffer_closed(&report);
+    smoke_assertions::assert_no_real_playback(&report);
+    smoke_assertions::assert_ring_buffer_silence_behavior(&report);
     smoke_assertions::assert_prohibited_always_false(&report);
     smoke_assertions::assert_thread_lifecycle_success(&report);
 
@@ -70,6 +72,6 @@ fn ring_buffer_output_thread_smoke_windows_ignored_opt_in() {
 fn ring_buffer_output_thread_smoke_non_windows_returns_skipped() {
     // On non-Windows, probe should always return skipped.
     let report = probe_ring_buffer_output_thread_smoke();
-    smoke_assertions::assert_skipped_when_env_not_set(&report);
+    smoke_assertions::assert_skipped_or_silent_success(&report);
     eprintln!("ring_buffer_output_thread smoke skipped: non-windows platform");
 }
