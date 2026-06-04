@@ -4,14 +4,14 @@
 //! Does not call the queue bridge planner, poll transport channels,
 //! or reference audio/output primitives.
 
-use super::output_thread_render_plan::OutputThreadRenderPlan;
-use super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState;
-use super::output_thread_runtime_loop_step::{
+use super::super::output_thread_render_plan::OutputThreadRenderPlan;
+use super::super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState;
+use super::super::output_thread_runtime_loop_step::{
     OutputThreadRuntimeLoopStepDecision, OutputThreadRuntimeLoopStepInput,
 };
-use super::output_thread_runtime_loop_plan::plan_runtime_loop_step;
-use super::runtime_queue_bridge::result::OutputThreadRuntimeQueueBridgeResult;
-use super::output_thread_worker_runtime_queue_result_decision::OutputThreadWorkerRuntimeQueueResultDecision;
+use super::super::output_thread_runtime_loop_plan::plan_runtime_loop_step;
+use super::super::runtime_queue_bridge::result::OutputThreadRuntimeQueueBridgeResult;
+use super::decision::OutputThreadWorkerRuntimeQueueResultDecision;
 
 /// Result of adapting a queue bridge result through the runtime loop plan.
 #[allow(dead_code)]

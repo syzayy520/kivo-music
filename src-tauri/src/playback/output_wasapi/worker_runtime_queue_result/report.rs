@@ -3,8 +3,8 @@
 //! Accumulates counters for a worker runtime queue result adapter run.
 //! Does not store command payloads, queue state, or buffer data.
 
-use super::output_thread_worker_runtime_queue_result_adapter::OutputThreadWorkerRuntimeQueueResultAdapterResult;
-use super::output_thread_worker_runtime_queue_result_decision::OutputThreadWorkerRuntimeQueueResultDecisionKind;
+use super::adapter::OutputThreadWorkerRuntimeQueueResultAdapterResult;
+use super::decision::OutputThreadWorkerRuntimeQueueResultDecisionKind;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

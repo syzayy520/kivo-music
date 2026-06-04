@@ -3,7 +3,7 @@
 //! Provides a fixed array of scenarios exercising the worker runtime
 //! queue result adapter. Does not hold queue state or transport channels.
 
-use super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState;
+use super::super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

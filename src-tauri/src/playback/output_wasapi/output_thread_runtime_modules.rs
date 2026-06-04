@@ -34,9 +34,6 @@ pub(crate) mod output_thread_worker_runtime_report;
 pub(crate) mod output_thread_worker_runtime_matrix;
 pub(crate) mod worker_queue_bridge;
 
-pub(crate) mod output_thread_worker_runtime_queue_result_adapter;
-pub(crate) mod output_thread_worker_runtime_queue_result_decision;
-pub(crate) mod output_thread_worker_runtime_queue_result_report;
-pub(crate) mod output_thread_worker_runtime_queue_result_matrix;
+pub(crate) mod worker_runtime_queue_result;
 
 pub(crate) mod runtime_queue_owner;

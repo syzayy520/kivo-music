@@ -1,4 +1,4 @@
-use super::output_thread_worker_runtime_queue_result_matrix::{
+use super::matrix::{
     worker_runtime_queue_result_scenario_matrix, OutputThreadWorkerRuntimeQueueResultScenarioKind,
 };
 
