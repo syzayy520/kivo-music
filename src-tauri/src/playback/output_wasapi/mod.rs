@@ -15,6 +15,12 @@ pub(crate) mod output_thread_mock_buffer;
 pub(crate) mod output_thread_mock_harness;
 pub(crate) mod output_thread_mock_renderer;
 pub(crate) mod output_thread_mock_result;
+pub(crate) mod output_thread_mock_scenario;
+pub(crate) mod output_thread_mock_scenario_matrix;
+pub(crate) mod output_thread_mock_scenario_result;
+pub(crate) mod output_thread_mock_scenario_runner;
+pub(crate) mod output_thread_mock_scenario_summary;
+pub(crate) mod output_thread_mock_scenarios;
 pub(crate) mod output_thread_mock_sequence;
 pub(crate) mod output_thread_plan_invariants;
 pub(crate) mod output_thread_plan_projection;
@@ -129,6 +135,24 @@ mod output_thread_mock_harness_tests;
 
 #[cfg(test)]
 mod output_thread_mock_sequence_tests;
+
+#[cfg(test)]
+mod output_thread_mock_scenario_tests;
+
+#[cfg(test)]
+mod output_thread_mock_scenario_summary_tests;
+
+#[cfg(test)]
+mod output_thread_mock_scenario_result_tests;
+
+#[cfg(test)]
+mod output_thread_mock_scenario_runner_tests;
+
+#[cfg(test)]
+mod output_thread_mock_scenarios_tests;
+
+#[cfg(test)]
+mod output_thread_mock_scenario_matrix_tests;
 
 #[cfg(test)]
 mod frame_bridge_tests;
