@@ -54,7 +54,7 @@ impl WasapiOutputThreadSmokeReport {
 
     /// Create a report for initialize failure.
     pub fn initialize_failed(fields: FormatFields, error: String) -> Self {
-        Self {
+        let mut report = Self {
             attempted: true,
             com_initialized: true,
             endpoint_available: true,
@@ -62,21 +62,16 @@ impl WasapiOutputThreadSmokeReport {
             mix_format_available: true,
             initialize_attempted: true,
             initialized_audio_client: false,
-            sample_rate_hz: Some(fields.sample_rate_hz),
-            channels: Some(fields.channels),
-            bits_per_sample: Some(fields.bits_per_sample),
-            block_align: Some(fields.block_align),
-            avg_bytes_per_sec: Some(fields.avg_bytes_per_sec),
-            format_tag: Some(fields.format_tag),
-            cb_size: Some(fields.cb_size),
             error_message: Some(error),
             ..Default::default()
-        }
+        };
+        report.apply_format_fields(&fields);
+        report
     }
 
     /// Create a report for get service failure.
     pub fn get_service_failed(fields: FormatFields, error: String) -> Self {
-        Self {
+        let mut report = Self {
             attempted: true,
             com_initialized: true,
             endpoint_available: true,
@@ -86,21 +81,16 @@ impl WasapiOutputThreadSmokeReport {
             initialized_audio_client: true,
             get_service_attempted: true,
             render_client_obtained: false,
-            sample_rate_hz: Some(fields.sample_rate_hz),
-            channels: Some(fields.channels),
-            bits_per_sample: Some(fields.bits_per_sample),
-            block_align: Some(fields.block_align),
-            avg_bytes_per_sec: Some(fields.avg_bytes_per_sec),
-            format_tag: Some(fields.format_tag),
-            cb_size: Some(fields.cb_size),
             error_message: Some(error),
             ..Default::default()
-        }
+        };
+        report.apply_format_fields(&fields);
+        report
     }
 
     /// Create a report for get buffer size failure.
     pub fn get_buffer_size_failed(fields: FormatFields, error: String) -> Self {
-        Self {
+        let mut report = Self {
             attempted: true,
             com_initialized: true,
             endpoint_available: true,
@@ -112,21 +102,16 @@ impl WasapiOutputThreadSmokeReport {
             render_client_obtained: true,
             get_buffer_size_attempted: true,
             buffer_size_frames: None,
-            sample_rate_hz: Some(fields.sample_rate_hz),
-            channels: Some(fields.channels),
-            bits_per_sample: Some(fields.bits_per_sample),
-            block_align: Some(fields.block_align),
-            avg_bytes_per_sec: Some(fields.avg_bytes_per_sec),
-            format_tag: Some(fields.format_tag),
-            cb_size: Some(fields.cb_size),
             error_message: Some(error),
             ..Default::default()
-        }
+        };
+        report.apply_format_fields(&fields);
+        report
     }
 
     /// Create a report for buffer size zero.
     pub fn buffer_size_zero(fields: FormatFields) -> Self {
-        Self {
+        let mut report = Self {
             attempted: true,
             com_initialized: true,
             endpoint_available: true,
@@ -138,15 +123,10 @@ impl WasapiOutputThreadSmokeReport {
             render_client_obtained: true,
             get_buffer_size_attempted: true,
             buffer_size_frames: Some(0),
-            sample_rate_hz: Some(fields.sample_rate_hz),
-            channels: Some(fields.channels),
-            bits_per_sample: Some(fields.bits_per_sample),
-            block_align: Some(fields.block_align),
-            avg_bytes_per_sec: Some(fields.avg_bytes_per_sec),
-            format_tag: Some(fields.format_tag),
-            cb_size: Some(fields.cb_size),
             error_message: Some("buffer size is zero".to_string()),
             ..Default::default()
-        }
+        };
+        report.apply_format_fields(&fields);
+        report
     }
 }
