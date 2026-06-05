@@ -168,3 +168,84 @@ fn status_transitions() {
     assert!(!wasapi_status.is_real_device_open);
     assert!(!wasapi_status.is_render_client_acquired);
 }
+
+/// Test that repeated open clears old status.
+///
+/// Second open() must not keep stale is_open/is_active from first attempt.
+#[test]
+fn open_failure_clears_old_status() {
+    let mut sink = WasapiOutputSink::new();
+
+    // First open attempt
+    let _ = sink.open(&OutputSettings::default());
+
+    // Second open attempt
+    let _ = sink.open(&OutputSettings::default());
+
+    let wasapi_status = sink.wasapi_status();
+    assert!(wasapi_status.is_open_attempted);
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        // On non-Windows, both fail — status should reflect failure
+        assert!(!wasapi_status.is_real_device_open);
+        assert!(!wasapi_status.is_render_client_acquired);
+    }
+
+    // Runtime should be consistent
+    #[cfg(not(target_os = "windows"))]
+    {
+        let s = sink.status();
+        assert!(!s.is_open);
+        assert!(!s.is_active);
+    }
+}
+
+/// Test that repeated open does not keep stale context.
+///
+/// Second open() must release old context resources first.
+#[test]
+fn repeated_open_does_not_keep_stale_context() {
+    let mut sink = WasapiOutputSink::new();
+
+    // First open attempt
+    let _ = sink.open(&OutputSettings::default());
+    let first_error = sink.status().last_error.clone();
+
+    // Second open attempt — should clear old state
+    let _ = sink.open(&OutputSettings::default());
+
+    // Context state should reflect the latest attempt only
+    let wasapi_status = sink.wasapi_status();
+    assert!(wasapi_status.is_open_attempted);
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        // Error should be about unsupported platform, not some stale state
+        let error = wasapi_status.last_error.as_deref().unwrap_or("");
+        assert!(error.contains("not supported"));
+    }
+
+    // First error reference should not interfere
+    let _ = first_error;
+}
+
+/// Test close after repeated open failure is idempotent.
+#[test]
+fn close_after_repeated_open_failure_is_idempotent() {
+    let mut sink = WasapiOutputSink::new();
+
+    // Two failed open attempts
+    let _ = sink.open(&OutputSettings::default());
+    let _ = sink.open(&OutputSettings::default());
+
+    // Close should succeed and reset all state
+    sink.close().unwrap();
+    let s = sink.status();
+    assert!(!s.is_open && !s.is_active && s.last_error.is_none() && s.pending_frames == 0);
+
+    // Second close should also succeed
+    sink.close().unwrap();
+    let s = sink.status();
+    assert!(!s.is_open && !s.is_active && s.last_error.is_none());
+}

@@ -110,12 +110,26 @@ impl WasapiOutputSink {
     pub(crate) fn ring_buffer_available_frames(&self) -> Option<u32> {
         self.ring_buffer.as_ref().map(|rb| rb.available_frames())
     }
+
+    /// Release stale WASAPI device resources before a new `open()` attempt.
+    ///
+    /// Closes the WASAPI device context and resets wasapi-specific status
+    /// fields. Ring buffer is intentionally preserved — it is an independent
+    /// sink-level resource that can survive across open/close cycles.
+    /// Does NOT change `runtime` or `config` — those are set by `open()`.
+    fn reset_context_for_open_attempt(&mut self) {
+        self.context.close();
+        self.status.mark_closed();
+    }
 }
 
 impl OutputSink for WasapiOutputSink {
     fn open(&mut self, settings: &OutputSettings) -> PlaybackResult<OutputRuntimeStatus> {
         self.config = WasapiOutputConfig::from_output_settings(settings);
         self.runtime.active_device_id = settings.selected_device_id.clone();
+
+        // Release old context before attempting new open
+        self.reset_context_for_open_attempt();
 
         // Attempt real WASAPI device open
         match self.context.open() {
