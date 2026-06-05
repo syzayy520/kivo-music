@@ -49,13 +49,13 @@ pub struct WasapiOutputSink {
     /// Configuration populated by `open`.
     config: WasapiOutputConfig,
     /// WASAPI-specific metadata.
-    status: WasapiOutputStatus,
+    pub(super) status: WasapiOutputStatus,
     /// Generic lifecycle state for `OutputSink` trait contract.
-    runtime: OutputRuntimeStatus,
+    pub(super) runtime: OutputRuntimeStatus,
     /// Optional ring buffer owned by this sink.
-    ring_buffer: Option<RingBuffer>,
+    pub(super) ring_buffer: Option<RingBuffer>,
     /// WASAPI device context (real on Windows, empty on other platforms).
-    context: WasapiContext,
+    pub(super) context: WasapiContext,
 }
 impl WasapiOutputSink {
     /// Create a new WASAPI output sink scaffold.
