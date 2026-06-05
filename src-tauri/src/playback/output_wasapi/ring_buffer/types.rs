@@ -1,6 +1,6 @@
 /// Format binding for ring buffer.
 /// Frame-oriented: all capacity and read/write operations use frame counts.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RingBufferFormat {
     pub sample_rate_hz: u32,
     pub channels: u16,

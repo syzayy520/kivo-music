@@ -82,6 +82,12 @@ impl RingBuffer {
         self.stats
     }
 
+    /// Read-only view of the buffer's format.
+    #[allow(dead_code)]
+    pub(crate) fn format(&self) -> RingBufferFormat {
+        self.format
+    }
+
     /// Write frames from byte slice. Length must be block_align aligned.
     /// Returns number of frames written.
     pub fn write_frames(&mut self, frames: &[u8]) -> Result<u32, RingBufferError> {
