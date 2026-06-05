@@ -68,6 +68,7 @@ fn windows_padding_state_smoke_ignored() {
     let snapshot = context
         .padding_state_snapshot()
         .expect("read padding state snapshot");
+    assert!(snapshot.buffer_frame_capacity > 0);
     assert!(snapshot.buffer_frame_capacity >= snapshot.current_padding_frames);
     assert_eq!(
         snapshot.available_frames,
