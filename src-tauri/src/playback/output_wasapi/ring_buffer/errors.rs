@@ -11,4 +11,6 @@ pub enum RingBufferError {
     Closed,
     /// Byte length not aligned to block_align
     FrameAlignment,
+    /// Not enough frames available for consume
+    NotEnoughFrames { requested: u32, available: u32 },
 }

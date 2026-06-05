@@ -6,15 +6,15 @@ use super::types::{RingBufferFormat, RingBufferStats};
 #[derive(Debug)]
 pub struct RingBuffer {
     #[allow(dead_code)]
-    format: RingBufferFormat,
-    capacity_frames: u32,
-    block_align: usize,
-    data: Vec<u8>,
-    read_frame: u32,
-    write_frame: u32,
-    available_frames: u32,
-    closed: bool,
-    stats: RingBufferStats,
+    pub(super) format: RingBufferFormat,
+    pub(super) capacity_frames: u32,
+    pub(super) block_align: usize,
+    pub(super) data: Vec<u8>,
+    pub(super) read_frame: u32,
+    pub(super) write_frame: u32,
+    pub(super) available_frames: u32,
+    pub(super) closed: bool,
+    pub(super) stats: RingBufferStats,
 }
 
 impl RingBuffer {
