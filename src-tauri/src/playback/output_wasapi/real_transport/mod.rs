@@ -4,6 +4,8 @@ pub(crate) mod contract;
 pub(crate) mod handle;
 pub(crate) mod status;
 pub(crate) mod thread;
+pub(crate) mod thread_error;
+pub(crate) mod thread_report;
 
 #[cfg(test)]
 mod channel_tests;
