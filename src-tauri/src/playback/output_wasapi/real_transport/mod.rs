@@ -14,6 +14,8 @@ mod command_tests;
 #[cfg(test)]
 mod contract_tests;
 #[cfg(test)]
+mod real_output_thread_start_stop_tests;
+#[cfg(test)]
 mod real_output_thread_tests;
 #[cfg(test)]
 mod status_tests;

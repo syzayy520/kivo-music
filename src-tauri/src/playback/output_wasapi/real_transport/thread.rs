@@ -1,7 +1,7 @@
 //! Real output thread spawn and entry point.
 //!
 //! Creates a real std thread with a bounded worker loop skeleton.
-//! Does not initialize COM, WASAPI, audio devices, or render clients.
+//! Does not render audio or move PCM data.
 
 use std::sync::mpsc;
 use std::thread;
@@ -29,6 +29,8 @@ pub(crate) struct RealOutputThreadSpawnConfig {
     pub max_steps: usize,
     /// Whether to open WasapiContext inside the thread on start.
     pub open_wasapi_context_on_start: bool,
+    /// Whether to start IAudioClient after WasapiContext opens.
+    pub start_audio_client_on_start: bool,
 }
 
 /// Spawn a real output thread with a bounded worker loop skeleton.
@@ -55,6 +57,8 @@ fn run_real_output_thread_entry(
     receiver: std::sync::mpsc::Receiver<OutputThreadRealTransportCommand>,
     config: RealOutputThreadSpawnConfig,
 ) -> Result<RealOutputThreadReport, RealOutputThreadSkeletonError> {
+    let thread_started = true;
+
     // Validate owned-state contract inside the thread.
     let contract = default_wasapi_output_thread_owned_state_contract();
     validate_wasapi_output_thread_owned_state_contract(contract)
@@ -65,6 +69,11 @@ fn run_real_output_thread_entry(
     let mut context: Option<WasapiContext> = None;
     let mut com_initialized = false;
     let mut wasapi_context_opened = false;
+    let audio_client_start_requested = config.start_audio_client_on_start;
+    let mut audio_client_started = false;
+    let mut audio_client_stop_requested = false;
+    let mut audio_client_stopped = false;
+    let mut started_guard = None;
 
     if config.open_wasapi_context_on_start {
         let mut ctx = WasapiContext::new();
@@ -74,6 +83,22 @@ fn run_real_output_thread_entry(
         com_initialized = ctx.is_open();
         wasapi_context_opened = ctx.is_open();
         context = Some(ctx);
+    }
+
+    if config.start_audio_client_on_start {
+        if !config.open_wasapi_context_on_start {
+            return Err(RealOutputThreadSkeletonError::AudioClientStartRequiresOpenContext);
+        }
+
+        let context_ref = context
+            .as_ref()
+            .ok_or(RealOutputThreadSkeletonError::AudioClientStartRequiresOpenContext)?;
+        let guard = context_ref
+            .start_audio_client()
+            .map_err(RealOutputThreadSkeletonError::AudioClientStartFailed)?;
+
+        audio_client_started = true;
+        started_guard = Some(guard);
     }
 
     // Create a dummy sender for the channel struct.
@@ -91,12 +116,28 @@ fn run_real_output_thread_entry(
     let report = loop_result.report;
 
     // Close context (drop) before returning — happens inside the thread.
-    let wasapi_context_closed = context.is_some();
+    let stop_result = if let Some(mut guard) = started_guard.take() {
+        audio_client_stop_requested = true;
+        let result = guard.stop();
+        if result.is_ok() {
+            audio_client_stopped = true;
+        }
+        result
+    } else {
+        Ok(())
+    };
+
+    let mut wasapi_context_closed = false;
+    if let Some(mut ctx) = context {
+        ctx.close();
+        wasapi_context_closed = true;
+    }
     let com_uninitialized = wasapi_context_closed;
-    drop(context);
+
+    stop_result.map_err(RealOutputThreadSkeletonError::AudioClientStopFailed)?;
 
     Ok(RealOutputThreadReport {
-        thread_started: true,
+        thread_started,
         owned_state_validated: true,
         shutdown_received: report.stopped_by_close_transport,
         exited_cleanly: report.final_state.is_terminal() || !loop_result.stopped_early,
@@ -108,6 +149,10 @@ fn run_real_output_thread_entry(
         wasapi_context_open_requested: config.open_wasapi_context_on_start,
         wasapi_context_opened,
         wasapi_context_closed,
+        audio_client_start_requested,
+        audio_client_started,
+        audio_client_stop_requested,
+        audio_client_stopped,
     })
 }
 

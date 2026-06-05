@@ -139,7 +139,7 @@ pub(super) fn release_buffer_silent(
 }
 
 /// Call IAudioClient::Start.
-pub(super) fn start_audio_client(audio_client: &IAudioClient) -> Result<(), String> {
+pub(crate) fn start_audio_client(audio_client: &IAudioClient) -> Result<(), String> {
     let hr = unsafe { audio_client.Start() };
     if hr.is_ok() {
         Ok(())

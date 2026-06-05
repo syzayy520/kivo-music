@@ -77,6 +77,39 @@ impl WasapiContext {
         }
     }
 
+    /// Start the opened audio client and return a guard that owns Stop.
+    pub(crate) fn start_audio_client(
+        &self,
+    ) -> Result<crate::playback::output_wasapi::start_stop::guards::StartedClientGuard, String>
+    {
+        #[cfg(target_os = "windows")]
+        {
+            let inner = self.inner.as_ref().ok_or_else(|| {
+                "WasapiContext::start_audio_client requires an open context".to_string()
+            })?;
+            let audio_client = inner
+                .audio_client
+                .as_ref()
+                .ok_or_else(|| "WasapiContext audio client missing".to_string())?
+                .clone();
+
+            crate::playback::output_wasapi::start_stop::start_stop_steps::start_audio_client(
+                &audio_client,
+            )?;
+
+            Ok(
+                crate::playback::output_wasapi::start_stop::guards::StartedClientGuard::new(
+                    audio_client,
+                ),
+            )
+        }
+
+        #[cfg(not(target_os = "windows"))]
+        {
+            Err("UnsupportedPlatform".to_string())
+        }
+    }
+
     /// Close the context, releasing all resources.
     ///
     /// Idempotent: safe to call multiple times.

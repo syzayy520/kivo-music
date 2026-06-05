@@ -20,4 +20,10 @@ pub(crate) enum RealOutputThreadSkeletonError {
     WorkerDidNotReport,
     /// WasapiContext::open() failed inside the thread.
     WasapiContextOpen(WasapiOpenError),
+    /// IAudioClient::Start was requested without opening WasapiContext.
+    AudioClientStartRequiresOpenContext,
+    /// IAudioClient::Start failed inside the thread.
+    AudioClientStartFailed(String),
+    /// IAudioClient::Stop failed inside the thread.
+    AudioClientStopFailed(String),
 }

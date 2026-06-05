@@ -27,6 +27,7 @@ fn config(max_steps: usize) -> RealOutputThreadSpawnConfig {
     RealOutputThreadSpawnConfig {
         max_steps,
         open_wasapi_context_on_start: false,
+        start_audio_client_on_start: false,
     }
 }
 
@@ -181,6 +182,7 @@ fn context_open_returns_error_on_non_windows() {
     let ctx_config = RealOutputThreadSpawnConfig {
         max_steps: 10,
         open_wasapi_context_on_start: true,
+        start_audio_client_on_start: false,
     };
     let result =
         spawn_real_output_thread(ctx_config).and_then(|h| shutdown_and_join_real_output_thread(h));
@@ -207,13 +209,12 @@ fn windows_context_open_smoke_test() {
     let ctx_config = RealOutputThreadSpawnConfig {
         max_steps: 10,
         open_wasapi_context_on_start: true,
+        start_audio_client_on_start: false,
     };
     let handle = spawn_real_output_thread(ctx_config).unwrap();
     let report = shutdown_and_join_real_output_thread(handle).unwrap();
     assert!(report.wasapi_context_opened, "context should be opened");
     assert!(report.wasapi_context_closed, "context should be closed");
     assert!(report.com_initialized, "COM should be initialized");
-    // No audio client Start/Stop/GetBuffer was called.
-    // We verify by code inspection: thread entry only calls open() and close().
     assert!(report.exited_cleanly, "thread should exit cleanly");
 }

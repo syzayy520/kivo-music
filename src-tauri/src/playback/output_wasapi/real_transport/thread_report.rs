@@ -35,4 +35,14 @@ pub(crate) struct RealOutputThreadReport {
     pub wasapi_context_opened: bool,
     /// WasapiContext was closed (dropped) inside the thread.
     pub wasapi_context_closed: bool,
+
+    // --- IAudioClient Start/Stop lifecycle flags (P0-077A) ---
+    /// IAudioClient::Start was requested by config.
+    pub audio_client_start_requested: bool,
+    /// IAudioClient::Start succeeded.
+    pub audio_client_started: bool,
+    /// Explicit StartedClientGuard::stop() was requested.
+    pub audio_client_stop_requested: bool,
+    /// Explicit StartedClientGuard::stop() succeeded.
+    pub audio_client_stopped: bool,
 }
