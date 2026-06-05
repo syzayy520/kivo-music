@@ -23,4 +23,16 @@ pub(crate) struct RealOutputThreadReport {
     pub loop_result: Option<OutputThreadWorkerLoopRunResult>,
     /// Thread panicked (set in error path, false in normal report).
     pub panicked: bool,
+
+    // --- COM / WasapiContext lifecycle flags (P0-076) ---
+    /// COM was initialized inside the thread (via WasapiContext::open).
+    pub com_initialized: bool,
+    /// COM was uninitialized inside the thread (context dropped).
+    pub com_uninitialized: bool,
+    /// WasapiContext open was requested by config.
+    pub wasapi_context_open_requested: bool,
+    /// WasapiContext::open() succeeded.
+    pub wasapi_context_opened: bool,
+    /// WasapiContext was closed (dropped) inside the thread.
+    pub wasapi_context_closed: bool,
 }

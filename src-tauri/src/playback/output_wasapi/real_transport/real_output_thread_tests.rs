@@ -10,6 +10,9 @@
 //! G. thread_does_not_start_audio_client
 //! H. skeleton_does_not_call_runtime_audio_layers
 //! I. owned_state_validation_happens_inside_thread
+//! J. context_flags_false_when_not_requested
+//! K. context_open_requested_flag_when_enabled
+//! L. windows_context_open_smoke_test
 
 use std::thread;
 use std::time::Duration;
@@ -20,13 +23,18 @@ use super::thread::{
 };
 use super::thread_error::RealOutputThreadSkeletonError;
 
+fn config(max_steps: usize) -> RealOutputThreadSpawnConfig {
+    RealOutputThreadSpawnConfig {
+        max_steps,
+        open_wasapi_context_on_start: false,
+    }
+}
+
 /// A. Thread spawns, handle has join, shutdown returns valid report.
 #[test]
 fn spawn_creates_valid_thread() {
-    let config = RealOutputThreadSpawnConfig { max_steps: 100 };
-    let handle = spawn_real_output_thread(config).unwrap();
+    let handle = spawn_real_output_thread(config(100)).unwrap();
     assert!(handle.has_join_handle(), "handle should have join handle");
-
     let report = shutdown_and_join_real_output_thread(handle).unwrap();
     assert!(report.thread_started, "thread should have started");
     assert!(
@@ -38,9 +46,7 @@ fn spawn_creates_valid_thread() {
 /// B. Shutdown returns report with correct worker loop fields.
 #[test]
 fn shutdown_and_join_returns_worker_report() {
-    let config = RealOutputThreadSpawnConfig { max_steps: 100 };
-    let handle = spawn_real_output_thread(config).unwrap();
-
+    let handle = spawn_real_output_thread(config(100)).unwrap();
     let report = shutdown_and_join_real_output_thread(handle).unwrap();
     assert!(report.shutdown_received, "shutdown should be received");
     assert!(report.exited_cleanly, "thread should exit cleanly");
@@ -59,13 +65,9 @@ fn shutdown_and_join_returns_worker_report() {
 /// C. Manual send CloseTransport then join, report shows shutdown received.
 #[test]
 fn send_close_transport_stops_thread() {
-    let config = RealOutputThreadSpawnConfig { max_steps: 10_000 };
-    let mut handle = spawn_real_output_thread(config).unwrap();
-
+    let mut handle = spawn_real_output_thread(config(10_000)).unwrap();
     let send_result = handle.send_command(OutputThreadRealTransportCommand::close_transport());
     assert!(send_result.is_ok(), "send should succeed");
-
-    // Take join handle directly to avoid double-sending shutdown.
     let join_handle = handle.take_join_handle().unwrap();
     let result = join_handle.join().unwrap().unwrap();
     assert!(
@@ -78,13 +80,9 @@ fn send_close_transport_stops_thread() {
 /// D. Thread exits after max_steps without shutdown command.
 #[test]
 fn worker_exits_after_max_steps_without_shutdown() {
-    let config = RealOutputThreadSpawnConfig { max_steps: 5 };
-    let mut handle = spawn_real_output_thread(config).unwrap();
-
-    // Take join handle directly, do NOT send shutdown.
+    let mut handle = spawn_real_output_thread(config(5)).unwrap();
     let join_handle = handle.take_join_handle().unwrap();
     let report = join_handle.join().unwrap().unwrap();
-
     assert!(!report.shutdown_received, "no shutdown should be received");
     assert!(report.exited_cleanly, "thread should exit cleanly");
     assert_eq!(
@@ -96,28 +94,15 @@ fn worker_exits_after_max_steps_without_shutdown() {
 /// E. Send failure returns stable error.
 #[test]
 fn shutdown_send_failure_is_reported() {
-    // Create a handle, drop the receiver by taking join handle and dropping it.
-    let config = RealOutputThreadSpawnConfig { max_steps: 100 };
-    let mut handle = spawn_real_output_thread(config).unwrap();
-
-    // Drop the join handle (this doesn't drop the receiver in the thread).
-    // Instead, we need to make the receiver disconnected.
-    // The simplest way: take join handle, join thread, then try to send.
+    let mut handle = spawn_real_output_thread(config(100)).unwrap();
     let join_handle = handle.take_join_handle().unwrap();
-
-    // Wait a bit for the thread to finish.
     thread::sleep(Duration::from_millis(50));
-
-    // The thread should have exited, so the receiver is dropped.
     let _ = join_handle.join();
-
-    // Now try to send - this should fail because receiver is dropped.
     let result = shutdown_and_join_real_output_thread(handle);
     assert!(
         result.is_err(),
         "shutdown should fail when receiver is dropped"
     );
-
     match result.unwrap_err() {
         RealOutputThreadSkeletonError::SendShutdown(_) => {} // expected
         other => panic!("expected SendShutdown error, got: {:?}", other),
@@ -127,18 +112,13 @@ fn shutdown_send_failure_is_reported() {
 /// F. Join panic is reported as stable error.
 #[test]
 fn join_panic_is_reported() {
-    // Create a handle with a panicking thread.
     let (sender, _receiver) = std::sync::mpsc::channel();
     let join_handle = thread::spawn(|| -> Result<super::thread_report::RealOutputThreadReport, RealOutputThreadSkeletonError> {
         panic!("test panic");
     });
-
     let mut handle = super::handle::OutputThreadRealTransportHandle::new(sender, join_handle);
-
-    // Take join handle and join - this should catch the panic.
     let taken = handle.take_join_handle().unwrap();
     let result = taken.join();
-
     assert!(
         result.is_err(),
         "join should return Err for panicked thread"
@@ -148,14 +128,8 @@ fn join_panic_is_reported() {
 /// G. Thread does not call IAudioClient::Start or GetBuffer/ReleaseBuffer.
 #[test]
 fn thread_does_not_start_audio_client() {
-    // This test verifies by code inspection that the thread entry
-    // does not call COM, IAudioClient::Start, GetBuffer, or ReleaseBuffer.
-    // The thread only runs run_worker_loop_skeleton which is a pure bounded loop.
-    let config = RealOutputThreadSpawnConfig { max_steps: 10 };
-    let handle = spawn_real_output_thread(config).unwrap();
+    let handle = spawn_real_output_thread(config(10)).unwrap();
     let report = shutdown_and_join_real_output_thread(handle).unwrap();
-
-    // If we get here, no audio APIs were called (no device required).
     assert!(
         report.thread_started,
         "thread should start without audio APIs"
@@ -165,15 +139,8 @@ fn thread_does_not_start_audio_client() {
 /// H. Skeleton does not call runtime audio layers.
 #[test]
 fn skeleton_does_not_call_runtime_audio_layers() {
-    // This test verifies by code inspection that the thread entry
-    // does not call run_wasapi_output_thread_adapter_slot,
-    // run_wasapi_render_step_adapter, run_manual_drain_render_loop_step,
-    // manual_drain_tick, or drain_wasapi_output_sink_once.
-    // The thread only runs run_worker_loop_skeleton.
-    let config = RealOutputThreadSpawnConfig { max_steps: 10 };
-    let handle = spawn_real_output_thread(config).unwrap();
+    let handle = spawn_real_output_thread(config(10)).unwrap();
     let report = shutdown_and_join_real_output_thread(handle).unwrap();
-
     assert!(
         report.thread_started,
         "thread should start without audio layers"
@@ -183,13 +150,93 @@ fn skeleton_does_not_call_runtime_audio_layers() {
 /// I. Owned-state validation happens inside the spawned thread.
 #[test]
 fn owned_state_validation_happens_inside_thread() {
-    let config = RealOutputThreadSpawnConfig { max_steps: 100 };
-    let handle = spawn_real_output_thread(config).unwrap();
-
+    let handle = spawn_real_output_thread(config(100)).unwrap();
     let report = shutdown_and_join_real_output_thread(handle).unwrap();
     assert!(
         report.owned_state_validated,
         "owned state must be validated inside thread, not just before spawn"
     );
     assert!(report.thread_started, "thread should have started");
+}
+
+/// J. Context lifecycle flags are all false when open not requested.
+#[test]
+fn context_flags_false_when_not_requested() {
+    let handle = spawn_real_output_thread(config(10)).unwrap();
+    let report = shutdown_and_join_real_output_thread(handle).unwrap();
+    assert!(
+        !report.wasapi_context_open_requested,
+        "open should not be requested"
+    );
+    assert!(
+        !report.wasapi_context_opened,
+        "context should not be opened"
+    );
+    assert!(
+        !report.wasapi_context_closed,
+        "context should not be closed"
+    );
+    assert!(!report.com_initialized, "COM should not be initialized");
+    assert!(!report.com_uninitialized, "COM should not be uninitialized");
+}
+
+/// K. Context open requested flag is set when enabled.
+///
+/// On non-Windows, open() returns UnsupportedPlatform so context is not actually
+/// opened. The requested flag is still true.
+#[test]
+fn context_open_requested_flag_when_enabled() {
+    let ctx_config = RealOutputThreadSpawnConfig {
+        max_steps: 10,
+        open_wasapi_context_on_start: true,
+    };
+    let result =
+        spawn_real_output_thread(ctx_config).and_then(|h| shutdown_and_join_real_output_thread(h));
+    if cfg!(target_os = "windows") {
+        let report = result.expect("thread should succeed on Windows");
+        assert!(
+            report.wasapi_context_open_requested,
+            "open should be requested"
+        );
+        assert!(
+            report.wasapi_context_opened,
+            "context should be opened on Windows"
+        );
+        assert!(
+            report.wasapi_context_closed,
+            "context should be closed after loop"
+        );
+        assert!(report.com_initialized, "COM should be initialized");
+        assert!(report.com_uninitialized, "COM should be uninitialized");
+    } else {
+        assert!(
+            result.is_err(),
+            "should fail on non-Windows with UnsupportedPlatform"
+        );
+        match result.unwrap_err() {
+            RealOutputThreadSkeletonError::WasapiContextOpen(_) => {} // expected
+            other => panic!("expected WasapiContextOpen, got: {:?}", other),
+        }
+    }
+}
+
+/// L. Windows ignored smoke test: context open does not call Start/GetBuffer.
+///
+/// This test is only meaningful on Windows where real COM/WASAPI resources
+/// are acquired. On non-Windows it is a no-op ignored test.
+#[cfg(target_os = "windows")]
+#[test]
+fn windows_context_open_smoke_test() {
+    let ctx_config = RealOutputThreadSpawnConfig {
+        max_steps: 10,
+        open_wasapi_context_on_start: true,
+    };
+    let handle = spawn_real_output_thread(ctx_config).unwrap();
+    let report = shutdown_and_join_real_output_thread(handle).unwrap();
+    assert!(report.wasapi_context_opened, "context should be opened");
+    assert!(report.wasapi_context_closed, "context should be closed");
+    assert!(report.com_initialized, "COM should be initialized");
+    // No audio client Start/Stop/GetBuffer was called.
+    // We verify by code inspection: thread entry only calls open() and close().
+    assert!(report.exited_cleanly, "thread should exit cleanly");
 }

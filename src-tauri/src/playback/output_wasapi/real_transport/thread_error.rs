@@ -3,11 +3,12 @@
 //! Covers spawn, shutdown, and join failures without
 //! referencing COM, WASAPI, or audio primitives.
 
+use super::super::errors::WasapiOpenError;
 use super::super::sink_drain::WasapiOutputThreadOwnedStateError;
 use super::channel::OutputThreadRealTransportSendError;
 
 /// Errors from real output thread spawn, shutdown, and join.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum RealOutputThreadSkeletonError {
     /// Owned-state validation failed inside the thread.
     OwnedStateValidation(WasapiOutputThreadOwnedStateError),
@@ -17,4 +18,6 @@ pub(crate) enum RealOutputThreadSkeletonError {
     JoinPanic,
     /// Thread exited without returning a report.
     WorkerDidNotReport,
+    /// WasapiContext::open() failed inside the thread.
+    WasapiContextOpen(WasapiOpenError),
 }

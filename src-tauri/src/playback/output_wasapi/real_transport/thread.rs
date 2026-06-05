@@ -10,6 +10,7 @@ use super::super::sink_drain::{
     default_wasapi_output_thread_owned_state_contract,
     validate_wasapi_output_thread_owned_state_contract,
 };
+use super::super::wasapi_context::WasapiContext;
 use super::super::worker_loop::runner::{
     run_worker_loop_skeleton, OutputThreadWorkerLoopRunConfig,
 };
@@ -26,6 +27,8 @@ use super::thread_report::RealOutputThreadReport;
 pub(crate) struct RealOutputThreadSpawnConfig {
     /// Maximum number of bounded loop iterations.
     pub max_steps: usize,
+    /// Whether to open WasapiContext inside the thread on start.
+    pub open_wasapi_context_on_start: bool,
 }
 
 /// Spawn a real output thread with a bounded worker loop skeleton.
@@ -57,6 +60,22 @@ fn run_real_output_thread_entry(
     validate_wasapi_output_thread_owned_state_contract(contract)
         .map_err(RealOutputThreadSkeletonError::OwnedStateValidation)?;
 
+    // Optionally open WasapiContext inside the thread.
+    // Context is owned locally — never stored in handle or returned to caller.
+    let mut context: Option<WasapiContext> = None;
+    let mut com_initialized = false;
+    let mut wasapi_context_opened = false;
+
+    if config.open_wasapi_context_on_start {
+        let mut ctx = WasapiContext::new();
+        ctx.open()
+            .map_err(RealOutputThreadSkeletonError::WasapiContextOpen)?;
+        // If open() succeeded on Windows, COM is initialized and context is open.
+        com_initialized = ctx.is_open();
+        wasapi_context_opened = ctx.is_open();
+        context = Some(ctx);
+    }
+
     // Create a dummy sender for the channel struct.
     // The real sender is in the handle; the worker only uses try_recv.
     let (dummy_sender, _) = mpsc::channel();
@@ -71,6 +90,11 @@ fn run_real_output_thread_entry(
 
     let report = loop_result.report;
 
+    // Close context (drop) before returning — happens inside the thread.
+    let wasapi_context_closed = context.is_some();
+    let com_uninitialized = wasapi_context_closed;
+    drop(context);
+
     Ok(RealOutputThreadReport {
         thread_started: true,
         owned_state_validated: true,
@@ -79,6 +103,11 @@ fn run_real_output_thread_entry(
         commands_processed: report.commands_handled,
         loop_result: Some(loop_result),
         panicked: false,
+        com_initialized,
+        com_uninitialized,
+        wasapi_context_open_requested: config.open_wasapi_context_on_start,
+        wasapi_context_opened,
+        wasapi_context_closed,
     })
 }
 
