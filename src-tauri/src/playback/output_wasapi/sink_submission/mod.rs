@@ -9,5 +9,7 @@ mod sample_bytes;
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tests_format;
 
 pub(crate) use buffered::submit_frame_to_ring_buffer;

@@ -58,16 +58,46 @@ pub(crate) fn submit_frame_to_ring_buffer(
         return Ok(runtime.clone());
     }
 
-    // Lazy-create ring buffer if absent
-    if ring_buffer.is_none() {
-        lazy_create_ring_buffer(&frame, ring_buffer)?;
+    // Compute expected format from frame stream
+    let expected_format = ring_buffer_format_from_stream(&frame.stream).map_err(|e| {
+        let msg = format!("frame format error: {e:?}");
+        runtime.last_error = Some(msg.clone());
+        PlaybackError::UnsupportedFormat(msg)
+    })?;
+
+    // Lazy-create ring buffer if absent; validate format if present
+    match ring_buffer {
+        None => {
+            let rb = RingBuffer::new(expected_format, DEFAULT_CAPACITY_FRAMES).map_err(|e| {
+                let msg = format!("ring buffer creation failed: {e:?}");
+                runtime.last_error = Some(msg.clone());
+                PlaybackError::Output(msg)
+            })?;
+            *ring_buffer = Some(rb);
+        }
+        Some(rb) => {
+            if rb.format() != expected_format {
+                let msg = format!(
+                    "ring buffer format mismatch: expected {:?}, got {:?}",
+                    expected_format,
+                    rb.format()
+                );
+                runtime.last_error = Some(msg.clone());
+                return Err(PlaybackError::UnsupportedFormat(msg));
+            }
+        }
     }
 
     // Convert f32 samples to native-endian bytes
     let bytes = f32_samples_to_ne_bytes(&frame.samples);
 
-    // Write to ring buffer
-    let rb = ring_buffer.as_mut().unwrap();
+    // Write to ring buffer (safe: guaranteed Some after above logic)
+    let Some(rb) = ring_buffer.as_mut() else {
+        let msg = "ring buffer unavailable after lazy create".to_string();
+        runtime.last_error = Some(msg.clone());
+        return Err(PlaybackError::Output(msg));
+    };
+
     match rb.write_frames(&bytes) {
         Ok(written) => {
             status.submitted_frames += written as u64;
@@ -81,17 +111,4 @@ pub(crate) fn submit_frame_to_ring_buffer(
             Err(PlaybackError::Output(msg))
         }
     }
-}
-
-/// Lazy-create a ring buffer from the frame's stream info.
-fn lazy_create_ring_buffer(
-    frame: &AudioOutputFrame,
-    ring_buffer: &mut Option<RingBuffer>,
-) -> PlaybackResult<()> {
-    let format = ring_buffer_format_from_stream(&frame.stream)
-        .map_err(|e| PlaybackError::UnsupportedFormat(format!("frame format error: {e:?}")))?;
-    let rb = RingBuffer::new(format, DEFAULT_CAPACITY_FRAMES)
-        .map_err(|e| PlaybackError::Output(format!("ring buffer creation failed: {e:?}")))?;
-    *ring_buffer = Some(rb);
-    Ok(())
 }

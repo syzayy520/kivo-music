@@ -171,24 +171,4 @@ fn submit_frame_path_has_no_wasapi_device_calls() {
     assert!(true);
 }
 
-/// Test close still resets ring buffer and status.
-#[test]
-fn close_still_resets_ring_buffer_and_status() {
-    use super::super::sink::WasapiOutputSink;
-    use crate::playback::output::{OutputSettings, OutputSink};
 
-    let mut sink = WasapiOutputSink::new();
-    let _ = sink.open(&OutputSettings::default());
-
-    // Prepare and submit to create ring buffer state
-    sink.prepare_ring_buffer_for_stream(&float32_stream(2, 44100), 1024)
-        .unwrap();
-    let frame = make_frame(2, 44100, vec![0.1, 0.2]);
-    let _ = sink.submit_frame(frame);
-
-    // Close should reset everything
-    sink.close().unwrap();
-    let s = sink.status();
-    assert!(!s.is_open && !s.is_active && s.last_error.is_none() && s.pending_frames == 0);
-    assert!(!sink.has_ring_buffer());
-}

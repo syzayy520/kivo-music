@@ -4,9 +4,7 @@ use super::super::runtime_loop::step::OutputThreadRuntimeLoopStepAction;
 use super::super::worker_loop::step::{
     OutputThreadWorkerLoopStepDecision, OutputThreadWorkerLoopStepKind,
 };
-use super::adapter::{
-    adapt_worker_step_to_runtime_loop, OutputThreadWorkerRuntimeAdapterResult,
-};
+use super::adapter::adapt_worker_step_to_runtime_loop;
 use super::decision::OutputThreadWorkerRuntimeDecisionKind;
 use super::super::worker_lifecycle::shutdown::OutputThreadWorkerShutdownRequest;
 
