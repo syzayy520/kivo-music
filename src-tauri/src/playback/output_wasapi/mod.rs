@@ -36,5 +36,8 @@ pub(crate) mod sink_submission;
 pub mod start_stop;
 pub mod status;
 pub(crate) mod wasapi_context;
+pub(crate) mod zero_pcm_render;
+#[cfg(test)]
+mod zero_pcm_render_tests;
 
 include!("output_thread_test_modules.rs");
