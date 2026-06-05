@@ -17,6 +17,7 @@ use windows::Win32::System::Com::{
 use crate::playback::output_wasapi::errors::WasapiOpenError;
 
 use super::format_cache::WasapiFormatCache;
+use super::padding_state::WasapiPaddingStateError;
 
 /// RAII guard for COM apartment initialization.
 struct ComGuard {
@@ -73,6 +74,7 @@ pub(super) struct WasapiDeviceContext {
     _endpoint: windows::Win32::Media::Audio::IMMDevice,
     pub(super) audio_client: Option<IAudioClient>,
     pub(super) render_client: Option<IAudioRenderClient>,
+    pub(super) buffer_frame_capacity: Option<u32>,
     _mix_format: MixFormatGuard,
     #[allow(dead_code)]
     pub(super) format_cache: Option<WasapiFormatCache>,
@@ -140,6 +142,7 @@ impl WasapiDeviceContext {
 
         // Step 6.5: Extract and cache format fields from mix format pointer
         let format_cache = unsafe { WasapiFormatCache::from_ptr(mix_format.ptr) };
+        let buffer_frame_capacity = unsafe { audio_client.GetBufferSize() }.ok();
 
         // Step 7: Get IAudioRenderClient
         let render_client: IAudioRenderClient =
@@ -153,6 +156,7 @@ impl WasapiDeviceContext {
             _endpoint: endpoint,
             audio_client: Some(audio_client),
             render_client: Some(render_client),
+            buffer_frame_capacity,
             _mix_format: mix_format,
             format_cache: Some(format_cache),
         })
@@ -167,6 +171,21 @@ impl WasapiDeviceContext {
     #[allow(dead_code)]
     pub(super) fn format_cache(&self) -> Option<&WasapiFormatCache> {
         self.format_cache.as_ref()
+    }
+
+    pub(super) fn buffer_frame_capacity(&self) -> Result<u32, WasapiPaddingStateError> {
+        self.buffer_frame_capacity
+            .ok_or(WasapiPaddingStateError::MissingBufferCapacity)
+    }
+
+    pub(super) fn current_padding_frames(&self) -> Result<u32, WasapiPaddingStateError> {
+        let audio_client = self
+            .audio_client
+            .as_ref()
+            .ok_or(WasapiPaddingStateError::MissingAudioClient)?;
+
+        unsafe { audio_client.GetCurrentPadding() }
+            .map_err(|e| WasapiPaddingStateError::GetCurrentPaddingFailed(format!("{e}")))
     }
 }
 

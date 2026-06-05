@@ -14,7 +14,7 @@ use super::render_error::{WasapiRenderWriteError, WasapiRenderWriteReport};
 /// On non-Windows platforms, all operations return UnsupportedPlatform.
 pub(crate) struct WasapiContext {
     #[cfg(target_os = "windows")]
-    inner: Option<super::windows::WasapiDeviceContext>,
+    pub(super) inner: Option<super::windows::WasapiDeviceContext>,
 }
 
 impl WasapiContext {
