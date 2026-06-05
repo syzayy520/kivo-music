@@ -46,4 +46,20 @@ pub(crate) enum RealOutputThreadSkeletonError {
     RenderSilenceLoopFrameCountTooLarge,
     /// Render silence loop failed inside the thread.
     RenderSilenceLoopFailed(String),
+    /// Padding-aware render loop was requested without opening WasapiContext.
+    RenderPaddingLoopRequiresOpenContext,
+    /// Padding-aware render loop was requested before audio client start succeeded.
+    RenderPaddingLoopRequiresStartedClient,
+    /// Padding-aware render loop was requested with zero iterations.
+    RenderPaddingLoopInvalidIterationCount,
+    /// Padding-aware render loop was requested with zero frames per write.
+    RenderPaddingLoopInvalidFrameCount,
+    /// Padding-aware render loop iteration count exceeded the ticket bound.
+    RenderPaddingLoopIterationCountTooLarge,
+    /// Padding-aware render loop frames per write exceeded the ticket bound.
+    RenderPaddingLoopFrameCountTooLarge,
+    /// Padding-aware render loop failed while querying padding state.
+    RenderPaddingLoopPaddingStateFailed(String),
+    /// Padding-aware render loop failed while writing silence.
+    RenderPaddingLoopWriteFailed(String),
 }

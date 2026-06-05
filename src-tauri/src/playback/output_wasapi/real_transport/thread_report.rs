@@ -75,4 +75,30 @@ pub(crate) struct RealOutputThreadReport {
     pub render_silence_loop_frames_written_total: u32,
     /// Whether every loop write used AUDCLNT_BUFFERFLAGS_SILENT.
     pub render_silence_loop_used_silent_flag: bool,
+
+    // --- Padding-aware bounded silent render loop flags (P0-077E) ---
+    /// Padding-aware render loop was requested by config.
+    pub render_padding_loop_requested: bool,
+    /// Padding-aware render loop started after audio client start.
+    pub render_padding_loop_started: bool,
+    /// Padding-aware render loop completed all iterations.
+    pub render_padding_loop_completed: bool,
+    /// Iterations requested for padding-aware render loop.
+    pub render_padding_loop_iterations_requested: u32,
+    /// Iterations completed by padding-aware render loop, including skips.
+    pub render_padding_loop_iterations_completed: u32,
+    /// Iterations skipped because no frames were available.
+    pub render_padding_loop_iterations_skipped_no_available: u32,
+    /// Max frames per padding-aware silent write.
+    pub render_padding_loop_max_frames_per_write: u32,
+    /// Total frames written by padding-aware render loop.
+    pub render_padding_loop_frames_written_total: u32,
+    /// Last observed WASAPI buffer capacity.
+    pub render_padding_loop_last_capacity: u32,
+    /// Last observed WASAPI queued padding.
+    pub render_padding_loop_last_padding: u32,
+    /// Last observed WASAPI available frames.
+    pub render_padding_loop_last_available: u32,
+    /// Whether every padding-aware write used AUDCLNT_BUFFERFLAGS_SILENT.
+    pub render_padding_loop_used_silent_flag: bool,
 }

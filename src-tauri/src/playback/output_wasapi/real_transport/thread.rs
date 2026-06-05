@@ -14,11 +14,14 @@ use super::channel::OutputThreadRealTransportChannel;
 use super::command::OutputThreadRealTransportCommand;
 use super::handle::OutputThreadRealTransportHandle;
 use super::render_loop::{
-    run_bounded_render_silence_loop, validate_render_silence_loop_config,
-    RenderSilenceLoopConfig,
+    run_bounded_render_silence_loop, validate_render_silence_loop_config, RenderSilenceLoopConfig,
 };
 use super::render_once::{
     maybe_write_render_silence_once, validate_render_silence_once_config, RenderSilenceOnceConfig,
+};
+use super::render_padding_loop::{
+    run_bounded_render_padding_loop, validate_render_padding_loop_config, RenderPaddingLoopConfig,
+    RenderPaddingLoopOutcome,
 };
 use super::thread_error::RealOutputThreadSkeletonError;
 use super::thread_report::RealOutputThreadReport;
@@ -34,6 +37,9 @@ pub(crate) struct RealOutputThreadSpawnConfig {
     pub render_silence_loop_after_start: bool,
     pub render_silence_loop_iterations: u32,
     pub render_silence_loop_frames_per_write: u32,
+    pub render_padding_loop_after_start: bool,
+    pub render_padding_loop_iterations: u32,
+    pub render_padding_loop_max_frames_per_write: u32,
 }
 
 #[allow(dead_code)]
@@ -69,6 +75,16 @@ fn run_real_output_thread_entry(
     };
     validate_render_silence_loop_config(
         render_loop_config,
+        config.open_wasapi_context_on_start,
+        config.start_audio_client_on_start,
+    )?;
+    let render_padding_loop_config = RenderPaddingLoopConfig {
+        enabled: config.render_padding_loop_after_start,
+        iterations: config.render_padding_loop_iterations,
+        max_frames_per_write: config.render_padding_loop_max_frames_per_write,
+    };
+    validate_render_padding_loop_config(
+        render_padding_loop_config,
         config.open_wasapi_context_on_start,
         config.start_audio_client_on_start,
     )?;
@@ -113,12 +129,20 @@ fn run_real_output_thread_entry(
         started_guard = Some(guard);
     }
 
-    let render_loop_result = run_bounded_render_silence_loop(
-        context.as_ref(),
-        audio_client_started,
-        render_loop_config,
-    );
-    let worker_loop_result = if render_loop_result.is_ok() {
+    let render_loop_result =
+        run_bounded_render_silence_loop(context.as_ref(), audio_client_started, render_loop_config);
+    let render_padding_loop_result = if render_loop_result.is_ok() {
+        run_bounded_render_padding_loop(
+            context.as_ref(),
+            audio_client_started,
+            render_padding_loop_config,
+        )
+    } else {
+        Ok(RenderPaddingLoopOutcome::skipped_after_prior_failure(
+            render_padding_loop_config,
+        ))
+    };
+    let worker_loop_result = if render_loop_result.is_ok() && render_padding_loop_result.is_ok() {
         let (dummy_sender, _) = mpsc::channel();
         let channel = OutputThreadRealTransportChannel::from_parts(dummy_sender, receiver);
         let loop_config = OutputThreadWorkerLoopRunConfig {
@@ -151,6 +175,7 @@ fn run_real_output_thread_entry(
 
     stop_result.map_err(RealOutputThreadSkeletonError::AudioClientStopFailed)?;
     let render_loop_outcome = render_loop_result?;
+    let render_padding_loop_outcome = render_padding_loop_result?;
     let loop_result = match worker_loop_result {
         Some(loop_result) => loop_result,
         None => return Err(RealOutputThreadSkeletonError::WorkerDidNotReport),
@@ -187,6 +212,19 @@ fn run_real_output_thread_entry(
         render_silence_loop_frames_per_write: render_loop_outcome.frames_per_write,
         render_silence_loop_frames_written_total: render_loop_outcome.frames_written_total,
         render_silence_loop_used_silent_flag: render_loop_outcome.used_silent_flag,
+        render_padding_loop_requested: render_padding_loop_outcome.requested,
+        render_padding_loop_started: render_padding_loop_outcome.started,
+        render_padding_loop_completed: render_padding_loop_outcome.completed,
+        render_padding_loop_iterations_requested: render_padding_loop_outcome.iterations_requested,
+        render_padding_loop_iterations_completed: render_padding_loop_outcome.iterations_completed,
+        render_padding_loop_iterations_skipped_no_available: render_padding_loop_outcome
+            .iterations_skipped_no_available,
+        render_padding_loop_max_frames_per_write: render_padding_loop_outcome.max_frames_per_write,
+        render_padding_loop_frames_written_total: render_padding_loop_outcome.frames_written_total,
+        render_padding_loop_last_capacity: render_padding_loop_outcome.last_capacity,
+        render_padding_loop_last_padding: render_padding_loop_outcome.last_padding,
+        render_padding_loop_last_available: render_padding_loop_outcome.last_available,
+        render_padding_loop_used_silent_flag: render_padding_loop_outcome.used_silent_flag,
     })
 }
 
