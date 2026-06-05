@@ -18,6 +18,9 @@ include!("output_thread_runtime_modules.rs");
 
 pub mod padding_query;
 pub mod platform;
+pub(crate) mod pcm_adapter;
+#[cfg(test)]
+mod pcm_adapter_tests;
 pub mod render_client;
 pub mod reset_boundary;
 pub mod ring_buffer;
