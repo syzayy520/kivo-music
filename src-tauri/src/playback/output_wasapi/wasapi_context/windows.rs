@@ -16,6 +16,8 @@ use windows::Win32::System::Com::{
 
 use crate::playback::output_wasapi::errors::WasapiOpenError;
 
+use super::format_cache::WasapiFormatCache;
+
 /// RAII guard for COM apartment initialization.
 struct ComGuard {
     initialized: bool,
@@ -69,9 +71,11 @@ pub(super) struct WasapiDeviceContext {
     _com: ComGuard,
     _enumerator: IMMDeviceEnumerator,
     _endpoint: windows::Win32::Media::Audio::IMMDevice,
-    audio_client: Option<IAudioClient>,
-    render_client: Option<IAudioRenderClient>,
+    pub(super) audio_client: Option<IAudioClient>,
+    pub(super) render_client: Option<IAudioRenderClient>,
     _mix_format: MixFormatGuard,
+    #[allow(dead_code)]
+    pub(super) format_cache: Option<WasapiFormatCache>,
 }
 
 impl WasapiDeviceContext {
@@ -134,6 +138,9 @@ impl WasapiDeviceContext {
             )));
         }
 
+        // Step 6.5: Extract and cache format fields from mix format pointer
+        let format_cache = unsafe { WasapiFormatCache::from_ptr(mix_format.ptr) };
+
         // Step 7: Get IAudioRenderClient
         let render_client: IAudioRenderClient =
             unsafe { audio_client.GetService() }.map_err(|e| {
@@ -147,12 +154,19 @@ impl WasapiDeviceContext {
             audio_client: Some(audio_client),
             render_client: Some(render_client),
             _mix_format: mix_format,
+            format_cache: Some(format_cache),
         })
     }
 
     /// Check if the context has a render client.
     pub(super) fn has_render_client(&self) -> bool {
         self.render_client.is_some()
+    }
+
+    /// Get the cached format fields, if available.
+    #[allow(dead_code)]
+    pub(super) fn format_cache(&self) -> Option<&WasapiFormatCache> {
+        self.format_cache.as_ref()
     }
 }
 

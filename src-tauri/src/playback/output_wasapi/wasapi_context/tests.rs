@@ -3,6 +3,7 @@
 //! These tests verify the cross-platform behavior of WasapiContext
 //! without requiring real audio hardware.
 
+use super::render_error::WasapiRenderWriteError;
 use super::WasapiContext;
 
 #[test]
@@ -88,4 +89,33 @@ fn close_after_failed_open_is_noop() {
     ctx.close();
     assert!(!ctx.is_open());
     assert!(!ctx.has_render_client());
+}
+
+#[test]
+fn format_cache_is_none_when_not_open() {
+    let ctx = WasapiContext::new();
+    assert!(ctx.format_cache().is_none());
+}
+
+#[test]
+fn format_cache_is_none_after_close() {
+    let mut ctx = WasapiContext::new();
+    let _ = ctx.open();
+    ctx.close();
+    assert!(ctx.format_cache().is_none());
+}
+
+#[test]
+fn write_silence_returns_not_open_when_not_open() {
+    let ctx = WasapiContext::new();
+    let result = ctx.write_render_buffer_silence(1);
+    assert_eq!(result.unwrap_err(), WasapiRenderWriteError::NotOpen);
+}
+
+#[test]
+fn write_bytes_returns_not_open_when_not_open() {
+    let ctx = WasapiContext::new();
+    let data = vec![0u8; 8];
+    let result = ctx.write_render_buffer_bytes(1, &data);
+    assert_eq!(result.unwrap_err(), WasapiRenderWriteError::NotOpen);
 }

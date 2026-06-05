@@ -5,6 +5,9 @@
 
 use crate::playback::output_wasapi::errors::WasapiOpenError;
 
+use super::format_cache::WasapiFormatCache;
+use super::render_error::{WasapiRenderWriteError, WasapiRenderWriteReport};
+
 /// WASAPI device context wrapper.
 ///
 /// Manages the lifecycle of Windows WASAPI resources.
@@ -81,6 +84,69 @@ impl WasapiContext {
         #[cfg(target_os = "windows")]
         {
             self.inner.take();
+        }
+    }
+
+    /// Get cached format fields (only available on Windows when open).
+    #[allow(dead_code)]
+    pub(crate) fn format_cache(&self) -> Option<&WasapiFormatCache> {
+        #[cfg(target_os = "windows")]
+        {
+            self.inner.as_ref().and_then(|ctx| ctx.format_cache())
+        }
+
+        #[cfg(not(target_os = "windows"))]
+        {
+            None
+        }
+    }
+
+    /// Write silence to the render buffer for the given number of frames.
+    ///
+    /// Does NOT call IAudioClient::Start.
+    /// On non-Windows, returns NotOpen.
+    #[allow(dead_code)]
+    pub(crate) fn write_render_buffer_silence(
+        &self,
+        frames: u32,
+    ) -> Result<WasapiRenderWriteReport, WasapiRenderWriteError> {
+        #[cfg(target_os = "windows")]
+        {
+            self.inner
+                .as_ref()
+                .ok_or(WasapiRenderWriteError::NotOpen)?
+                .write_render_buffer_silence(frames)
+        }
+
+        #[cfg(not(target_os = "windows"))]
+        {
+            let _ = frames;
+            Err(WasapiRenderWriteError::NotOpen)
+        }
+    }
+
+    /// Write byte data to the render buffer.
+    ///
+    /// Does NOT call IAudioClient::Start.
+    /// On non-Windows, returns NotOpen.
+    #[allow(dead_code)]
+    pub(crate) fn write_render_buffer_bytes(
+        &self,
+        frames: u32,
+        data: &[u8],
+    ) -> Result<WasapiRenderWriteReport, WasapiRenderWriteError> {
+        #[cfg(target_os = "windows")]
+        {
+            self.inner
+                .as_ref()
+                .ok_or(WasapiRenderWriteError::NotOpen)?
+                .write_render_buffer_bytes(frames, data)
+        }
+
+        #[cfg(not(target_os = "windows"))]
+        {
+            let _ = (frames, data);
+            Err(WasapiRenderWriteError::NotOpen)
         }
     }
 }
