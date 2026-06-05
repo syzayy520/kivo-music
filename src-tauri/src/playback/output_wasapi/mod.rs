@@ -25,6 +25,7 @@ pub mod ring_buffer_output_thread;
 pub mod silent_loop;
 pub mod sink;
 pub(crate) mod sink_silent_helper;
+pub(crate) mod sink_submission;
 pub mod start_stop;
 pub mod status;
 pub(crate) mod wasapi_context;

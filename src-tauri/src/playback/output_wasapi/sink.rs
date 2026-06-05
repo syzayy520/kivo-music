@@ -1,13 +1,12 @@
 use crate::playback::decoder::AudioStreamInfo;
-use crate::playback::errors::{PlaybackError, PlaybackResult};
+use crate::playback::errors::PlaybackResult;
 use crate::playback::output::{AudioOutputFrame, OutputRuntimeStatus, OutputSettings, OutputSink};
 
 use super::config::WasapiOutputConfig;
-use super::errors::wasapi_unsupported;
 use super::frame_bridge::{ring_buffer_format_from_stream, FrameBridgeError};
 use super::platform::WasapiCompileBoundary;
-use super::ring_buffer::buffer::RingBuffer;
-use super::ring_buffer::errors::RingBufferError;
+use super::ring_buffer::{buffer::RingBuffer, errors::RingBufferError};
+use super::sink_submission::submit_frame_to_ring_buffer;
 use super::status::WasapiOutputStatus;
 use super::wasapi_context::WasapiContext;
 
@@ -40,11 +39,11 @@ impl From<RingBufferError> for WasapiRingBufferPrepareError {
 /// - `close()` releases all WASAPI resources.
 ///
 /// **This sink does NOT:**
-/// - Write PCM data (submit_frame returns UnsupportedOperation)
+/// - Write PCM to WASAPI device buffer (local ring buffer only)
 /// - Start IAudioClient
 /// - Produce audible output
 /// - Create output threads
-/// - Use RingBuffer for production
+/// - Use RingBuffer for audible output
 #[derive(Debug, Default)]
 pub struct WasapiOutputSink {
     /// Configuration populated by `open`.
@@ -58,7 +57,6 @@ pub struct WasapiOutputSink {
     /// WASAPI device context (real on Windows, empty on other platforms).
     context: WasapiContext,
 }
-
 impl WasapiOutputSink {
     /// Create a new WASAPI output sink scaffold.
     pub fn new() -> Self {
@@ -150,11 +148,13 @@ impl OutputSink for WasapiOutputSink {
         Ok(self.runtime.clone())
     }
 
-    fn submit_frame(&mut self, _frame: AudioOutputFrame) -> PlaybackResult<OutputRuntimeStatus> {
-        self.runtime.last_error = Some(wasapi_unsupported("submit_frame"));
-        Err(PlaybackError::UnsupportedOperation(wasapi_unsupported(
-            "submit_frame",
-        )))
+    fn submit_frame(&mut self, frame: AudioOutputFrame) -> PlaybackResult<OutputRuntimeStatus> {
+        submit_frame_to_ring_buffer(
+            frame,
+            &mut self.status,
+            &mut self.ring_buffer,
+            &mut self.runtime,
+        )
     }
 
     fn pause(&mut self) -> PlaybackResult<OutputRuntimeStatus> {

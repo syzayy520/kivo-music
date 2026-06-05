@@ -1,4 +1,5 @@
 use crate::playback::decoder::{AudioSampleFormat, AudioStreamInfo};
+#[cfg(not(target_os = "windows"))]
 use crate::playback::errors::PlaybackError;
 use crate::playback::output::{AudioOutputFrame, OutputSettings, OutputSink};
 
@@ -42,12 +43,26 @@ fn submit_frame_still_unsupported_after_prepare() {
     sink.open(&OutputSettings::default()).unwrap();
     sink.prepare_ring_buffer_for_stream(&float32_stream(2, 44100), 1024)
         .unwrap();
-    assert!(matches!(
-        sink.submit_frame(dummy_frame()),
-        Err(PlaybackError::UnsupportedOperation(ref msg)) if msg.contains("submit_frame")
-    ));
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        // Device can't open on non-Windows → guard fails → UnsupportedOperation
+        assert!(matches!(
+            sink.submit_frame(dummy_frame()),
+            Err(PlaybackError::UnsupportedOperation(ref msg)) if msg.contains("submit_frame")
+        ));
+        assert_eq!(sink.ring_buffer_available_frames(), Some(0));
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        // On Windows, if device opened: submit_frame writes to ring buffer (Ok).
+        // If device failed to open: returns UnsupportedOperation.
+        // We verify no panic occurs either way.
+        let _ = sink.submit_frame(dummy_frame());
+    }
+
     assert!(sink.has_ring_buffer());
-    assert_eq!(sink.ring_buffer_available_frames(), Some(0));
 }
 #[test]
 fn new_sink_has_no_ring_buffer() {
