@@ -1,11 +1,11 @@
-use super::super::output_thread_consumer_plan::plan_consumer_step;
-use super::super::output_thread_control::OutputThreadControlSnapshot;
+use super::super::output_thread_core::consumer_plan::plan_consumer_step;
+use super::super::output_thread_core::control::OutputThreadControlSnapshot;
 use super::buffer::OutputThreadMockBuffer;
 use super::renderer::OutputThreadMockRenderer;
 use super::result::OutputThreadMockStepResult;
-use super::super::output_thread_plan_invariants::validate_render_plan_shape;
-use super::super::output_thread_plan_projection::{project_stats_from_plan, OutputThreadStatsProjection};
-use super::super::output_thread_transition_validation::validate_plan_for_state;
+use super::super::output_thread_core::plan_invariants::validate_render_plan_shape;
+use super::super::output_thread_core::plan_projection::{project_stats_from_plan, OutputThreadStatsProjection};
+use super::super::output_thread_core::transition_validation::validate_plan_for_state;
 
 /// Run a single mock harness step.
 ///

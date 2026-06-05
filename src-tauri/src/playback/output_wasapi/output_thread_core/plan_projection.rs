@@ -1,4 +1,4 @@
-use super::output_thread_render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
+use super::render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
 
 /// Projected stats delta from a single render plan step.
 ///

@@ -1,7 +1,7 @@
-use super::output_thread_plan_validation::{
+use super::plan_validation::{
     OutputThreadPlanValidationError, OutputThreadPlanValidationResult,
 };
-use super::output_thread_render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
+use super::render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
 
 /// Validate that a render plan's internal fields are self-consistent.
 ///

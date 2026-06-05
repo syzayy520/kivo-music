@@ -1,5 +1,5 @@
-use super::output_thread_control::{OutputThreadCommand, OutputThreadControlSnapshot};
-use super::output_thread_state::OutputThreadState;
+use super::control::{OutputThreadCommand, OutputThreadControlSnapshot};
+use super::state::OutputThreadState;
 
 // ---------------------------------------------------------------------------
 // OutputThreadCommand — pure intent classification

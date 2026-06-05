@@ -1,11 +1,11 @@
-use super::super::output_thread_control::OutputThreadControlSnapshot;
+use super::super::output_thread_core::control::OutputThreadControlSnapshot;
 use super::buffer::OutputThreadMockBuffer;
 use super::golden::*;
 use super::harness::plan_mock_step;
 use super::renderer::OutputThreadMockRenderer;
 use super::scenario_result::OutputThreadMockScenarioResult;
 use super::sequence::OutputThreadMockSequence;
-use super::super::output_thread_state::OutputThreadState;
+use super::super::output_thread_core::state::OutputThreadState;
 
 fn running_control() -> OutputThreadControlSnapshot {
     OutputThreadControlSnapshot {
@@ -34,7 +34,7 @@ fn build_result(
         if should_exit {
             break;
         }
-        if plan.action == super::super::output_thread_render_plan::OutputThreadRenderAction::RenderAudio {
+        if plan.action == super::super::output_thread_core::render_plan::OutputThreadRenderAction::RenderAudio {
             buf = buf.consume(plan.frames_to_read);
         }
         if should_sleep {

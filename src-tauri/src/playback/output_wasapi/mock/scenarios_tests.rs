@@ -1,5 +1,5 @@
 use super::scenarios;
-use super::super::output_thread_state::OutputThreadState;
+use super::super::output_thread_core::state::OutputThreadState;
 
 #[test]
 fn normal_audio_factory_has_expected_name() {

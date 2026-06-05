@@ -6,7 +6,7 @@
 //! Does not poll transport channels, construct queue bridge results,
 //! or reference audio/output primitives.
 
-use super::super::output_thread_render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
+use super::super::output_thread_core::render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
 use super::super::runtime_core::intent::OutputThreadRuntimeIntent;
 use super::super::runtime_loop::state::OutputThreadRuntimeLoopState;
 use super::super::runtime_loop::plan::plan_runtime_loop_step;

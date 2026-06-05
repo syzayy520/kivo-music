@@ -1,4 +1,4 @@
-use super::output_thread_state::{OutputThreadReport, OutputThreadState, OutputThreadStats};
+use super::state::{OutputThreadReport, OutputThreadState, OutputThreadStats};
 
 // ---------------------------------------------------------------------------
 // OutputThreadState default and equality

@@ -1,7 +1,7 @@
-use super::output_thread_buffer_snapshot::OutputThreadBufferSnapshot;
-use super::output_thread_control::OutputThreadControlSnapshot;
-use super::output_thread_render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
-use super::output_thread_state::OutputThreadState;
+use super::buffer_snapshot::OutputThreadBufferSnapshot;
+use super::control::OutputThreadControlSnapshot;
+use super::render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
+use super::state::OutputThreadState;
 
 /// Compute the next consumer step based on current state.
 ///

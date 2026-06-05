@@ -1,5 +1,5 @@
 use super::status::OutputThreadRuntimeStatus;
-use super::super::output_thread_state::OutputThreadState;
+use super::super::output_thread_core::state::OutputThreadState;
 
 #[test]
 fn inactive_status_is_not_running() {

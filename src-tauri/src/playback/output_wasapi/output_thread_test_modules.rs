@@ -47,36 +47,6 @@ mod sink_ring_buffer_tests;
 mod sink_silent_helper_tests;
 
 #[cfg(test)]
-mod output_thread_state_tests;
-
-#[cfg(test)]
-mod output_thread_control_tests;
-
-#[cfg(test)]
-mod output_thread_errors_tests;
-
-#[cfg(test)]
-mod output_thread_buffer_snapshot_tests;
-
-#[cfg(test)]
-mod output_thread_render_plan_tests;
-
-#[cfg(test)]
-mod output_thread_consumer_plan_tests;
-
-#[cfg(test)]
-mod output_thread_plan_validation_tests;
-
-#[cfg(test)]
-mod output_thread_plan_projection_tests;
-
-#[cfg(test)]
-mod output_thread_plan_invariants_tests;
-
-#[cfg(test)]
-mod output_thread_transition_validation_tests;
-
-#[cfg(test)]
 mod frame_bridge_tests;
 
 include!("output_thread_runtime_test_modules.rs");

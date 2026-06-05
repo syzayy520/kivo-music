@@ -16,7 +16,7 @@ fn make_accepted_result() -> OutputThreadRuntimeQueueBridgeResult {
         ),
         queue_state: super::super::runtime_queue::state::OutputThreadRuntimeQueueState::empty(),
         projection: super::super::runtime_queue_bridge::projection::OutputThreadRuntimeQueueBridgeProjection {
-            runtime_state: super::super::output_thread_state::OutputThreadState::Created,
+            runtime_state: super::super::output_thread_core::state::OutputThreadState::Created,
             pending_count: 0,
             accepted_count: 0,
             rejected_count: 0,
@@ -34,7 +34,7 @@ fn make_rejected_result() -> OutputThreadRuntimeQueueBridgeResult {
         reason: super::super::runtime_queue::result::OutputThreadRuntimeQueueRejectReason::Full,
         queue_state: super::super::runtime_queue::state::OutputThreadRuntimeQueueState::empty(),
         projection: super::super::runtime_queue_bridge::projection::OutputThreadRuntimeQueueBridgeProjection {
-            runtime_state: super::super::output_thread_state::OutputThreadState::Running,
+            runtime_state: super::super::output_thread_core::state::OutputThreadState::Running,
             pending_count: 32,
             accepted_count: 0,
             rejected_count: 0,

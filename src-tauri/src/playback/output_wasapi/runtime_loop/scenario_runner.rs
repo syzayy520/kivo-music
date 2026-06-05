@@ -1,4 +1,4 @@
-use super::super::output_thread_render_plan::OutputThreadRenderPlan;
+use super::super::output_thread_core::render_plan::OutputThreadRenderPlan;
 use super::plan::plan_runtime_loop_step;
 use super::scenario::OutputThreadRuntimeLoopScenario;
 use super::state::OutputThreadRuntimeLoopState;

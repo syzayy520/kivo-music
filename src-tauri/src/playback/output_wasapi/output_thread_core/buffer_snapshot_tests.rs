@@ -1,4 +1,4 @@
-use super::output_thread_buffer_snapshot::OutputThreadBufferSnapshot;
+use super::buffer_snapshot::OutputThreadBufferSnapshot;
 
 #[test]
 fn default_snapshot_is_empty_and_open() {

@@ -1,4 +1,4 @@
-use super::super::output_thread_control::OutputThreadControlSnapshot;
+use super::super::output_thread_core::control::OutputThreadControlSnapshot;
 use super::buffer::OutputThreadMockBuffer;
 use super::renderer::OutputThreadMockRenderer;
 

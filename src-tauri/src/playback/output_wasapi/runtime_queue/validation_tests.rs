@@ -5,7 +5,7 @@ use super::validation::{
     validate_queue_entry_for_runtime, OutputThreadRuntimeQueueValidationError,
 };
 use super::super::runtime_core::status::OutputThreadRuntimeStatus;
-use super::super::output_thread_state::OutputThreadState;
+use super::super::output_thread_core::state::OutputThreadState;
 
 #[test]
 fn validation_accepts_matching_generation_and_allowed_intent() {

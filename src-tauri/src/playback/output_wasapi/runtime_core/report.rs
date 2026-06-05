@@ -1,6 +1,6 @@
-use super::super::output_thread_errors::OutputThreadErrorSummary;
+use super::super::output_thread_core::errors::OutputThreadErrorSummary;
 use super::id::{OutputThreadRuntimeGeneration, OutputThreadRuntimeId};
-use super::super::output_thread_state::{OutputThreadReport, OutputThreadStats};
+use super::super::output_thread_core::state::{OutputThreadReport, OutputThreadStats};
 
 /// Summary of an output thread runtime report.
 ///
@@ -51,7 +51,7 @@ impl OutputThreadRuntimeReportSummary {
             stats: report.stats,
             error: report.error.map(|msg| {
                 OutputThreadErrorSummary::new(
-                    super::super::output_thread_errors::OutputThreadErrorKind::ThreadPanic,
+                    super::super::output_thread_core::errors::OutputThreadErrorKind::ThreadPanic,
                     msg,
                 )
             }),

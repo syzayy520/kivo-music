@@ -1,4 +1,4 @@
-use super::super::output_thread_render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
+use super::super::output_thread_core::render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
 use super::super::runtime_core::id::OutputThreadRuntimeGeneration;
 use super::super::runtime_core::intent::OutputThreadRuntimeIntent;
 use super::scenario::{
@@ -14,7 +14,7 @@ use super::super::runtime_queue::state::OutputThreadRuntimeQueueState;
 
 fn default_projection() -> OutputThreadRuntimeQueueBridgeProjection {
     OutputThreadRuntimeQueueBridgeProjection {
-        runtime_state: super::super::output_thread_state::OutputThreadState::Created,
+        runtime_state: super::super::output_thread_core::state::OutputThreadState::Created,
         pending_count: 0,
         accepted_count: 0,
         rejected_count: 0,

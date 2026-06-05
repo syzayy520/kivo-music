@@ -1,7 +1,7 @@
-use super::super::output_thread_control::OutputThreadCommand;
+use super::super::output_thread_core::control::OutputThreadCommand;
 use super::intent::OutputThreadRuntimeIntent;
 use super::status::OutputThreadRuntimeStatus;
-use super::super::output_thread_state::OutputThreadState;
+use super::super::output_thread_core::state::OutputThreadState;
 
 #[test]
 fn intent_maps_to_command() {

@@ -1,6 +1,6 @@
 use super::id::{OutputThreadRuntimeGeneration, OutputThreadRuntimeId};
 use super::report::OutputThreadRuntimeReportSummary;
-use super::super::output_thread_state::{OutputThreadReport, OutputThreadStats};
+use super::super::output_thread_core::state::{OutputThreadReport, OutputThreadStats};
 
 #[test]
 fn report_summary_from_thread_report_preserves_stats() {

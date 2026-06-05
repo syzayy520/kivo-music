@@ -1,4 +1,4 @@
-use super::output_thread_errors::{OutputThreadErrorKind, OutputThreadErrorSummary};
+use super::errors::{OutputThreadErrorKind, OutputThreadErrorSummary};
 
 // ---------------------------------------------------------------------------
 // OutputThreadErrorKind classification

@@ -1,8 +1,8 @@
-use super::output_thread_buffer_snapshot::OutputThreadBufferSnapshot;
-use super::output_thread_consumer_plan::plan_consumer_step;
-use super::output_thread_control::OutputThreadControlSnapshot;
-use super::output_thread_render_plan::OutputThreadRenderAction;
-use super::output_thread_state::OutputThreadState;
+use super::buffer_snapshot::OutputThreadBufferSnapshot;
+use super::consumer_plan::plan_consumer_step;
+use super::control::OutputThreadControlSnapshot;
+use super::render_plan::OutputThreadRenderAction;
+use super::state::OutputThreadState;
 
 // ---------------------------------------------------------------------------
 // Priority rules

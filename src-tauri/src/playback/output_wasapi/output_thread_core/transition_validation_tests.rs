@@ -1,9 +1,9 @@
-use super::output_thread_buffer_snapshot::OutputThreadBufferSnapshot;
-use super::output_thread_control::OutputThreadControlSnapshot;
-use super::output_thread_plan_validation::OutputThreadPlanValidationError;
-use super::output_thread_render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
-use super::output_thread_state::OutputThreadState;
-use super::output_thread_transition_validation::validate_plan_for_state;
+use super::buffer_snapshot::OutputThreadBufferSnapshot;
+use super::control::OutputThreadControlSnapshot;
+use super::plan_validation::OutputThreadPlanValidationError;
+use super::render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
+use super::state::OutputThreadState;
+use super::transition_validation::validate_plan_for_state;
 
 fn running_control() -> OutputThreadControlSnapshot {
     OutputThreadControlSnapshot {

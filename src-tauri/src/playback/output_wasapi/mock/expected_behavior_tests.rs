@@ -1,5 +1,5 @@
 use super::expected_behavior::*;
-use super::super::output_thread_render_plan::OutputThreadRenderAction;
+use super::super::output_thread_core::render_plan::OutputThreadRenderAction;
 
 const KNOWN_NAMES: &[&str] = &[
     "normal_audio",

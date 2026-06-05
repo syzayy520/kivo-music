@@ -1,4 +1,4 @@
-use super::super::output_thread_state::OutputThreadState;
+use super::super::output_thread_core::state::OutputThreadState;
 
 /// Runtime status of the output thread handle and its attachments.
 ///

@@ -1,4 +1,4 @@
-use super::super::output_thread_render_plan::OutputThreadRenderPlan;
+use super::super::output_thread_core::render_plan::OutputThreadRenderPlan;
 use super::state::OutputThreadRuntimeLoopState;
 use super::super::runtime_queue_bridge::bridge::OutputThreadRuntimeQueueBridgeResult;
 

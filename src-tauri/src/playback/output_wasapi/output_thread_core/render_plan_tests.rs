@@ -1,4 +1,4 @@
-use super::output_thread_render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
+use super::render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
 
 #[test]
 fn default_plan_is_sleep() {

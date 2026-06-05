@@ -1,6 +1,6 @@
-use super::output_thread_plan_invariants::validate_render_plan_shape;
-use super::output_thread_plan_validation::OutputThreadPlanValidationError;
-use super::output_thread_render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
+use super::plan_invariants::validate_render_plan_shape;
+use super::plan_validation::OutputThreadPlanValidationError;
+use super::render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
 
 #[test]
 fn valid_sleep_plan_passes() {

@@ -1,6 +1,6 @@
-use super::super::output_thread_control::OutputThreadCommand;
+use super::super::output_thread_core::control::OutputThreadCommand;
 use super::handle::OutputThreadRuntimeHandle;
-use super::super::output_thread_state::OutputThreadState;
+use super::super::output_thread_core::state::OutputThreadState;
 
 /// Errors from runtime lifecycle transitions.
 #[allow(dead_code, clippy::enum_variant_names)]

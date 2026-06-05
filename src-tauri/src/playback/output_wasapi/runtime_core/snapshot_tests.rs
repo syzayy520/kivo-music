@@ -1,7 +1,7 @@
 use super::id::{OutputThreadRuntimeGeneration, OutputThreadRuntimeId};
 use super::snapshot::OutputThreadRuntimeSnapshot;
 use super::status::OutputThreadRuntimeStatus;
-use super::super::output_thread_state::{OutputThreadState, OutputThreadStats};
+use super::super::output_thread_core::state::{OutputThreadState, OutputThreadStats};
 
 #[test]
 fn empty_snapshot_is_inactive() {

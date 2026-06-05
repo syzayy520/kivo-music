@@ -1,6 +1,6 @@
-use super::super::output_thread_control::OutputThreadCommand;
+use super::super::output_thread_core::control::OutputThreadCommand;
 use super::status::OutputThreadRuntimeStatus;
-use super::super::output_thread_state::OutputThreadState;
+use super::super::output_thread_core::state::OutputThreadState;
 
 /// Intent to perform an operation on the output thread runtime.
 ///

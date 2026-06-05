@@ -1,8 +1,8 @@
-use super::super::output_thread_control::OutputThreadControlSnapshot;
+use super::super::output_thread_core::control::OutputThreadControlSnapshot;
 use super::buffer::OutputThreadMockBuffer;
 use super::renderer::OutputThreadMockRenderer;
 use super::scenario::OutputThreadMockScenario;
-use super::super::output_thread_state::OutputThreadState;
+use super::super::output_thread_core::state::OutputThreadState;
 
 fn running_control() -> OutputThreadControlSnapshot {
     OutputThreadControlSnapshot {

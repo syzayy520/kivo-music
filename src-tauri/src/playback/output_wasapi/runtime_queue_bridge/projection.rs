@@ -1,6 +1,6 @@
 use super::input::OutputThreadRuntimeQueueBridgeInput;
 use super::super::runtime_queue::state::OutputThreadRuntimeQueueState;
-use super::super::output_thread_state::OutputThreadState;
+use super::super::output_thread_core::state::OutputThreadState;
 
 /// Projection of runtime queue bridge state.
 #[allow(dead_code)]

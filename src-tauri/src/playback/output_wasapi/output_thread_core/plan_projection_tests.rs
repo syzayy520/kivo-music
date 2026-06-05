@@ -1,5 +1,5 @@
-use super::output_thread_plan_projection::{project_stats_from_plan, OutputThreadStatsProjection};
-use super::output_thread_render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
+use super::plan_projection::{project_stats_from_plan, OutputThreadStatsProjection};
+use super::render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
 
 #[test]
 fn audio_plan_projects_consumed_and_rendered_frames() {

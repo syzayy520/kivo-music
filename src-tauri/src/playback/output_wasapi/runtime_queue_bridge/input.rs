@@ -4,7 +4,7 @@ use super::super::runtime_queue::config::OutputThreadRuntimeQueueConfig;
 use super::super::runtime_queue::snapshot::OutputThreadRuntimeQueueSnapshot;
 use super::super::runtime_queue::state::OutputThreadRuntimeQueueState;
 use super::super::runtime_core::status::OutputThreadRuntimeStatus;
-use super::super::output_thread_state::OutputThreadState;
+use super::super::output_thread_core::state::OutputThreadState;
 
 /// Bridge input combining handle and queue snapshot.
 #[allow(dead_code)]

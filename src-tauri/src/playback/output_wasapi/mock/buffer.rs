@@ -1,4 +1,4 @@
-use super::super::output_thread_buffer_snapshot::OutputThreadBufferSnapshot;
+use super::super::output_thread_core::buffer_snapshot::OutputThreadBufferSnapshot;
 
 /// Pure in-memory mock buffer for testing the consumer harness.
 ///

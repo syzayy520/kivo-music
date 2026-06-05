@@ -1,5 +1,5 @@
 use super::expectation::OutputThreadMockExpectation;
-use super::super::output_thread_render_plan::OutputThreadRenderAction;
+use super::super::output_thread_core::render_plan::OutputThreadRenderAction;
 
 fn exit_expectation() -> OutputThreadMockExpectation {
     OutputThreadMockExpectation::new(

@@ -1,6 +1,6 @@
 use super::id::{OutputThreadRuntimeGeneration, OutputThreadRuntimeId};
 use super::status::OutputThreadRuntimeStatus;
-use super::super::output_thread_state::OutputThreadStats;
+use super::super::output_thread_core::state::OutputThreadStats;
 
 /// Snapshot of the output thread runtime state.
 ///

@@ -1,4 +1,4 @@
-use super::output_thread_state::OutputThreadState;
+use super::state::OutputThreadState;
 
 /// Control commands for the WASAPI output thread.
 ///

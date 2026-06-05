@@ -1,4 +1,4 @@
-use super::output_thread_plan_validation::{
+use super::plan_validation::{
     OutputThreadPlanValidationError, OutputThreadPlanValidationResult,
 };
 

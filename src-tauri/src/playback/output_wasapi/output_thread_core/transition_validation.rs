@@ -1,10 +1,10 @@
-use super::output_thread_buffer_snapshot::OutputThreadBufferSnapshot;
-use super::output_thread_control::OutputThreadControlSnapshot;
-use super::output_thread_plan_validation::{
+use super::buffer_snapshot::OutputThreadBufferSnapshot;
+use super::control::OutputThreadControlSnapshot;
+use super::plan_validation::{
     OutputThreadPlanValidationError, OutputThreadPlanValidationResult,
 };
-use super::output_thread_render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
-use super::output_thread_state::OutputThreadState;
+use super::render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
+use super::state::OutputThreadState;
 
 /// Validate that a render plan is legal for the given control and buffer state.
 ///

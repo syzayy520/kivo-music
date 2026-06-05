@@ -1,8 +1,8 @@
 use super::result::OutputThreadMockStepResult;
 use super::scenario_summary::OutputThreadMockScenarioSummary;
 use super::sequence::OutputThreadMockSequence;
-use super::super::output_thread_plan_projection::OutputThreadStatsProjection;
-use super::super::output_thread_render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
+use super::super::output_thread_core::plan_projection::OutputThreadStatsProjection;
+use super::super::output_thread_core::render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
 
 fn sleep_step() -> OutputThreadMockStepResult {
     OutputThreadMockStepResult {
@@ -121,7 +121,7 @@ fn summary_counts_rendered_and_silence_frames() {
 fn summary_detects_validation_errors() {
     let mut step = sleep_step();
     step.validation_error = Some(
-        super::super::output_thread_plan_validation::OutputThreadPlanValidationError::SleepPlanHasWork,
+        super::super::output_thread_core::plan_validation::OutputThreadPlanValidationError::SleepPlanHasWork,
     );
     let seq = OutputThreadMockSequence::default().push(step);
     let summary = OutputThreadMockScenarioSummary::from_sequence(&seq);

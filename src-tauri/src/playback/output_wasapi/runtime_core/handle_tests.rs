@@ -1,7 +1,7 @@
 use super::handle::OutputThreadRuntimeHandle;
 use super::id::{OutputThreadRuntimeGeneration, OutputThreadRuntimeId};
 use super::status::OutputThreadRuntimeStatus;
-use super::super::output_thread_state::OutputThreadState;
+use super::super::output_thread_core::state::OutputThreadState;
 
 #[test]
 fn inactive_handle_is_not_attached() {
