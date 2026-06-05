@@ -8,9 +8,7 @@
 use std::sync::mpsc::{self, Receiver, Sender, TryRecvError};
 
 use super::command::OutputThreadRealTransportCommand;
-use super::status::{
-    OutputThreadRealTransportStatus, OutputThreadRealTransportStatusReport,
-};
+use super::status::{OutputThreadRealTransportStatus, OutputThreadRealTransportStatusReport};
 
 #[allow(dead_code)]
 pub(crate) struct OutputThreadRealTransportChannel {
@@ -42,6 +40,19 @@ impl OutputThreadRealTransportChannel {
     #[allow(dead_code)]
     pub(crate) fn new() -> Self {
         let (sender, receiver) = mpsc::channel();
+        Self {
+            sender,
+            receiver,
+            status: OutputThreadRealTransportStatus::ChannelCreated,
+        }
+    }
+
+    /// Create a channel from pre-existing sender and receiver halves.
+    #[allow(dead_code)]
+    pub(crate) fn from_parts(
+        sender: Sender<OutputThreadRealTransportCommand>,
+        receiver: Receiver<OutputThreadRealTransportCommand>,
+    ) -> Self {
         Self {
             sender,
             receiver,
