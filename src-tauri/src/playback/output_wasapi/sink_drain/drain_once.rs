@@ -79,6 +79,14 @@ where
         });
     }
 
+    // Verify rendered bytes match expected bytes
+    if write_report.bytes_written as usize != peeked_bytes_len {
+        return Err(WasapiRingBufferDrainError::RenderedByteMismatch {
+            expected: peeked_bytes_len,
+            rendered: write_report.bytes_written as usize,
+        });
+    }
+
     // Check pending_frames >= peeked_frames before consume
     if pending_before < peeked_frames as usize {
         return Err(WasapiRingBufferDrainError::PendingFrameUnderflow {
@@ -98,7 +106,7 @@ where
         peeked_frames,
         rendered_frames: write_report.frames_written,
         consumed_frames,
-        bytes_rendered: peeked_bytes_len,
+        bytes_rendered: write_report.bytes_written as usize,
         pending_before,
         pending_after: *pending_frames,
     })

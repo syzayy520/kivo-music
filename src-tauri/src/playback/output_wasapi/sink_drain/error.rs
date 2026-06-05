@@ -14,6 +14,8 @@ pub enum WasapiRingBufferDrainError {
     PendingFrameUnderflow { pending: usize, consumed: u32 },
     /// Writer reported different frames than peeked.
     RenderedFrameMismatch { peeked: u32, rendered: u32 },
+    /// Writer reported different bytes than expected.
+    RenderedByteMismatch { expected: usize, rendered: usize },
 }
 
 impl From<RingBufferError> for WasapiRingBufferDrainError {
