@@ -15,6 +15,11 @@
 
 mod drain_once;
 mod error;
+mod output_thread_adapter_slot;
+mod output_thread_adapter_slot_error;
+mod output_thread_adapter_slot_report;
+#[cfg(test)]
+mod output_thread_adapter_slot_tests;
 mod render_loop_error;
 mod render_loop_report;
 mod render_loop_step;
@@ -36,31 +41,39 @@ mod tick_report;
 #[cfg(test)]
 mod tick_tests;
 
-#[allow(unused_imports)] // temporary until P0-074E4 output-thread wiring
+#[allow(unused_imports)] // temporary until P0-074E5 real output-thread wiring
 pub use drain_once::{drain_ring_buffer_once_with_writer, drain_wasapi_output_sink_once};
-#[allow(unused_imports)] // temporary until P0-074E4 output-thread wiring
+#[allow(unused_imports)] // temporary until P0-074E5 real output-thread wiring
 pub use error::WasapiRingBufferDrainError;
-#[allow(unused_imports)] // temporary until P0-074E4 output-thread wiring
+#[allow(unused_imports)] // temporary until P0-074E5 real output-thread wiring
+pub(crate) use output_thread_adapter_slot::run_wasapi_output_thread_adapter_slot;
+#[allow(unused_imports)] // temporary until P0-074E5 real output-thread wiring
+pub(crate) use output_thread_adapter_slot_error::WasapiOutputThreadAdapterSlotError;
+#[allow(unused_imports)] // temporary until P0-074E5 real output-thread wiring
+pub(crate) use output_thread_adapter_slot_report::{
+    WasapiOutputThreadAdapterSlotConfig, WasapiOutputThreadAdapterSlotReport,
+};
+#[allow(unused_imports)] // temporary until P0-074E5 real output-thread wiring
 pub(crate) use render_loop_error::WasapiRenderLoopStepError;
-#[allow(unused_imports)] // temporary until P0-074E4 output-thread wiring
+#[allow(unused_imports)] // temporary until P0-074E5 real output-thread wiring
 pub(crate) use render_loop_report::{
     WasapiRenderLoopStepPlan, WasapiRenderLoopStepReport, WasapiRenderLoopStepSkipReason,
 };
-#[allow(unused_imports)] // temporary until P0-074E4 output-thread wiring
+#[allow(unused_imports)] // temporary until P0-074E5 real output-thread wiring
 pub(crate) use render_loop_step::run_manual_drain_render_loop_step;
-#[allow(unused_imports)] // temporary until P0-074E4 output-thread wiring
+#[allow(unused_imports)] // temporary until P0-074E5 real output-thread wiring
 pub(crate) use render_step_adapter::run_wasapi_render_step_adapter;
-#[allow(unused_imports)] // temporary until P0-074E4 output-thread wiring
+#[allow(unused_imports)] // temporary until P0-074E5 real output-thread wiring
 pub(crate) use render_step_adapter_error::WasapiRenderStepAdapterError;
-#[allow(unused_imports)] // temporary until P0-074E4 output-thread wiring
+#[allow(unused_imports)] // temporary until P0-074E5 real output-thread wiring
 pub(crate) use render_step_adapter_report::{
     WasapiRenderStepAdapterConfig, WasapiRenderStepAdapterReport,
 };
-#[allow(unused_imports)] // temporary until P0-074E4 output-thread wiring
+#[allow(unused_imports)] // temporary until P0-074E5 real output-thread wiring
 pub use report::WasapiRingBufferDrainReport;
-#[allow(unused_imports)] // temporary until P0-074E4 output-thread wiring
+#[allow(unused_imports)] // temporary until P0-074E5 real output-thread wiring
 pub(crate) use tick::manual_drain_tick;
-#[allow(unused_imports)] // temporary until P0-074E4 output-thread wiring
+#[allow(unused_imports)] // temporary until P0-074E5 real output-thread wiring
 pub(crate) use tick_error::WasapiDrainTickError;
-#[allow(unused_imports)] // temporary until P0-074E4 output-thread wiring
+#[allow(unused_imports)] // temporary until P0-074E5 real output-thread wiring
 pub(crate) use tick_report::{WasapiDrainTickReport, WasapiDrainTickSkipReason};
