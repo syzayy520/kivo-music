@@ -20,10 +20,21 @@ mod report;
 mod tests_core;
 #[cfg(test)]
 mod tests_error;
+mod tick;
+mod tick_error;
+mod tick_report;
+#[cfg(test)]
+mod tick_tests;
 
-#[allow(unused_imports)] // temporary until P0-074E/P0-074D drain wiring
+#[allow(unused_imports)] // temporary until P0-074E2 render loop wiring
 pub use drain_once::{drain_ring_buffer_once_with_writer, drain_wasapi_output_sink_once};
-#[allow(unused_imports)] // temporary until P0-074E/P0-074D drain wiring
+#[allow(unused_imports)] // temporary until P0-074E2 render loop wiring
 pub use error::WasapiRingBufferDrainError;
-#[allow(unused_imports)] // temporary until P0-074E/P0-074D drain wiring
+#[allow(unused_imports)] // temporary until P0-074E2 render loop wiring
 pub use report::WasapiRingBufferDrainReport;
+#[allow(unused_imports)] // temporary until P0-074E2 render loop wiring
+pub(crate) use tick::manual_drain_tick;
+#[allow(unused_imports)] // temporary until P0-074E2 render loop wiring
+pub(crate) use tick_error::WasapiDrainTickError;
+#[allow(unused_imports)] // temporary until P0-074E2 render loop wiring
+pub(crate) use tick_report::{WasapiDrainTickReport, WasapiDrainTickSkipReason};
