@@ -1,5 +1,5 @@
 use super::input::OutputThreadRuntimeQueueBridgeInput;
-use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::runtime_core::intent::OutputThreadRuntimeIntent;
 use super::super::output_thread_state::OutputThreadState;
 
 /// Validate reset policy for bridge.

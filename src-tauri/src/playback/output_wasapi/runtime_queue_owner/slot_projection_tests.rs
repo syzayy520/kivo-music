@@ -15,13 +15,13 @@ fn projection_state_matches_slot_occupancy() {
     let config = OutputThreadRuntimeQueueConfig::default();
     let mut slots_arr = [None; 8];
     slots_arr[0] = Some(super::super::runtime_queue::entry::OutputThreadRuntimeQueueEntry::new(
-        super::super::output_thread_runtime_id::OutputThreadRuntimeGeneration::default(),
-        super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent::Start,
+        super::super::runtime_core::id::OutputThreadRuntimeGeneration::default(),
+        super::super::runtime_core::intent::OutputThreadRuntimeIntent::Start,
         1,
     ));
     slots_arr[1] = Some(super::super::runtime_queue::entry::OutputThreadRuntimeQueueEntry::new(
-        super::super::output_thread_runtime_id::OutputThreadRuntimeGeneration::default(),
-        super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent::Stop,
+        super::super::runtime_core::id::OutputThreadRuntimeGeneration::default(),
+        super::super::runtime_core::intent::OutputThreadRuntimeIntent::Stop,
         2,
     ));
     let slots = OutputThreadRuntimeQueueOwnerFixedSlots::from_slots(slots_arr);

@@ -1,7 +1,7 @@
 use super::channel::*;
 use super::command::OutputThreadRealTransportCommand;
 use super::status::OutputThreadRealTransportStatus;
-use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::runtime_core::intent::OutputThreadRuntimeIntent;
 
 #[test]
 fn new_channel_reports_channel_created() {

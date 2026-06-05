@@ -1,4 +1,4 @@
-use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::runtime_core::intent::OutputThreadRuntimeIntent;
 use super::super::worker_loop::step::OutputThreadWorkerLoopStepKind;
 use super::decision::{
     OutputThreadWorkerRuntimeDecision, OutputThreadWorkerRuntimeDecisionKind,

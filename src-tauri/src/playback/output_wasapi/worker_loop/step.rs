@@ -5,7 +5,7 @@
 
 use super::super::real_transport::channel::OutputThreadRealTransportRecvResult;
 use super::super::real_transport::command::OutputThreadRealTransportCommand;
-use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::runtime_core::intent::OutputThreadRuntimeIntent;
 use super::state::OutputThreadWorkerLoopState;
 use super::super::worker_lifecycle::shutdown::OutputThreadWorkerShutdownRequest;
 

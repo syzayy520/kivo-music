@@ -1,6 +1,6 @@
 use super::super::output_thread_render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
-use super::super::output_thread_runtime_id::OutputThreadRuntimeGeneration;
-use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::runtime_core::id::OutputThreadRuntimeGeneration;
+use super::super::runtime_core::intent::OutputThreadRuntimeIntent;
 use super::plan::plan_runtime_loop_step;
 use super::state::OutputThreadRuntimeLoopState;
 use super::step::{

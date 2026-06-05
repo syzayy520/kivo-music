@@ -1,5 +1,5 @@
 use super::super::output_thread_render_plan::OutputThreadRenderAction;
-use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::runtime_core::intent::OutputThreadRuntimeIntent;
 use super::state::OutputThreadRuntimeLoopState;
 use super::step::{
     OutputThreadRuntimeLoopStepAction, OutputThreadRuntimeLoopStepDecision,

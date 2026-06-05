@@ -1,6 +1,6 @@
-use super::output_thread_runtime_id::{OutputThreadRuntimeGeneration, OutputThreadRuntimeId};
-use super::output_thread_runtime_status::OutputThreadRuntimeStatus;
-use super::output_thread_state::OutputThreadState;
+use super::id::{OutputThreadRuntimeGeneration, OutputThreadRuntimeId};
+use super::status::OutputThreadRuntimeStatus;
+use super::super::output_thread_state::OutputThreadState;
 
 /// Descriptor for the output thread runtime handle.
 ///

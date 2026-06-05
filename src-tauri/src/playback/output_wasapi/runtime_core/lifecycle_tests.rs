@@ -1,15 +1,15 @@
-use super::output_thread_control::OutputThreadCommand;
-use super::output_thread_runtime_handle::OutputThreadRuntimeHandle;
-use super::output_thread_runtime_lifecycle::{
+use super::super::output_thread_control::OutputThreadCommand;
+use super::handle::OutputThreadRuntimeHandle;
+use super::lifecycle::{
     apply_runtime_command, OutputThreadRuntimeLifecycleError,
 };
-use super::output_thread_runtime_status::OutputThreadRuntimeStatus;
-use super::output_thread_state::OutputThreadState;
+use super::status::OutputThreadRuntimeStatus;
+use super::super::output_thread_state::OutputThreadState;
 
 fn handle_with_state(state: OutputThreadState) -> OutputThreadRuntimeHandle {
     OutputThreadRuntimeHandle::new(
-        super::output_thread_runtime_id::OutputThreadRuntimeId::new(1),
-        super::output_thread_runtime_id::OutputThreadRuntimeGeneration::new(0),
+        super::id::OutputThreadRuntimeId::new(1),
+        super::id::OutputThreadRuntimeGeneration::new(0),
         OutputThreadRuntimeStatus::new(state, true, true, true, true),
     )
 }

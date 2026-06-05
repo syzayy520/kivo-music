@@ -1,5 +1,5 @@
-use super::super::output_thread_runtime_id::OutputThreadRuntimeGeneration;
-use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::runtime_core::id::OutputThreadRuntimeGeneration;
+use super::super::runtime_core::intent::OutputThreadRuntimeIntent;
 use super::config::OutputThreadRuntimeQueueConfig;
 use super::plan::plan_queue_intent;
 use super::result::OutputThreadRuntimeQueuePlanResult;

@@ -1,4 +1,4 @@
-use super::output_thread_runtime_config::OutputThreadRuntimeConfig;
+use super::config::OutputThreadRuntimeConfig;
 
 #[test]
 fn default_config_has_valid_timeouts() {

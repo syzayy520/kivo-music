@@ -18,8 +18,8 @@ fn empty_slots_have_zero_occupied_count() {
 fn single_slot_occupied_updates_occupied_count() {
     let mut slots_arr = [None; RUNTIME_QUEUE_OWNER_FIXED_SLOT_CAPACITY];
     slots_arr[0] = Some(super::super::runtime_queue::entry::OutputThreadRuntimeQueueEntry::new(
-        super::super::output_thread_runtime_id::OutputThreadRuntimeGeneration::default(),
-        super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent::Start,
+        super::super::runtime_core::id::OutputThreadRuntimeGeneration::default(),
+        super::super::runtime_core::intent::OutputThreadRuntimeIntent::Start,
         1,
     ));
     let slots = OutputThreadRuntimeQueueOwnerFixedSlots::from_slots(slots_arr);
@@ -31,8 +31,8 @@ fn full_slots_report_full() {
     let mut slots_arr = [None; RUNTIME_QUEUE_OWNER_FIXED_SLOT_CAPACITY];
     for i in 0..RUNTIME_QUEUE_OWNER_FIXED_SLOT_CAPACITY {
         slots_arr[i] = Some(super::super::runtime_queue::entry::OutputThreadRuntimeQueueEntry::new(
-            super::super::output_thread_runtime_id::OutputThreadRuntimeGeneration::default(),
-            super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent::Start,
+            super::super::runtime_core::id::OutputThreadRuntimeGeneration::default(),
+            super::super::runtime_core::intent::OutputThreadRuntimeIntent::Start,
             i as u64 + 1,
         ));
     }

@@ -1,12 +1,12 @@
-use super::super::output_thread_runtime_handle::OutputThreadRuntimeHandle;
-use super::super::output_thread_runtime_id::{OutputThreadRuntimeGeneration, OutputThreadRuntimeId};
-use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::runtime_core::handle::OutputThreadRuntimeHandle;
+use super::super::runtime_core::id::{OutputThreadRuntimeGeneration, OutputThreadRuntimeId};
+use super::super::runtime_core::intent::OutputThreadRuntimeIntent;
 use super::bridge::*;
 use super::super::runtime_queue::config::OutputThreadRuntimeQueueConfig;
 use super::super::runtime_queue::result::OutputThreadRuntimeQueueRejectReason;
 use super::super::runtime_queue::snapshot::OutputThreadRuntimeQueueSnapshot;
 use super::super::runtime_queue::state::OutputThreadRuntimeQueueState;
-use super::super::output_thread_runtime_status::OutputThreadRuntimeStatus;
+use super::super::runtime_core::status::OutputThreadRuntimeStatus;
 use super::super::output_thread_state::OutputThreadState;
 
 fn handle_with_state(state: OutputThreadState, gen: u64) -> OutputThreadRuntimeHandle {

@@ -3,7 +3,7 @@
 //! Provides a fixed array of scenarios exercising the worker queue bridge
 //! adapter. Does not hold transport channels or queue bridge state.
 
-use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::runtime_core::intent::OutputThreadRuntimeIntent;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

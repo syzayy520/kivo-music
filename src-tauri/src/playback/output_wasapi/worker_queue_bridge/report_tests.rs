@@ -1,11 +1,11 @@
-use super::super::output_thread_runtime_handle::OutputThreadRuntimeHandle;
-use super::super::output_thread_runtime_id::OutputThreadRuntimeGeneration;
-use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::runtime_core::handle::OutputThreadRuntimeHandle;
+use super::super::runtime_core::id::OutputThreadRuntimeGeneration;
+use super::super::runtime_core::intent::OutputThreadRuntimeIntent;
 use super::super::runtime_queue_bridge::input::OutputThreadRuntimeQueueBridgeInput;
 use super::super::runtime_queue::config::OutputThreadRuntimeQueueConfig;
 use super::super::runtime_queue::snapshot::OutputThreadRuntimeQueueSnapshot;
 use super::super::runtime_queue::state::OutputThreadRuntimeQueueState;
-use super::super::output_thread_runtime_status::OutputThreadRuntimeStatus;
+use super::super::runtime_core::status::OutputThreadRuntimeStatus;
 use super::super::output_thread_state::OutputThreadState;
 use super::adapter::adapt_worker_intent_to_queue_bridge;
 use super::report::OutputThreadWorkerQueueBridgeReport;
@@ -17,7 +17,7 @@ fn make_bridge_input(
     let config = OutputThreadRuntimeQueueConfig::default();
     let status = OutputThreadRuntimeStatus::new(state, true, true, false, false);
     let handle = OutputThreadRuntimeHandle::new(
-        super::super::output_thread_runtime_id::OutputThreadRuntimeId::default(),
+        super::super::runtime_core::id::OutputThreadRuntimeId::default(),
         OutputThreadRuntimeGeneration::default(),
         status,
     );

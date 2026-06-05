@@ -1,10 +1,10 @@
-use super::super::output_thread_runtime_id::OutputThreadRuntimeGeneration;
-use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::runtime_core::id::OutputThreadRuntimeGeneration;
+use super::super::runtime_core::intent::OutputThreadRuntimeIntent;
 use super::entry::OutputThreadRuntimeQueueEntry;
 use super::validation::{
     validate_queue_entry_for_runtime, OutputThreadRuntimeQueueValidationError,
 };
-use super::super::output_thread_runtime_status::OutputThreadRuntimeStatus;
+use super::super::runtime_core::status::OutputThreadRuntimeStatus;
 use super::super::output_thread_state::OutputThreadState;
 
 #[test]

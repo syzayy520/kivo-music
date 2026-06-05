@@ -1,4 +1,4 @@
-use super::output_thread_runtime_id::{OutputThreadRuntimeGeneration, OutputThreadRuntimeId};
+use super::id::{OutputThreadRuntimeGeneration, OutputThreadRuntimeId};
 
 #[test]
 fn runtime_id_new_preserves_value() {

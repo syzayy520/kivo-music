@@ -1,4 +1,4 @@
-use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::runtime_core::intent::OutputThreadRuntimeIntent;
 use super::super::runtime_queue_bridge::result::{
     OutputThreadRuntimeQueueBridgeAccepted, OutputThreadRuntimeQueueBridgeRejected,
     OutputThreadRuntimeQueueBridgeResult,
@@ -10,7 +10,7 @@ use super::decision::{
 fn make_accepted_result() -> OutputThreadRuntimeQueueBridgeResult {
     OutputThreadRuntimeQueueBridgeResult::Accepted(OutputThreadRuntimeQueueBridgeAccepted {
         entry: super::super::runtime_queue::entry::OutputThreadRuntimeQueueEntry::new(
-            super::super::output_thread_runtime_id::OutputThreadRuntimeGeneration::default(),
+            super::super::runtime_core::id::OutputThreadRuntimeGeneration::default(),
             OutputThreadRuntimeIntent::Start,
             1,
         ),

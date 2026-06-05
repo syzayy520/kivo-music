@@ -4,7 +4,7 @@
 //! through the queue bridge plan. Does not reference transport
 //! channels, runtime loop, or audio/output primitives.
 
-use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::runtime_core::intent::OutputThreadRuntimeIntent;
 use super::super::runtime_queue_bridge::result::OutputThreadRuntimeQueueBridgeResult;
 
 #[allow(dead_code)]

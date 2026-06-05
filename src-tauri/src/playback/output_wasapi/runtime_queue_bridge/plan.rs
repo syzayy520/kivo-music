@@ -1,4 +1,4 @@
-use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::runtime_core::intent::OutputThreadRuntimeIntent;
 use super::input::OutputThreadRuntimeQueueBridgeInput;
 use super::projection::projection_with_queue_state;
 use super::result::{

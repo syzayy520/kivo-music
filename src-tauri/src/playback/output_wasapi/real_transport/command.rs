@@ -3,7 +3,7 @@
 //! Wraps runtime intents and transport lifecycle commands.
 //! Does not reference any sync/thread/WASAPI primitives.
 
-use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::super::runtime_core::intent::OutputThreadRuntimeIntent;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
