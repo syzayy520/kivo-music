@@ -104,11 +104,12 @@ impl super::windows::WasapiDeviceContext {
             .as_ref()
             .ok_or(WasapiRenderWriteError::MissingAudioClient)?;
 
-        let mut guard = RenderBufferGuard::new(render_client.clone(), frames);
-        // GetBuffer: we don't use the returned pointer for silence
+        // GetBuffer FIRST - if it fails, no guard exists to ReleaseBuffer
         let _ptr = unsafe { render_client.GetBuffer(frames) }
             .map_err(|e| WasapiRenderWriteError::GetBufferFailed(format!("{e:?}")))?;
 
+        // Only create guard AFTER GetBuffer succeeds
+        let mut guard = RenderBufferGuard::new(render_client.clone(), frames);
         guard.release_silent()?;
 
         let format = self.format_cache.as_ref();
@@ -138,7 +139,7 @@ impl super::windows::WasapiDeviceContext {
         let format = self
             .format_cache
             .as_ref()
-            .ok_or(WasapiRenderWriteError::MissingAudioClient)?;
+            .ok_or(WasapiRenderWriteError::MissingFormatCache)?;
         if !format.is_float32() {
             return Err(WasapiRenderWriteError::UnsupportedFormat);
         }
@@ -159,9 +160,12 @@ impl super::windows::WasapiDeviceContext {
             .as_ref()
             .ok_or(WasapiRenderWriteError::MissingAudioClient)?;
 
-        let mut guard = RenderBufferGuard::new(render_client.clone(), frames);
+        // GetBuffer FIRST - if it fails, no guard exists to ReleaseBuffer
         let ptr = unsafe { render_client.GetBuffer(frames) }
             .map_err(|e| WasapiRenderWriteError::GetBufferFailed(format!("{e:?}")))?;
+
+        // Only create guard AFTER GetBuffer succeeds
+        let mut guard = RenderBufferGuard::new(render_client.clone(), frames);
 
         // Copy data into the WASAPI buffer
         unsafe {

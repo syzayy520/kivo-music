@@ -81,16 +81,38 @@ fn write_bytes_returns_not_open_when_not_open() {
 fn render_write_error_display_variants() {
     let cases = [
         (WasapiRenderWriteError::NotOpen, "context is not open"),
-        (WasapiRenderWriteError::MissingRenderClient, "render client is missing"),
-        (WasapiRenderWriteError::MissingAudioClient, "audio client is missing"),
-        (WasapiRenderWriteError::UnsupportedFormat, "format is not IEEE Float32"),
-        (WasapiRenderWriteError::InvalidFrameCount, "frame count must be > 0"),
+        (
+            WasapiRenderWriteError::MissingRenderClient,
+            "render client is missing",
+        ),
+        (
+            WasapiRenderWriteError::MissingAudioClient,
+            "audio client is missing",
+        ),
+        (
+            WasapiRenderWriteError::MissingFormatCache,
+            "format cache is missing",
+        ),
+        (
+            WasapiRenderWriteError::UnsupportedFormat,
+            "format is not IEEE Float32",
+        ),
+        (
+            WasapiRenderWriteError::InvalidFrameCount,
+            "frame count must be > 0",
+        ),
     ];
     for (err, expected) in &cases {
         assert_eq!(&format!("{err}"), expected);
     }
-    let mismatch = WasapiRenderWriteError::ByteLengthMismatch { expected: 8, actual: 4 };
-    assert_eq!(format!("{mismatch}"), "byte length mismatch: expected 8, got 4");
+    let mismatch = WasapiRenderWriteError::ByteLengthMismatch {
+        expected: 8,
+        actual: 4,
+    };
+    assert_eq!(
+        format!("{mismatch}"),
+        "byte length mismatch: expected 8, got 4"
+    );
     let get_err = WasapiRenderWriteError::GetBufferFailed("E_INVALIDARG".into());
     assert_eq!(format!("{get_err}"), "GetBuffer failed: E_INVALIDARG");
     let rel_err = WasapiRenderWriteError::ReleaseBufferFailed("E_FAIL".into());

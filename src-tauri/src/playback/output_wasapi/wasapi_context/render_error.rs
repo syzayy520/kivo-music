@@ -10,6 +10,8 @@ pub(crate) enum WasapiRenderWriteError {
     MissingRenderClient,
     /// IAudioClient is missing.
     MissingAudioClient,
+    /// Format cache was not populated during open().
+    MissingFormatCache,
     /// Format is not IEEE Float32 (required for write).
     UnsupportedFormat,
     /// Requested frame count is zero.
@@ -28,6 +30,7 @@ impl std::fmt::Display for WasapiRenderWriteError {
             Self::NotOpen => write!(f, "context is not open"),
             Self::MissingRenderClient => write!(f, "render client is missing"),
             Self::MissingAudioClient => write!(f, "audio client is missing"),
+            Self::MissingFormatCache => write!(f, "format cache is missing"),
             Self::UnsupportedFormat => write!(f, "format is not IEEE Float32"),
             Self::InvalidFrameCount => write!(f, "frame count must be > 0"),
             Self::ByteLengthMismatch { expected, actual } => {
