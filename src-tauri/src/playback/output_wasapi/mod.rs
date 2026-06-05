@@ -24,6 +24,9 @@ mod pcm_adapter_tests;
 pub mod render_client;
 pub mod reset_boundary;
 pub mod ring_buffer;
+pub(crate) mod ring_buffer_source;
+#[cfg(test)]
+mod ring_buffer_source_tests;
 pub mod ring_buffer_output_thread;
 pub mod silent_loop;
 pub mod sink;
