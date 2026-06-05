@@ -24,6 +24,9 @@ mod pcm_adapter_tests;
 pub mod render_client;
 pub mod reset_boundary;
 pub mod ring_buffer;
+pub(crate) mod ring_buffer_render_boundary;
+#[cfg(test)]
+mod ring_buffer_render_boundary_tests;
 pub(crate) mod ring_buffer_source;
 #[cfg(test)]
 mod ring_buffer_source_tests;
