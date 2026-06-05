@@ -58,16 +58,17 @@ pub(crate) use output_thread_adapter_slot_error::WasapiOutputThreadAdapterSlotEr
 pub(crate) use output_thread_adapter_slot_report::{
     WasapiOutputThreadAdapterSlotConfig, WasapiOutputThreadAdapterSlotReport,
 };
-#[allow(unused_imports)] // temporary until P0-074E5B real output-thread wiring
+#[allow(unused_imports)] // temporary until P0-074E5B command contract wiring
 pub(crate) use output_thread_owned_state::{
-    build_default_output_thread_owned_state_contract, validate_output_thread_owned_state_contract,
+    default_wasapi_output_thread_owned_state_contract,
+    validate_wasapi_output_thread_owned_state_contract,
 };
-#[allow(unused_imports)] // temporary until P0-074E5B real output-thread wiring
+#[allow(unused_imports)] // temporary until P0-074E5B command contract wiring
 pub(crate) use output_thread_owned_state_error::WasapiOutputThreadOwnedStateError;
-#[allow(unused_imports)] // temporary until P0-074E5B real output-thread wiring
+#[allow(unused_imports)] // temporary until P0-074E5B command contract wiring
 pub(crate) use output_thread_owned_state_report::{
     WasapiOutputThreadOwnedStateContract, WasapiOutputThreadOwnedStateOwner,
-    WasapiOutputThreadOwnedStateStage,
+    WasapiOutputThreadOwnedStateReport, WasapiOutputThreadOwnedStateStage,
 };
 #[allow(unused_imports)] // temporary until P0-074E5 real output-thread wiring
 pub(crate) use render_loop_error::WasapiRenderLoopStepError;

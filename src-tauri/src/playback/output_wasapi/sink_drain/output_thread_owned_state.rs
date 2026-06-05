@@ -6,7 +6,7 @@
 use super::output_thread_owned_state_error::WasapiOutputThreadOwnedStateError;
 use super::output_thread_owned_state_report::{
     WasapiOutputThreadOwnedStateContract, WasapiOutputThreadOwnedStateOwner,
-    WasapiOutputThreadOwnedStateStage,
+    WasapiOutputThreadOwnedStateReport, WasapiOutputThreadOwnedStateStage,
 };
 
 /// Build the default output-thread owned state contract.
@@ -20,8 +20,8 @@ use super::output_thread_owned_state_report::{
 /// - Adapter slot: OutputThread
 /// - Command channel: NotAllocated
 /// - All runtime flags: false
-#[allow(dead_code)]
-pub(crate) fn build_default_output_thread_owned_state_contract(
+#[allow(dead_code)] // temporary until P0-074E5B command contract wiring
+pub(crate) fn default_wasapi_output_thread_owned_state_contract(
 ) -> WasapiOutputThreadOwnedStateContract {
     WasapiOutputThreadOwnedStateContract {
         stage: WasapiOutputThreadOwnedStateStage::ContractOnly,
@@ -43,47 +43,50 @@ pub(crate) fn build_default_output_thread_owned_state_contract(
 
 /// Validate an output-thread owned state contract against the expected rules.
 ///
-/// Returns `Ok(())` if the contract is valid, or a specific error variant
+/// Returns `Ok(report)` if the contract is valid, or a specific error variant
 /// describing which rule was violated.
-#[allow(dead_code)]
-pub(crate) fn validate_output_thread_owned_state_contract(
-    contract: &WasapiOutputThreadOwnedStateContract,
-) -> Result<(), WasapiOutputThreadOwnedStateError> {
+#[allow(dead_code)] // temporary until P0-074E5B command contract wiring
+pub(crate) fn validate_wasapi_output_thread_owned_state_contract(
+    contract: WasapiOutputThreadOwnedStateContract,
+) -> Result<WasapiOutputThreadOwnedStateReport, WasapiOutputThreadOwnedStateError> {
     if contract.stage != WasapiOutputThreadOwnedStateStage::ContractOnly {
         return Err(WasapiOutputThreadOwnedStateError::InvalidStage);
-    }
-    if contract.wasapi_context_owner != WasapiOutputThreadOwnedStateOwner::OutputThread {
-        return Err(WasapiOutputThreadOwnedStateError::InvalidContextOwner);
     }
     if contract.sink_owner != WasapiOutputThreadOwnedStateOwner::SplitProducerConsumer {
         return Err(WasapiOutputThreadOwnedStateError::InvalidSinkOwner);
     }
+    if contract.wasapi_context_owner != WasapiOutputThreadOwnedStateOwner::OutputThread {
+        return Err(WasapiOutputThreadOwnedStateError::WasapiContextMustBeOutputThreadOwned);
+    }
     if contract.ring_buffer_producer_owner != WasapiOutputThreadOwnedStateOwner::MainThread {
-        return Err(WasapiOutputThreadOwnedStateError::InvalidRingBufferProducerOwner);
+        return Err(WasapiOutputThreadOwnedStateError::RingBufferProducerMustBeMainThreadOwned);
     }
     if contract.ring_buffer_consumer_owner != WasapiOutputThreadOwnedStateOwner::OutputThread {
-        return Err(WasapiOutputThreadOwnedStateError::InvalidRingBufferConsumerOwner);
+        return Err(WasapiOutputThreadOwnedStateError::RingBufferConsumerMustBeOutputThreadOwned);
     }
     if contract.adapter_slot_owner != WasapiOutputThreadOwnedStateOwner::OutputThread {
-        return Err(WasapiOutputThreadOwnedStateError::InvalidAdapterSlotOwner);
+        return Err(WasapiOutputThreadOwnedStateError::AdapterSlotMustBeOutputThreadOwned);
     }
     if contract.command_channel_owner != WasapiOutputThreadOwnedStateOwner::NotAllocated {
-        return Err(WasapiOutputThreadOwnedStateError::InvalidCommandChannelOwner);
+        return Err(WasapiOutputThreadOwnedStateError::CommandChannelMustNotBeAllocatedYet);
     }
     if contract.thread_spawned {
-        return Err(WasapiOutputThreadOwnedStateError::ThreadAlreadySpawned);
+        return Err(WasapiOutputThreadOwnedStateError::ThreadMustNotBeSpawnedYet);
     }
     if contract.channel_created {
-        return Err(WasapiOutputThreadOwnedStateError::ChannelAlreadyCreated);
+        return Err(WasapiOutputThreadOwnedStateError::ChannelMustNotBeCreatedYet);
     }
     if contract.audio_client_start_allowed {
-        return Err(WasapiOutputThreadOwnedStateError::StartNotAllowedYet);
+        return Err(WasapiOutputThreadOwnedStateError::AudioClientStartMustNotBeAllowedYet);
     }
     if contract.native_pipeline_connected {
-        return Err(WasapiOutputThreadOwnedStateError::NativePipelineAlreadyConnected);
+        return Err(WasapiOutputThreadOwnedStateError::NativePipelineMustNotBeConnectedYet);
     }
     if contract.playback_capabilities_enabled {
-        return Err(WasapiOutputThreadOwnedStateError::CapabilitiesAlreadyEnabled);
+        return Err(WasapiOutputThreadOwnedStateError::PlaybackCapabilitiesMustNotBeEnabledYet);
     }
-    Ok(())
+    Ok(WasapiOutputThreadOwnedStateReport {
+        contract,
+        valid_for_current_scaffold: true,
+    })
 }

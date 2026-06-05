@@ -29,7 +29,7 @@ pub(crate) enum WasapiOutputThreadOwnedStateStage {
 /// Ownership contract for a future real output thread.
 ///
 /// Describes who owns what resource, without creating any real resources.
-/// Validated by `validate_output_thread_owned_state_contract`.
+/// Validated by `validate_wasapi_output_thread_owned_state_contract`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct WasapiOutputThreadOwnedStateContract {
     pub(crate) stage: WasapiOutputThreadOwnedStateStage,
@@ -46,4 +46,16 @@ pub(crate) struct WasapiOutputThreadOwnedStateContract {
     pub(crate) audio_client_start_allowed: bool,
     pub(crate) native_pipeline_connected: bool,
     pub(crate) playback_capabilities_enabled: bool,
+}
+
+/// Validation report for an output-thread owned state contract.
+///
+/// Contains the validated contract and a flag indicating whether
+/// the current scaffold (pure contract, no real resources) is valid.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) struct WasapiOutputThreadOwnedStateReport {
+    /// The contract that was validated.
+    pub(crate) contract: WasapiOutputThreadOwnedStateContract,
+    /// Whether the contract is valid for the current scaffold stage.
+    pub(crate) valid_for_current_scaffold: bool,
 }

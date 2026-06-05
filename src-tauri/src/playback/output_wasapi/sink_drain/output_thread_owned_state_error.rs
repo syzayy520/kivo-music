@@ -1,30 +1,30 @@
 //! Validation errors for the output-thread owned state contract.
 
 /// Errors returned when a contract violates the expected ownership rules.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum WasapiOutputThreadOwnedStateError {
     /// Contract stage must be `ContractOnly`.
     InvalidStage,
-    /// `wasapi_context_owner` must be `OutputThread`.
-    InvalidContextOwner,
     /// `sink_owner` must be `SplitProducerConsumer`.
     InvalidSinkOwner,
+    /// `wasapi_context_owner` must be `OutputThread`.
+    WasapiContextMustBeOutputThreadOwned,
     /// `ring_buffer_producer_owner` must be `MainThread`.
-    InvalidRingBufferProducerOwner,
+    RingBufferProducerMustBeMainThreadOwned,
     /// `ring_buffer_consumer_owner` must be `OutputThread`.
-    InvalidRingBufferConsumerOwner,
+    RingBufferConsumerMustBeOutputThreadOwned,
     /// `adapter_slot_owner` must be `OutputThread`.
-    InvalidAdapterSlotOwner,
+    AdapterSlotMustBeOutputThreadOwned,
     /// `command_channel_owner` must be `NotAllocated`.
-    InvalidCommandChannelOwner,
+    CommandChannelMustNotBeAllocatedYet,
     /// `thread_spawned` must be `false`.
-    ThreadAlreadySpawned,
+    ThreadMustNotBeSpawnedYet,
     /// `channel_created` must be `false`.
-    ChannelAlreadyCreated,
+    ChannelMustNotBeCreatedYet,
     /// `audio_client_start_allowed` must be `false`.
-    StartNotAllowedYet,
+    AudioClientStartMustNotBeAllowedYet,
     /// `native_pipeline_connected` must be `false`.
-    NativePipelineAlreadyConnected,
+    NativePipelineMustNotBeConnectedYet,
     /// `playback_capabilities_enabled` must be `false`.
-    CapabilitiesAlreadyEnabled,
+    PlaybackCapabilitiesMustNotBeEnabledYet,
 }
