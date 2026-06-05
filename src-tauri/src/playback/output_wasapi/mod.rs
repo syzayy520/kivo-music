@@ -27,5 +27,6 @@ pub mod sink;
 pub(crate) mod sink_silent_helper;
 pub mod start_stop;
 pub mod status;
+pub(crate) mod wasapi_context;
 
 include!("output_thread_test_modules.rs");

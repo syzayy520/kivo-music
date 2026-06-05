@@ -9,6 +9,7 @@ use super::platform::WasapiCompileBoundary;
 use super::ring_buffer::buffer::RingBuffer;
 use super::ring_buffer::errors::RingBufferError;
 use super::status::WasapiOutputStatus;
+use super::wasapi_context::WasapiContext;
 
 /// Errors from preparing a ring buffer for a stream.
 #[derive(Debug)]
@@ -31,19 +32,19 @@ impl From<RingBufferError> for WasapiRingBufferPrepareError {
     }
 }
 
-/// WASAPI output sink scaffold for the native audio pipeline.
+/// WASAPI output sink for the native audio pipeline.
 ///
-/// This is a lifecycle-only scaffold that does NOT:
-/// - Open real audio devices
+/// Manages real WASAPI device lifecycle on Windows:
+/// - `open()` initializes COM, enumerates devices, activates IAudioClient,
+///   initializes in shared mode, and acquires IAudioRenderClient.
+/// - `close()` releases all WASAPI resources.
+///
+/// **This sink does NOT:**
+/// - Write PCM data (submit_frame returns UnsupportedOperation)
+/// - Start IAudioClient
 /// - Produce audible output
 /// - Create output threads
-/// - Use Windows audio APIs
-/// - Write to ring buffers
-///
-/// State-transition methods (`open`, `stop`, `flush`, `close`, `set_volume`,
-/// `set_muted`) succeed and update internal lifecycle state.
-/// `submit_frame` returns typed `UnsupportedOperation` — this sink cannot
-/// accept audio frames until a real WASAPI backend is wired in.
+/// - Use RingBuffer for production
 #[derive(Debug, Default)]
 pub struct WasapiOutputSink {
     /// Configuration populated by `open`.
@@ -54,6 +55,8 @@ pub struct WasapiOutputSink {
     runtime: OutputRuntimeStatus,
     /// Optional ring buffer owned by this sink.
     ring_buffer: Option<RingBuffer>,
+    /// WASAPI device context (real on Windows, empty on other platforms).
+    context: WasapiContext,
 }
 
 impl WasapiOutputSink {
@@ -112,12 +115,24 @@ impl WasapiOutputSink {
 impl OutputSink for WasapiOutputSink {
     fn open(&mut self, settings: &OutputSettings) -> PlaybackResult<OutputRuntimeStatus> {
         self.config = WasapiOutputConfig::from_output_settings(settings);
-        self.status.is_open_attempted = true;
-        self.status.is_real_device_open = false;
         self.runtime.active_device_id = settings.selected_device_id.clone();
-        self.runtime.is_open = true;
-        self.runtime.is_active = true;
-        self.runtime.last_error = None;
+
+        // Attempt real WASAPI device open
+        match self.context.open() {
+            Ok(()) => {
+                self.status.mark_opened_with_render_client();
+                self.runtime.is_open = true;
+                self.runtime.is_active = true;
+                self.runtime.last_error = None;
+            }
+            Err(e) => {
+                self.status.mark_open_failed(e.to_message());
+                self.runtime.is_open = false;
+                self.runtime.is_active = false;
+                self.runtime.last_error = Some(e.to_message());
+            }
+        }
+
         Ok(self.runtime.clone())
     }
 
@@ -171,12 +186,21 @@ impl OutputSink for WasapiOutputSink {
     }
 
     fn close(&mut self) -> PlaybackResult<()> {
+        // Release ring buffer if present
         if let Some(mut rb) = self.ring_buffer.take() {
             rb.close();
         }
+
+        // Release WASAPI context
+        self.context.close();
+
+        // Reset status
+        self.status.mark_closed();
+
+        // Reset runtime state
         self.runtime = OutputRuntimeStatus::default();
-        self.status = WasapiOutputStatus::default();
         self.config = WasapiOutputConfig::default();
+
         Ok(())
     }
 }
