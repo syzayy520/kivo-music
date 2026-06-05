@@ -20,6 +20,11 @@ mod output_thread_adapter_slot_error;
 mod output_thread_adapter_slot_report;
 #[cfg(test)]
 mod output_thread_adapter_slot_tests;
+mod output_thread_owned_state;
+mod output_thread_owned_state_error;
+mod output_thread_owned_state_report;
+#[cfg(test)]
+mod output_thread_owned_state_tests;
 mod render_loop_error;
 mod render_loop_report;
 mod render_loop_step;
@@ -52,6 +57,17 @@ pub(crate) use output_thread_adapter_slot_error::WasapiOutputThreadAdapterSlotEr
 #[allow(unused_imports)] // temporary until P0-074E5 real output-thread wiring
 pub(crate) use output_thread_adapter_slot_report::{
     WasapiOutputThreadAdapterSlotConfig, WasapiOutputThreadAdapterSlotReport,
+};
+#[allow(unused_imports)] // temporary until P0-074E5B real output-thread wiring
+pub(crate) use output_thread_owned_state::{
+    build_default_output_thread_owned_state_contract, validate_output_thread_owned_state_contract,
+};
+#[allow(unused_imports)] // temporary until P0-074E5B real output-thread wiring
+pub(crate) use output_thread_owned_state_error::WasapiOutputThreadOwnedStateError;
+#[allow(unused_imports)] // temporary until P0-074E5B real output-thread wiring
+pub(crate) use output_thread_owned_state_report::{
+    WasapiOutputThreadOwnedStateContract, WasapiOutputThreadOwnedStateOwner,
+    WasapiOutputThreadOwnedStateStage,
 };
 #[allow(unused_imports)] // temporary until P0-074E5 real output-thread wiring
 pub(crate) use render_loop_error::WasapiRenderLoopStepError;
