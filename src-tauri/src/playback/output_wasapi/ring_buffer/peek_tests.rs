@@ -88,13 +88,29 @@ fn peek_unaligned_output_is_error() {
 }
 
 #[test]
-fn peek_closed_buffer_returns_zero() {
+fn peek_closed_empty_returns_closed_error() {
     let mut rb = RingBuffer::new(sample_format(), 10).unwrap();
     rb.close();
 
     let mut out = vec![0u8; 16];
+    let result = rb.peek_frames(&mut out);
+    assert_eq!(result.unwrap_err(), RingBufferError::Closed);
+    // Output should be unchanged
+    assert_eq!(out, vec![0u8; 16]);
+}
+
+#[test]
+fn peek_closed_buffer_with_data_works() {
+    let mut rb = RingBuffer::new(sample_format(), 10).unwrap();
+    let data = vec![1u8, 2, 3, 4, 5, 6, 7, 8];
+    rb.write_frames(&data).unwrap();
+    rb.close();
+
+    // Closed buffer with data should still allow peek
+    let mut out = vec![0u8; 16];
     let peeked = rb.peek_frames(&mut out).unwrap();
-    assert_eq!(peeked, 0);
+    assert_eq!(peeked, 1);
+    assert_eq!(out[..8], data);
 }
 
 #[test]

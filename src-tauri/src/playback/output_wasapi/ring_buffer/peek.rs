@@ -18,8 +18,8 @@ impl RingBuffer {
     /// Behavior:
     /// - If `out.len()` is not a multiple of `block_align`, returns `FrameAlignment` error.
     /// - If `out.len() == 0`, returns `Ok(0)`.
-    /// - If buffer is empty, returns `Ok(0)` without modifying `out`.
-    /// - If buffer is closed and empty, returns `Ok(0)` (consistent with `read_frames_or_silence`).
+    /// - If buffer is open and empty, returns `Ok(0)` without modifying `out`.
+    /// - If buffer is closed and empty, returns `Closed` error (consistent with `read_frames_or_silence`).
     /// - Supports wrap-around: data spanning ring boundary is copied in correct order.
     /// - Does not modify stats.
     #[allow(dead_code)] // temporary until P0-074D drain wiring
@@ -32,6 +32,9 @@ impl RingBuffer {
             return Ok(0);
         }
         if self.available_frames == 0 {
+            if self.closed {
+                return Err(RingBufferError::Closed);
+            }
             return Ok(0);
         }
 
@@ -69,7 +72,7 @@ impl RingBuffer {
     /// Behavior:
     /// - If `frames == 0`, returns `Ok(0)` without modifying state.
     /// - If `frames > available_frames`, returns `NotEnoughFrames` error.
-    /// - If buffer is closed and empty, returns `Ok(0)` (consistent with `read_frames_or_silence`).
+    /// - If buffer is closed and empty, returns `Closed` error (consistent with `read_frames_or_silence`).
     /// - Updates `stats.total_frames_read`.
     /// - Does not perform partial consume.
     #[allow(dead_code)] // temporary until P0-074D drain wiring
@@ -81,7 +84,10 @@ impl RingBuffer {
             if self.closed {
                 return Err(RingBufferError::Closed);
             }
-            return Ok(0);
+            return Err(RingBufferError::NotEnoughFrames {
+                requested: frames,
+                available: 0,
+            });
         }
         if frames > self.available_frames {
             return Err(RingBufferError::NotEnoughFrames {

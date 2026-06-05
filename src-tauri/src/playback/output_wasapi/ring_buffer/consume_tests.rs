@@ -107,6 +107,22 @@ fn consume_updates_stats() {
 }
 
 #[test]
+fn consume_empty_open_with_positive_frames_returns_not_enough_frames() {
+    let mut rb = RingBuffer::new(sample_format(), 10).unwrap();
+    // Buffer is open and empty
+    assert_eq!(rb.available_frames(), 0);
+
+    let result = rb.consume_frames(1);
+    assert_eq!(
+        result.unwrap_err(),
+        RingBufferError::NotEnoughFrames {
+            requested: 1,
+            available: 0,
+        }
+    );
+}
+
+#[test]
 fn consume_closed_buffer_returns_error() {
     let mut rb = RingBuffer::new(sample_format(), 10).unwrap();
     rb.close();
