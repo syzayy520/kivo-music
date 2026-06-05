@@ -1,9 +1,9 @@
-use super::output_thread_control::OutputThreadControlSnapshot;
-use super::output_thread_mock_buffer::OutputThreadMockBuffer;
-use super::output_thread_mock_harness::{plan_mock_step, plan_mock_step_projection_only};
-use super::output_thread_mock_renderer::OutputThreadMockRenderer;
-use super::output_thread_render_plan::OutputThreadRenderAction;
-use super::output_thread_state::OutputThreadState;
+use super::super::output_thread_control::OutputThreadControlSnapshot;
+use super::buffer::OutputThreadMockBuffer;
+use super::harness::{plan_mock_step, plan_mock_step_projection_only};
+use super::renderer::OutputThreadMockRenderer;
+use super::super::output_thread_render_plan::OutputThreadRenderAction;
+use super::super::output_thread_state::OutputThreadState;
 
 fn running_control() -> OutputThreadControlSnapshot {
     OutputThreadControlSnapshot {

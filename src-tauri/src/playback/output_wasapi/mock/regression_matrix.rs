@@ -1,6 +1,6 @@
-use super::output_thread_mock_coverage::OutputThreadMockCoverage;
-use super::output_thread_mock_regression::{run_mock_regression, OutputThreadMockRegressionResult};
-use super::output_thread_mock_scenario_matrix::{all_mock_scenarios, scenario_names};
+use super::coverage::OutputThreadMockCoverage;
+use super::regression::{run_mock_regression, OutputThreadMockRegressionResult};
+use super::scenario_matrix::{all_mock_scenarios, scenario_names};
 
 /// Result of running all mock regressions.
 ///

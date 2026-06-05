@@ -1,5 +1,5 @@
-use super::output_thread_mock_scenario_matrix::{all_mock_scenarios, scenario_names};
-use super::output_thread_mock_scenario_runner::run_mock_scenario;
+use super::scenario_matrix::{all_mock_scenarios, scenario_names};
+use super::scenario_runner::run_mock_scenario;
 
 #[test]
 fn matrix_contains_all_expected_scenarios() {

@@ -1,5 +1,5 @@
-use super::super::output_thread_real_transport_channel::OutputThreadRealTransportRecvResult;
-use super::super::output_thread_real_transport_command::OutputThreadRealTransportCommand;
+use super::super::real_transport::channel::OutputThreadRealTransportRecvResult;
+use super::super::real_transport::command::OutputThreadRealTransportCommand;
 use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
 use super::state::OutputThreadWorkerLoopState;
 use super::step::{

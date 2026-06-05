@@ -1,8 +1,8 @@
-use super::output_thread_mock_result::OutputThreadMockStepResult;
-use super::output_thread_mock_scenario_result::OutputThreadMockScenarioResult;
-use super::output_thread_mock_sequence::OutputThreadMockSequence;
-use super::output_thread_plan_projection::OutputThreadStatsProjection;
-use super::output_thread_render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
+use super::result::OutputThreadMockStepResult;
+use super::scenario_result::OutputThreadMockScenarioResult;
+use super::sequence::OutputThreadMockSequence;
+use super::super::output_thread_plan_projection::OutputThreadStatsProjection;
+use super::super::output_thread_render_plan::{OutputThreadRenderAction, OutputThreadRenderPlan};
 
 fn audio_step(frames: u32) -> OutputThreadMockStepResult {
     OutputThreadMockStepResult {

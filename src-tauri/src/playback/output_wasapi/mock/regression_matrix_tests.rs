@@ -1,4 +1,4 @@
-use super::output_thread_mock_regression_matrix::*;
+use super::regression_matrix::*;
 
 #[test]
 fn regression_matrix_runs_all_scenarios() {

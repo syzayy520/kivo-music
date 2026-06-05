@@ -3,8 +3,8 @@
 //! Maps a single transport recv result into a loop step decision.
 //! Does not reference thread, sync, audio, or blocking primitives.
 
-use super::super::output_thread_real_transport_channel::OutputThreadRealTransportRecvResult;
-use super::super::output_thread_real_transport_command::OutputThreadRealTransportCommand;
+use super::super::real_transport::channel::OutputThreadRealTransportRecvResult;
+use super::super::real_transport::command::OutputThreadRealTransportCommand;
 use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
 use super::state::OutputThreadWorkerLoopState;
 use super::super::worker_lifecycle::shutdown::OutputThreadWorkerShutdownRequest;

@@ -1,6 +1,6 @@
-use super::output_thread_control::OutputThreadControlSnapshot;
-use super::output_thread_mock_buffer::OutputThreadMockBuffer;
-use super::output_thread_mock_renderer::OutputThreadMockRenderer;
+use super::super::output_thread_control::OutputThreadControlSnapshot;
+use super::buffer::OutputThreadMockBuffer;
+use super::renderer::OutputThreadMockRenderer;
 
 /// Input parameters for a single mock scenario.
 ///

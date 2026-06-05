@@ -1,4 +1,4 @@
-use super::output_thread_mock_sequence::OutputThreadMockSequence;
+use super::sequence::OutputThreadMockSequence;
 
 /// Summary of a mock scenario execution.
 ///

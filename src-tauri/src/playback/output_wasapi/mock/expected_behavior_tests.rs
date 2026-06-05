@@ -1,5 +1,5 @@
-use super::output_thread_mock_expected_behavior::*;
-use super::output_thread_render_plan::OutputThreadRenderAction;
+use super::expected_behavior::*;
+use super::super::output_thread_render_plan::OutputThreadRenderAction;
 
 const KNOWN_NAMES: &[&str] = &[
     "normal_audio",

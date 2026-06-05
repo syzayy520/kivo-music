@@ -1,5 +1,5 @@
-use super::super::output_thread_real_transport_channel::OutputThreadRealTransportChannel;
-use super::super::output_thread_real_transport_command::OutputThreadRealTransportCommand;
+use super::super::real_transport::channel::OutputThreadRealTransportChannel;
+use super::super::real_transport::command::OutputThreadRealTransportCommand;
 use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
 use super::runner::{
     run_worker_loop_skeleton, OutputThreadWorkerLoopRunConfig,

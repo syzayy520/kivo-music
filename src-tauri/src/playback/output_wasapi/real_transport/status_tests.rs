@@ -1,5 +1,5 @@
-use super::output_thread_real_transport_contract::OutputThreadRealTransportContract;
-use super::output_thread_real_transport_status::*;
+use super::contract::OutputThreadRealTransportContract;
+use super::status::*;
 
 #[test]
 fn report_from_contract_is_not_created() {

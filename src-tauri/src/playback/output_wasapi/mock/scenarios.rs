@@ -1,8 +1,8 @@
-use super::output_thread_control::OutputThreadControlSnapshot;
-use super::output_thread_mock_buffer::OutputThreadMockBuffer;
-use super::output_thread_mock_renderer::OutputThreadMockRenderer;
-use super::output_thread_mock_scenario::OutputThreadMockScenario;
-use super::output_thread_state::OutputThreadState;
+use super::super::output_thread_control::OutputThreadControlSnapshot;
+use super::buffer::OutputThreadMockBuffer;
+use super::renderer::OutputThreadMockRenderer;
+use super::scenario::OutputThreadMockScenario;
+use super::super::output_thread_state::OutputThreadState;
 
 // ---------------------------------------------------------------------------
 // Control helpers

@@ -1,20 +1,20 @@
-use super::output_thread_mock_scenario::OutputThreadMockScenario;
-use super::output_thread_mock_scenarios;
+use super::scenario::OutputThreadMockScenario;
+use super::scenarios;
 
 /// Return all named mock scenarios in fixed order.
 #[allow(dead_code)]
 pub(crate) fn all_mock_scenarios() -> Vec<OutputThreadMockScenario> {
     vec![
-        output_thread_mock_scenarios::normal_audio(),
-        output_thread_mock_scenarios::empty_running(),
-        output_thread_mock_scenarios::no_capacity(),
-        output_thread_mock_scenarios::shutdown_requested(),
-        output_thread_mock_scenarios::paused_empty(),
-        output_thread_mock_scenarios::paused_with_frames(),
-        output_thread_mock_scenarios::flush_empty(),
-        output_thread_mock_scenarios::closed_empty(),
-        output_thread_mock_scenarios::closed_with_remaining(),
-        output_thread_mock_scenarios::non_running(),
+        scenarios::normal_audio(),
+        scenarios::empty_running(),
+        scenarios::no_capacity(),
+        scenarios::shutdown_requested(),
+        scenarios::paused_empty(),
+        scenarios::paused_with_frames(),
+        scenarios::flush_empty(),
+        scenarios::closed_empty(),
+        scenarios::closed_with_remaining(),
+        scenarios::non_running(),
     ]
 }
 

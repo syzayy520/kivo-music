@@ -1,4 +1,4 @@
-use super::output_thread_real_transport_contract::*;
+use super::contract::*;
 
 #[test]
 fn contract_only_stage_is_contract_only() {

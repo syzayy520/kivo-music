@@ -1,10 +1,10 @@
-use super::output_thread_mock_assertions::*;
-use super::output_thread_mock_coverage::OutputThreadMockCoverage;
-use super::output_thread_mock_golden::OutputThreadMockGoldenError;
-use super::output_thread_mock_regression::OutputThreadMockRegressionResult;
-use super::output_thread_mock_regression_matrix::OutputThreadMockRegressionMatrix;
-use super::output_thread_mock_scenario_result::OutputThreadMockScenarioResult;
-use super::output_thread_mock_sequence::OutputThreadMockSequence;
+use super::assertions::*;
+use super::coverage::OutputThreadMockCoverage;
+use super::golden::OutputThreadMockGoldenError;
+use super::regression::OutputThreadMockRegressionResult;
+use super::regression_matrix::OutputThreadMockRegressionMatrix;
+use super::scenario_result::OutputThreadMockScenarioResult;
+use super::sequence::OutputThreadMockSequence;
 
 #[test]
 fn result_passes_golden_for_valid_result() {

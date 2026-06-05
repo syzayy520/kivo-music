@@ -1,4 +1,4 @@
-use super::output_thread_render_plan::OutputThreadRenderAction;
+use super::super::output_thread_render_plan::OutputThreadRenderAction;
 
 /// Expectation for a mock scenario outcome.
 ///

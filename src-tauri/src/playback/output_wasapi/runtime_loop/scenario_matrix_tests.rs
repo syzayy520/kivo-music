@@ -1,6 +1,6 @@
-use super::output_thread_runtime_loop_scenario::OutputThreadRuntimeLoopScenarioKind;
-use super::output_thread_runtime_loop_scenario_matrix::runtime_loop_scenario_matrix;
-use super::output_thread_runtime_loop_scenario_runner::plan_runtime_loop_scenario;
+use super::scenario::OutputThreadRuntimeLoopScenarioKind;
+use super::scenario_matrix::runtime_loop_scenario_matrix;
+use super::scenario_runner::plan_runtime_loop_scenario;
 
 #[test]
 fn matrix_contains_required_scenarios() {
@@ -55,7 +55,7 @@ fn matrix_render_audio_scenario_is_classification_only() {
     assert!(!run.is_terminal());
     assert_eq!(
         run.final_state,
-        super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState::Active
+        super::state::OutputThreadRuntimeLoopState::Active
     );
 }
 

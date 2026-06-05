@@ -1,6 +1,6 @@
-use super::output_thread_render_plan::OutputThreadRenderPlan;
-use super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState;
-use super::runtime_queue_bridge::bridge::OutputThreadRuntimeQueueBridgeResult;
+use super::super::output_thread_render_plan::OutputThreadRenderPlan;
+use super::state::OutputThreadRuntimeLoopState;
+use super::super::runtime_queue_bridge::bridge::OutputThreadRuntimeQueueBridgeResult;
 
 /// Input for a single loop step calculation.
 #[allow(dead_code)]

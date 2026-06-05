@@ -1,9 +1,9 @@
-use super::output_thread_control::OutputThreadControlSnapshot;
-use super::output_thread_mock_buffer::OutputThreadMockBuffer;
-use super::output_thread_mock_harness::plan_mock_step;
-use super::output_thread_mock_renderer::OutputThreadMockRenderer;
-use super::output_thread_mock_result::OutputThreadMockStepResult;
-use super::output_thread_render_plan::OutputThreadRenderAction;
+use super::super::output_thread_control::OutputThreadControlSnapshot;
+use super::buffer::OutputThreadMockBuffer;
+use super::harness::plan_mock_step;
+use super::renderer::OutputThreadMockRenderer;
+use super::result::OutputThreadMockStepResult;
+use super::super::output_thread_render_plan::OutputThreadRenderAction;
 
 /// Sequence of mock harness steps.
 ///

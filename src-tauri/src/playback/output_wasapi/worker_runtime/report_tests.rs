@@ -1,5 +1,5 @@
 use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
-use super::super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState;
+use super::super::runtime_loop::state::OutputThreadRuntimeLoopState;
 use super::super::worker_loop::report::OutputThreadWorkerLoopReport;
 use super::super::worker_loop::state::OutputThreadWorkerLoopState;
 use super::super::worker_loop::step::{

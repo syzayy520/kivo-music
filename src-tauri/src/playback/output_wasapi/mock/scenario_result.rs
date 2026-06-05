@@ -1,5 +1,5 @@
-use super::output_thread_mock_scenario_summary::OutputThreadMockScenarioSummary;
-use super::output_thread_mock_sequence::OutputThreadMockSequence;
+use super::scenario_summary::OutputThreadMockScenarioSummary;
+use super::sequence::OutputThreadMockSequence;
 
 /// Result of running a mock scenario.
 ///

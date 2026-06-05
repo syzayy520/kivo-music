@@ -1,4 +1,4 @@
-use super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState;
+use super::state::OutputThreadRuntimeLoopState;
 
 #[test]
 fn idle_can_accept_start() {

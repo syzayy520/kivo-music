@@ -4,8 +4,8 @@
 //! through the runtime loop step plan. Does not reference
 //! transport channels, queue bridge plan, or audio/output primitives.
 
-use super::super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState;
-use super::super::output_thread_runtime_loop_step::OutputThreadRuntimeLoopStepAction;
+use super::super::runtime_loop::state::OutputThreadRuntimeLoopState;
+use super::super::runtime_loop::step::OutputThreadRuntimeLoopStepAction;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -1,7 +1,7 @@
-use super::output_thread_mock_golden::{validate_golden_behavior, OutputThreadMockGoldenError};
-use super::output_thread_mock_scenario::OutputThreadMockScenario;
-use super::output_thread_mock_scenario_result::OutputThreadMockScenarioResult;
-use super::output_thread_mock_scenario_runner::run_mock_scenario;
+use super::golden::{validate_golden_behavior, OutputThreadMockGoldenError};
+use super::scenario::OutputThreadMockScenario;
+use super::scenario_result::OutputThreadMockScenarioResult;
+use super::scenario_runner::run_mock_scenario;
 
 /// Result of a mock regression run.
 ///

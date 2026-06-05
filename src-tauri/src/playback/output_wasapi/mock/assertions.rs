@@ -1,7 +1,7 @@
-use super::output_thread_mock_golden::validate_golden_behavior;
-use super::output_thread_mock_regression::OutputThreadMockRegressionResult;
-use super::output_thread_mock_regression_matrix::OutputThreadMockRegressionMatrix;
-use super::output_thread_mock_scenario_result::OutputThreadMockScenarioResult;
+use super::golden::validate_golden_behavior;
+use super::regression::OutputThreadMockRegressionResult;
+use super::regression_matrix::OutputThreadMockRegressionMatrix;
+use super::scenario_result::OutputThreadMockScenarioResult;
 
 /// Whether a scenario result passes golden validation.
 #[allow(dead_code)]

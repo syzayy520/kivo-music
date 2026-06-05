@@ -1,4 +1,4 @@
-use super::output_thread_mock_regression_matrix::run_mock_regression_matrix;
+use super::regression_matrix::run_mock_regression_matrix;
 
 /// Run the full mock smoke suite.
 ///

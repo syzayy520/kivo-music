@@ -1,8 +1,8 @@
-use super::output_thread_render_plan::OutputThreadRenderPlan;
-use super::output_thread_runtime_loop_plan::plan_runtime_loop_step;
-use super::output_thread_runtime_loop_scenario::OutputThreadRuntimeLoopScenario;
-use super::output_thread_runtime_loop_state::OutputThreadRuntimeLoopState;
-use super::output_thread_runtime_loop_step::{
+use super::super::output_thread_render_plan::OutputThreadRenderPlan;
+use super::plan::plan_runtime_loop_step;
+use super::scenario::OutputThreadRuntimeLoopScenario;
+use super::state::OutputThreadRuntimeLoopState;
+use super::step::{
     OutputThreadRuntimeLoopStepDecision, OutputThreadRuntimeLoopStepInput,
 };
 
@@ -10,7 +10,7 @@ use super::output_thread_runtime_loop_step::{
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct OutputThreadRuntimeLoopScenarioRun {
-    pub kind: super::output_thread_runtime_loop_scenario::OutputThreadRuntimeLoopScenarioKind,
+    pub kind: super::scenario::OutputThreadRuntimeLoopScenarioKind,
     pub name: &'static str,
     pub final_state: OutputThreadRuntimeLoopState,
     pub decisions: Vec<OutputThreadRuntimeLoopStepDecision>,

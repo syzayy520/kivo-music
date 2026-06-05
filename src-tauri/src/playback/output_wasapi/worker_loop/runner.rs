@@ -5,7 +5,7 @@
 //!
 //! Does not spawn threads, create workers, or reference audio APIs.
 
-use super::super::output_thread_real_transport_channel::OutputThreadRealTransportChannel;
+use super::super::real_transport::channel::OutputThreadRealTransportChannel;
 use super::report::OutputThreadWorkerLoopReport;
 use super::state::OutputThreadWorkerLoopState;
 use super::step::plan_worker_loop_step;

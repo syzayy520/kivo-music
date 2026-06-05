@@ -1,4 +1,4 @@
-use super::output_thread_mock_coverage::OutputThreadMockCoverage;
+use super::coverage::OutputThreadMockCoverage;
 
 #[test]
 fn empty_coverage_is_incomplete() {

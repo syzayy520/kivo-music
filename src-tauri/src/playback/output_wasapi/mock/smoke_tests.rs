@@ -1,4 +1,4 @@
-use super::output_thread_mock_smoke::run_mock_smoke_suite;
+use super::smoke::run_mock_smoke_suite;
 
 #[test]
 fn mock_smoke_suite_passes() {

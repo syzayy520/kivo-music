@@ -1,5 +1,5 @@
-use super::output_thread_real_transport_command::*;
-use super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
+use super::command::*;
+use super::super::output_thread_runtime_intent::OutputThreadRuntimeIntent;
 
 #[test]
 fn runtime_intent_preserves_intent() {

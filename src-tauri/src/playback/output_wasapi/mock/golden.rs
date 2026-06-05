@@ -1,5 +1,5 @@
-use super::output_thread_mock_expected_behavior::expectation_for_name;
-use super::output_thread_mock_scenario_result::OutputThreadMockScenarioResult;
+use super::expected_behavior::expectation_for_name;
+use super::scenario_result::OutputThreadMockScenarioResult;
 
 /// Errors from golden behavior validation.
 #[allow(dead_code)]

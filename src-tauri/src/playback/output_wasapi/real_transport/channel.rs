@@ -7,8 +7,8 @@
 
 use std::sync::mpsc::{self, Receiver, Sender, TryRecvError};
 
-use super::output_thread_real_transport_command::OutputThreadRealTransportCommand;
-use super::output_thread_real_transport_status::{
+use super::command::OutputThreadRealTransportCommand;
+use super::status::{
     OutputThreadRealTransportStatus, OutputThreadRealTransportStatusReport,
 };
 

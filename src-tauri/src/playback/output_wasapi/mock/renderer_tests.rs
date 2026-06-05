@@ -1,4 +1,4 @@
-use super::output_thread_mock_renderer::OutputThreadMockRenderer;
+use super::renderer::OutputThreadMockRenderer;
 
 #[test]
 fn full_renderer_has_no_capacity() {

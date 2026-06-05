@@ -77,63 +77,6 @@ mod output_thread_plan_invariants_tests;
 mod output_thread_transition_validation_tests;
 
 #[cfg(test)]
-mod output_thread_mock_buffer_tests;
-
-#[cfg(test)]
-mod output_thread_mock_renderer_tests;
-
-#[cfg(test)]
-mod output_thread_mock_result_tests;
-
-#[cfg(test)]
-mod output_thread_mock_harness_tests;
-
-#[cfg(test)]
-mod output_thread_mock_sequence_tests;
-
-#[cfg(test)]
-mod output_thread_mock_scenario_tests;
-
-#[cfg(test)]
-mod output_thread_mock_scenario_summary_tests;
-
-#[cfg(test)]
-mod output_thread_mock_scenario_result_tests;
-
-#[cfg(test)]
-mod output_thread_mock_scenario_runner_tests;
-
-#[cfg(test)]
-mod output_thread_mock_scenarios_tests;
-
-#[cfg(test)]
-mod output_thread_mock_scenario_matrix_tests;
-
-#[cfg(test)]
-mod output_thread_mock_assertions_tests;
-
-#[cfg(test)]
-mod output_thread_mock_coverage_tests;
-
-#[cfg(test)]
-mod output_thread_mock_expected_behavior_tests;
-
-#[cfg(test)]
-mod output_thread_mock_expectation_tests;
-
-#[cfg(test)]
-mod output_thread_mock_golden_tests;
-
-#[cfg(test)]
-mod output_thread_mock_regression_tests;
-
-#[cfg(test)]
-mod output_thread_mock_regression_matrix_tests;
-
-#[cfg(test)]
-mod output_thread_mock_smoke_tests;
-
-#[cfg(test)]
 mod frame_bridge_tests;
 
 include!("output_thread_runtime_test_modules.rs");

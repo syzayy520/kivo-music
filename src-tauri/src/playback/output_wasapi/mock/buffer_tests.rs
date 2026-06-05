@@ -1,4 +1,4 @@
-use super::output_thread_mock_buffer::OutputThreadMockBuffer;
+use super::buffer::OutputThreadMockBuffer;
 
 #[test]
 fn empty_open_buffer_snapshot_is_empty_open() {

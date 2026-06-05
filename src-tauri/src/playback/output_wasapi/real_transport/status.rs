@@ -3,7 +3,7 @@
 //! Tracks channel creation and closure without referencing
 //! worker, thread, device, or audio output state.
 
-use super::output_thread_real_transport_contract::OutputThreadRealTransportContract;
+use super::contract::OutputThreadRealTransportContract;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
