@@ -1,8 +1,3 @@
-//! Real output thread spawn and entry point.
-//!
-//! Creates a real std thread with a bounded worker loop skeleton.
-//! Does not render audio or move PCM data.
-
 use std::sync::mpsc;
 use std::thread;
 
@@ -18,35 +13,29 @@ use super::super::worker_loop::state::OutputThreadWorkerLoopState;
 use super::channel::OutputThreadRealTransportChannel;
 use super::command::OutputThreadRealTransportCommand;
 use super::handle::OutputThreadRealTransportHandle;
+use super::render_loop::{
+    run_bounded_render_silence_loop, validate_render_silence_loop_config,
+    RenderSilenceLoopConfig,
+};
 use super::render_once::{
     maybe_write_render_silence_once, validate_render_silence_once_config, RenderSilenceOnceConfig,
 };
 use super::thread_error::RealOutputThreadSkeletonError;
 use super::thread_report::RealOutputThreadReport;
 
-/// Configuration for spawning a real output thread.
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, Default)]
 pub(crate) struct RealOutputThreadSpawnConfig {
-    /// Maximum number of bounded loop iterations.
     pub max_steps: usize,
-    /// Whether to open WasapiContext inside the thread on start.
     pub open_wasapi_context_on_start: bool,
-    /// Whether to start IAudioClient after WasapiContext opens.
     pub start_audio_client_on_start: bool,
-    /// Whether to write one silent render buffer after WasapiContext opens.
     pub render_silence_once_after_open: bool,
-    /// Frames to write for the one-shot silent render buffer.
     pub render_silence_once_frames: u32,
+    pub render_silence_loop_after_start: bool,
+    pub render_silence_loop_iterations: u32,
+    pub render_silence_loop_frames_per_write: u32,
 }
 
-/// Spawn a real output thread with a bounded worker loop skeleton.
-///
-/// Creates a command channel pair and spawns a thread that runs
-/// `run_worker_loop_skeleton` with the specified `max_steps`.
-/// Owned-state validation happens inside the thread.
-///
-/// Returns a handle containing the sender and join handle.
 #[allow(dead_code)]
 pub(crate) fn spawn_real_output_thread(
     config: RealOutputThreadSpawnConfig,
@@ -57,9 +46,6 @@ pub(crate) fn spawn_real_output_thread(
     Ok(OutputThreadRealTransportHandle::new(sender, join_handle))
 }
 
-/// Thread entry point. Runs owned-state validation and bounded worker loop.
-///
-/// Returns a report on success or an error if validation fails.
 fn run_real_output_thread_entry(
     receiver: std::sync::mpsc::Receiver<OutputThreadRealTransportCommand>,
     config: RealOutputThreadSpawnConfig,
@@ -76,6 +62,16 @@ fn run_real_output_thread_entry(
         frames: config.render_silence_once_frames,
     };
     validate_render_silence_once_config(render_once_config)?;
+    let render_loop_config = RenderSilenceLoopConfig {
+        enabled: config.render_silence_loop_after_start,
+        iterations: config.render_silence_loop_iterations,
+        frames_per_write: config.render_silence_loop_frames_per_write,
+    };
+    validate_render_silence_loop_config(
+        render_loop_config,
+        config.open_wasapi_context_on_start,
+        config.start_audio_client_on_start,
+    )?;
 
     // Optionally open WasapiContext inside the thread.
     // Context is owned locally — never stored in handle or returned to caller.
@@ -117,19 +113,22 @@ fn run_real_output_thread_entry(
         started_guard = Some(guard);
     }
 
-    // Create a dummy sender for the channel struct.
-    // The real sender is in the handle; the worker only uses try_recv.
-    let (dummy_sender, _) = mpsc::channel();
-    let channel = OutputThreadRealTransportChannel::from_parts(dummy_sender, receiver);
-
-    let loop_config = OutputThreadWorkerLoopRunConfig {
-        max_steps: config.max_steps,
-        initial_state: OutputThreadWorkerLoopState::NotStarted,
+    let render_loop_result = run_bounded_render_silence_loop(
+        context.as_ref(),
+        audio_client_started,
+        render_loop_config,
+    );
+    let worker_loop_result = if render_loop_result.is_ok() {
+        let (dummy_sender, _) = mpsc::channel();
+        let channel = OutputThreadRealTransportChannel::from_parts(dummy_sender, receiver);
+        let loop_config = OutputThreadWorkerLoopRunConfig {
+            max_steps: config.max_steps,
+            initial_state: OutputThreadWorkerLoopState::NotStarted,
+        };
+        Some(run_worker_loop_skeleton(&channel, loop_config))
+    } else {
+        None
     };
-
-    let loop_result = run_worker_loop_skeleton(&channel, loop_config);
-
-    let report = loop_result.report;
 
     // Close context (drop) before returning — happens inside the thread.
     let stop_result = if let Some(mut guard) = started_guard.take() {
@@ -151,6 +150,12 @@ fn run_real_output_thread_entry(
     let com_uninitialized = wasapi_context_closed;
 
     stop_result.map_err(RealOutputThreadSkeletonError::AudioClientStopFailed)?;
+    let render_loop_outcome = render_loop_result?;
+    let loop_result = match worker_loop_result {
+        Some(loop_result) => loop_result,
+        None => return Err(RealOutputThreadSkeletonError::WorkerDidNotReport),
+    };
+    let report = loop_result.report;
 
     Ok(RealOutputThreadReport {
         thread_started,
@@ -174,13 +179,17 @@ fn run_real_output_thread_entry(
         render_silence_once_frames_requested: render_once_outcome.frames_requested,
         render_silence_once_frames_written: render_once_outcome.frames_written,
         render_silence_once_used_silent_flag: render_once_outcome.used_silent_flag,
+        render_silence_loop_requested: render_loop_outcome.requested,
+        render_silence_loop_started: render_loop_outcome.started,
+        render_silence_loop_completed: render_loop_outcome.completed,
+        render_silence_loop_iterations_requested: render_loop_outcome.iterations_requested,
+        render_silence_loop_iterations_completed: render_loop_outcome.iterations_completed,
+        render_silence_loop_frames_per_write: render_loop_outcome.frames_per_write,
+        render_silence_loop_frames_written_total: render_loop_outcome.frames_written_total,
+        render_silence_loop_used_silent_flag: render_loop_outcome.used_silent_flag,
     })
 }
 
-/// Send a shutdown command and join the thread.
-///
-/// Sends `CloseTransport` command, then joins the thread.
-/// Returns the thread report or a stable error.
 #[allow(dead_code)]
 pub(crate) fn shutdown_and_join_real_output_thread(
     mut handle: OutputThreadRealTransportHandle,

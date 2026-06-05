@@ -57,4 +57,22 @@ pub(crate) struct RealOutputThreadReport {
     pub render_silence_once_frames_written: u32,
     /// Whether the one-shot render used AUDCLNT_BUFFERFLAGS_SILENT.
     pub render_silence_once_used_silent_flag: bool,
+
+    // --- Bounded silent render loop flags (P0-077C) ---
+    /// Bounded silent render loop was requested by config.
+    pub render_silence_loop_requested: bool,
+    /// Bounded silent render loop started after audio client start.
+    pub render_silence_loop_started: bool,
+    /// Bounded silent render loop completed all iterations.
+    pub render_silence_loop_completed: bool,
+    /// Iterations requested for bounded silent render loop.
+    pub render_silence_loop_iterations_requested: u32,
+    /// Iterations completed by bounded silent render loop.
+    pub render_silence_loop_iterations_completed: u32,
+    /// Frames requested per bounded silent render write.
+    pub render_silence_loop_frames_per_write: u32,
+    /// Total frames written by bounded silent render loop.
+    pub render_silence_loop_frames_written_total: u32,
+    /// Whether every loop write used AUDCLNT_BUFFERFLAGS_SILENT.
+    pub render_silence_loop_used_silent_flag: bool,
 }

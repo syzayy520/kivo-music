@@ -17,6 +17,7 @@ fn config(
         start_audio_client_on_start,
         render_silence_once_after_open,
         render_silence_once_frames,
+        ..Default::default()
     }
 }
 

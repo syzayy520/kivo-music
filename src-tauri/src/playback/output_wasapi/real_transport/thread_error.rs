@@ -32,4 +32,18 @@ pub(crate) enum RealOutputThreadSkeletonError {
     RenderSilenceOnceInvalidFrameCount,
     /// Render silence once failed inside the thread.
     RenderSilenceOnceFailed(String),
+    /// Render silence loop was requested without opening WasapiContext.
+    RenderSilenceLoopRequiresOpenContext,
+    /// Render silence loop was requested before audio client start succeeded.
+    RenderSilenceLoopRequiresStartedClient,
+    /// Render silence loop was requested with zero iterations.
+    RenderSilenceLoopInvalidIterationCount,
+    /// Render silence loop was requested with zero frames per write.
+    RenderSilenceLoopInvalidFrameCount,
+    /// Render silence loop iteration count exceeded the ticket bound.
+    RenderSilenceLoopIterationCountTooLarge,
+    /// Render silence loop frames per write exceeded the ticket bound.
+    RenderSilenceLoopFrameCountTooLarge,
+    /// Render silence loop failed inside the thread.
+    RenderSilenceLoopFailed(String),
 }
