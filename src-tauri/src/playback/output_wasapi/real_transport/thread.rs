@@ -18,12 +18,15 @@ use super::super::worker_loop::state::OutputThreadWorkerLoopState;
 use super::channel::OutputThreadRealTransportChannel;
 use super::command::OutputThreadRealTransportCommand;
 use super::handle::OutputThreadRealTransportHandle;
+use super::render_once::{
+    maybe_write_render_silence_once, validate_render_silence_once_config, RenderSilenceOnceConfig,
+};
 use super::thread_error::RealOutputThreadSkeletonError;
 use super::thread_report::RealOutputThreadReport;
 
 /// Configuration for spawning a real output thread.
 #[allow(dead_code)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub(crate) struct RealOutputThreadSpawnConfig {
     /// Maximum number of bounded loop iterations.
     pub max_steps: usize,
@@ -31,6 +34,10 @@ pub(crate) struct RealOutputThreadSpawnConfig {
     pub open_wasapi_context_on_start: bool,
     /// Whether to start IAudioClient after WasapiContext opens.
     pub start_audio_client_on_start: bool,
+    /// Whether to write one silent render buffer after WasapiContext opens.
+    pub render_silence_once_after_open: bool,
+    /// Frames to write for the one-shot silent render buffer.
+    pub render_silence_once_frames: u32,
 }
 
 /// Spawn a real output thread with a bounded worker loop skeleton.
@@ -64,6 +71,12 @@ fn run_real_output_thread_entry(
     validate_wasapi_output_thread_owned_state_contract(contract)
         .map_err(RealOutputThreadSkeletonError::OwnedStateValidation)?;
 
+    let render_once_config = RenderSilenceOnceConfig {
+        enabled: config.render_silence_once_after_open,
+        frames: config.render_silence_once_frames,
+    };
+    validate_render_silence_once_config(render_once_config)?;
+
     // Optionally open WasapiContext inside the thread.
     // Context is owned locally — never stored in handle or returned to caller.
     let mut context: Option<WasapiContext> = None;
@@ -84,6 +97,9 @@ fn run_real_output_thread_entry(
         wasapi_context_opened = ctx.is_open();
         context = Some(ctx);
     }
+
+    let render_once_outcome =
+        maybe_write_render_silence_once(context.as_ref(), render_once_config)?;
 
     if config.start_audio_client_on_start {
         if !config.open_wasapi_context_on_start {
@@ -153,6 +169,11 @@ fn run_real_output_thread_entry(
         audio_client_started,
         audio_client_stop_requested,
         audio_client_stopped,
+        render_silence_once_requested: render_once_outcome.requested,
+        render_silence_once_written: render_once_outcome.written,
+        render_silence_once_frames_requested: render_once_outcome.frames_requested,
+        render_silence_once_frames_written: render_once_outcome.frames_written,
+        render_silence_once_used_silent_flag: render_once_outcome.used_silent_flag,
     })
 }
 

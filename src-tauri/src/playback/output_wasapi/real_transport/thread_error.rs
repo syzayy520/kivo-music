@@ -26,4 +26,10 @@ pub(crate) enum RealOutputThreadSkeletonError {
     AudioClientStartFailed(String),
     /// IAudioClient::Stop failed inside the thread.
     AudioClientStopFailed(String),
+    /// Render silence once was requested without opening WasapiContext.
+    RenderSilenceOnceRequiresOpenContext,
+    /// Render silence once was requested with zero frames.
+    RenderSilenceOnceInvalidFrameCount,
+    /// Render silence once failed inside the thread.
+    RenderSilenceOnceFailed(String),
 }

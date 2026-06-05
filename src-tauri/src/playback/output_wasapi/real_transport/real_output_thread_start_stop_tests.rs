@@ -13,6 +13,7 @@ fn config(
         max_steps: 10,
         open_wasapi_context_on_start,
         start_audio_client_on_start,
+        ..Default::default()
     }
 }
 

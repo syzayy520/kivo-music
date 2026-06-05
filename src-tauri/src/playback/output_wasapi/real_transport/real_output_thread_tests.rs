@@ -26,8 +26,7 @@ use super::thread_error::RealOutputThreadSkeletonError;
 fn config(max_steps: usize) -> RealOutputThreadSpawnConfig {
     RealOutputThreadSpawnConfig {
         max_steps,
-        open_wasapi_context_on_start: false,
-        start_audio_client_on_start: false,
+        ..Default::default()
     }
 }
 
@@ -182,7 +181,7 @@ fn context_open_returns_error_on_non_windows() {
     let ctx_config = RealOutputThreadSpawnConfig {
         max_steps: 10,
         open_wasapi_context_on_start: true,
-        start_audio_client_on_start: false,
+        ..Default::default()
     };
     let result =
         spawn_real_output_thread(ctx_config).and_then(|h| shutdown_and_join_real_output_thread(h));
@@ -209,7 +208,7 @@ fn windows_context_open_smoke_test() {
     let ctx_config = RealOutputThreadSpawnConfig {
         max_steps: 10,
         open_wasapi_context_on_start: true,
-        start_audio_client_on_start: false,
+        ..Default::default()
     };
     let handle = spawn_real_output_thread(ctx_config).unwrap();
     let report = shutdown_and_join_real_output_thread(handle).unwrap();

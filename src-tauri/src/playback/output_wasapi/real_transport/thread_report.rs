@@ -45,4 +45,16 @@ pub(crate) struct RealOutputThreadReport {
     pub audio_client_stop_requested: bool,
     /// Explicit StartedClientGuard::stop() succeeded.
     pub audio_client_stopped: bool,
+
+    // --- One-shot silent render write flags (P0-077B) ---
+    /// One-shot silent render write was requested by config.
+    pub render_silence_once_requested: bool,
+    /// One-shot silent render write succeeded.
+    pub render_silence_once_written: bool,
+    /// Frames requested for one-shot silent render write.
+    pub render_silence_once_frames_requested: u32,
+    /// Frames written by one-shot silent render write.
+    pub render_silence_once_frames_written: u32,
+    /// Whether the one-shot render used AUDCLNT_BUFFERFLAGS_SILENT.
+    pub render_silence_once_used_silent_flag: bool,
 }
