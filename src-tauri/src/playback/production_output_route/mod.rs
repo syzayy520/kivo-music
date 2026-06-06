@@ -1,6 +1,7 @@
 pub(crate) mod authority;
 pub(crate) mod config;
 mod failure;
+pub(crate) mod input_admission;
 mod input;
 pub(crate) mod lifecycle;
 
@@ -66,6 +67,14 @@ fn production_output_route_contract_lint_anchor(frame: &crate::playback::output:
     let _close_authority = ProductionOutputRouteLifecycleCloseAuthority;
     let _close_decision_type = std::any::type_name::<ProductionOutputRouteLifecycleCloseDecision>();
 
+    // P0-119: input admission contract symbols
+    use input_admission::{
+        ProductionOutputRouteInputAdmission,
+        ProductionOutputRouteInputAdmissionResult,
+    };
+    let _input_admission = ProductionOutputRouteInputAdmission;
+    let _input_admission_result_type = std::any::type_name::<ProductionOutputRouteInputAdmissionResult<'_>>();
+
     let _ = (
         input.position_ms(),
         input.sample_count(),
@@ -91,6 +100,8 @@ fn production_output_route_contract_lint_anchor(frame: &crate::playback::output:
         _update_decision_type,
         _close_authority,
         _close_decision_type,
+        _input_admission,
+        _input_admission_result_type,
     );
 }
 
