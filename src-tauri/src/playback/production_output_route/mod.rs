@@ -58,6 +58,14 @@ fn production_output_route_contract_lint_anchor(frame: &crate::playback::output:
     let _state_cell = ProductionOutputRouteLifecycleStateCell::new(ProductionOutputRouteLifecycleState::NotReadyForInput);
     let _update_decision_type = std::any::type_name::<ProductionOutputRouteLifecycleStateOwnerUpdateDecision>();
 
+    // P0-116: lifecycle close authority contract symbols
+    use lifecycle::{
+        ProductionOutputRouteLifecycleCloseAuthority,
+        ProductionOutputRouteLifecycleCloseDecision,
+    };
+    let _close_authority = ProductionOutputRouteLifecycleCloseAuthority;
+    let _close_decision_type = std::any::type_name::<ProductionOutputRouteLifecycleCloseDecision>();
+
     let _ = (
         input.position_ms(),
         input.sample_count(),
@@ -81,6 +89,8 @@ fn production_output_route_contract_lint_anchor(frame: &crate::playback::output:
         _decision_type,
         _state_cell,
         _update_decision_type,
+        _close_authority,
+        _close_decision_type,
     );
 }
 
