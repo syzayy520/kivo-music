@@ -35,6 +35,7 @@ pub mod manager_queue;
 pub mod metadata;
 pub mod native_output;
 pub mod native_pipeline;
+pub mod native_pipeline_route_tap_diagnostic_policy;
 pub mod output;
 pub mod output_frame;
 pub mod output_policy;
@@ -136,6 +137,9 @@ mod native_pipeline_progress_tests;
 
 #[cfg(test)]
 mod native_pipeline_route_tap_tests;
+
+#[cfg(test)]
+mod native_pipeline_route_tap_diagnostic_policy_tests;
 
 #[cfg(test)]
 mod native_pipeline_tests;

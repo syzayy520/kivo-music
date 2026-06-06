@@ -1,0 +1,9 @@
+mod close_tests;
+mod config_tests;
+mod fixtures;
+mod open_tests;
+mod query_tests;
+mod reset_contract_tests;
+mod seek_tests;
+mod stream_compat_tests;
+mod structure_tests;
