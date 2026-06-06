@@ -62,20 +62,20 @@ fn production_output_route_failure_sink_failure_has_operation_message_contract()
 #[test]
 fn production_output_route_failure_route_closed_has_reason_contract() {
     let failure = ProductionOutputRouteRouteClosed::new(
-        ProductionOutputRouteRouteClosedReason::ClosedByOwner,
+        ProductionOutputRouteRouteClosedReason::ExplicitClose,
     );
     let route_failure = ProductionOutputRouteFailure::from(failure);
 
     assert_eq!(
         failure.reason(),
-        ProductionOutputRouteRouteClosedReason::ClosedByOwner
+        ProductionOutputRouteRouteClosedReason::ExplicitClose
     );
     assert_eq!(
         route_failure.class(),
         ProductionOutputRouteFailureClass::RouteClosed
     );
     assert_ne!(
-        ProductionOutputRouteRouteClosedReason::ClosedByOwner,
+        ProductionOutputRouteRouteClosedReason::ExplicitClose,
         ProductionOutputRouteRouteClosedReason::NotOpened
     );
 }
