@@ -159,6 +159,9 @@ fn input_admission_returns_allowed_when_both_accept() {
         ProductionOutputRouteInputAdmissionResult::Allowed(allowed_input) => {
             assert_eq!(allowed_input.sample_count(), input.sample_count());
             assert_eq!(allowed_input.position_ms(), input.position_ms());
+            assert_eq!(allowed_input.stream().sample_rate_hz, 48_000);
+            assert_eq!(allowed_input.stream().channels, 2);
+            assert!(matches!(allowed_input.stream().sample_format, AudioSampleFormat::Float32));
         }
         other => panic!("expected Allowed, got {:?}", other),
     }
@@ -200,13 +203,21 @@ fn admit_input_uses_caller_provided_parameters() {
     let input = ProductionOutputRouteFrameInput::from_frame(&frame);
 
     // Pass all parameters explicitly.
-    let _result = admission.admit_input(
+    let result = admission.admit_input(
         &lifecycle_gate,
         &config_authority,
         ProductionOutputRouteLifecycleState::AcceptingInput,
         input,
         0,
     );
+
+    match result {
+        ProductionOutputRouteInputAdmissionResult::Allowed(allowed_input) => {
+            assert_eq!(allowed_input.sample_count(), input.sample_count());
+            assert_eq!(allowed_input.position_ms(), input.position_ms());
+        }
+        other => panic!("expected Allowed, got {:?}", other),
+    }
 }
 
 #[test]
