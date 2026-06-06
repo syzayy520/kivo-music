@@ -4,6 +4,7 @@ mod failure;
 pub(crate) mod input_admission;
 mod input;
 pub(crate) mod lifecycle;
+pub(crate) mod sink_failure_mapping;
 
 pub(crate) use failure::{
     ProductionOutputRouteBackpressure, ProductionOutputRouteFailure,

@@ -13,3 +13,4 @@ mod lifecycle_state_owner_update_tests;
 mod lifecycle_state_tests;
 mod lifecycle_transition_matrix_tests;
 mod route_closed_reason_tests;
+mod sink_failure_mapping_tests;
