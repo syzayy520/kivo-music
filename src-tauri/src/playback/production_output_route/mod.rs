@@ -50,6 +50,14 @@ fn production_output_route_contract_lint_anchor(frame: &crate::playback::output:
         _transition_matrix.validate_transition(ProductionOutputRouteLifecycleState::NotReadyForInput, ProductionOutputRouteLifecycleState::AcceptingInput);
     let _decision_type = std::any::type_name::<ProductionOutputRouteLifecycleTransitionDecision>();
 
+    // P0-114: lifecycle state owner contract symbols
+    use lifecycle::{
+        ProductionOutputRouteLifecycleStateCell,
+        ProductionOutputRouteLifecycleStateOwnerUpdateDecision,
+    };
+    let _state_cell = ProductionOutputRouteLifecycleStateCell::new(ProductionOutputRouteLifecycleState::NotReadyForInput);
+    let _update_decision_type = std::any::type_name::<ProductionOutputRouteLifecycleStateOwnerUpdateDecision>();
+
     let _ = (
         input.position_ms(),
         input.sample_count(),
@@ -71,6 +79,8 @@ fn production_output_route_contract_lint_anchor(frame: &crate::playback::output:
         _transition_matrix,
         _transition_decision,
         _decision_type,
+        _state_cell,
+        _update_decision_type,
     );
 }
 
