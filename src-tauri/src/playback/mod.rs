@@ -5,6 +5,7 @@ pub mod activity_snapshot;
 pub mod audio_bridge;
 pub mod audio_route;
 pub mod audio_route_coordinator;
+pub mod audio_route_integration;
 pub mod audio_buffer;
 pub mod backend_status;
 pub mod backends;
@@ -85,6 +86,9 @@ mod audio_route_tests;
 
 #[cfg(test)]
 mod audio_route_coordinator_tests;
+
+#[cfg(test)]
+mod audio_route_integration_tests;
 
 #[cfg(test)]
 mod command_activity_tests;
