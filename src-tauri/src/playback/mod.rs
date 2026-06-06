@@ -68,6 +68,7 @@ mod native_pipeline_route_tap;
 mod native_pipeline_runtime;
 mod native_pipeline_state;
 mod native_pipeline_worker;
+pub(crate) mod production_output_route;
 
 #[cfg(test)]
 mod activity_log_tests;
