@@ -2,14 +2,15 @@ pub(crate) mod channel;
 pub(crate) mod command;
 pub(crate) mod contract;
 pub(crate) mod handle;
-pub(crate) mod render_ring_buffer_boundary;
 pub(crate) mod render_loop;
 pub(crate) mod render_once;
 pub(crate) mod render_padding_loop;
+pub(crate) mod render_ring_buffer_boundary;
 pub(crate) mod status;
 pub(crate) mod thread;
 pub(crate) mod thread_error;
 pub(crate) mod thread_report;
+pub(crate) mod thread_stages;
 
 #[cfg(test)]
 mod channel_tests;
@@ -25,6 +26,8 @@ mod real_output_thread_render_once_tests;
 mod real_output_thread_render_padding_loop_tests;
 #[cfg(test)]
 mod real_output_thread_render_ring_buffer_boundary_tests;
+#[cfg(test)]
+mod real_output_thread_stage_tests;
 #[cfg(test)]
 mod real_output_thread_start_stop_tests;
 #[cfg(test)]

@@ -13,18 +13,13 @@ use super::super::worker_loop::state::OutputThreadWorkerLoopState;
 use super::channel::OutputThreadRealTransportChannel;
 use super::command::OutputThreadRealTransportCommand;
 use super::handle::OutputThreadRealTransportHandle;
-use super::render_loop::{
-    run_bounded_render_silence_loop, validate_render_silence_loop_config, RenderSilenceLoopConfig,
-};
-use super::render_once::{
-    maybe_write_render_silence_once, validate_render_silence_once_config, RenderSilenceOnceConfig,
-};
-use super::render_padding_loop::{
-    run_bounded_render_padding_loop, validate_render_padding_loop_config, RenderPaddingLoopConfig,
-    RenderPaddingLoopOutcome,
-};
 use super::thread_error::RealOutputThreadSkeletonError;
 use super::thread_report::RealOutputThreadReport;
+use super::thread_stages::{
+    build_real_output_thread_report, resolve_thread_stage_results, run_post_start_stages,
+    run_render_once_stage, validate_thread_stage_configs, RealOutputThreadLifecycleReportFields,
+    RealOutputThreadStageConfigs,
+};
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, Default)]
@@ -40,6 +35,10 @@ pub(crate) struct RealOutputThreadSpawnConfig {
     pub render_padding_loop_after_start: bool,
     pub render_padding_loop_iterations: u32,
     pub render_padding_loop_max_frames_per_write: u32,
+    pub render_ring_buffer_boundary_after_padding_loop: bool,
+    pub render_ring_buffer_boundary_iterations: u32,
+    pub render_ring_buffer_boundary_max_frames_per_write: u32,
+    pub render_ring_buffer_boundary_synthetic_zero_seed_frames: u32,
 }
 
 #[allow(dead_code)]
@@ -56,68 +55,38 @@ fn run_real_output_thread_entry(
     receiver: std::sync::mpsc::Receiver<OutputThreadRealTransportCommand>,
     config: RealOutputThreadSpawnConfig,
 ) -> Result<RealOutputThreadReport, RealOutputThreadSkeletonError> {
-    let thread_started = true;
-
-    // Validate owned-state contract inside the thread.
     let contract = default_wasapi_output_thread_owned_state_contract();
     validate_wasapi_output_thread_owned_state_contract(contract)
         .map_err(RealOutputThreadSkeletonError::OwnedStateValidation)?;
 
-    let render_once_config = RenderSilenceOnceConfig {
-        enabled: config.render_silence_once_after_open,
-        frames: config.render_silence_once_frames,
-    };
-    validate_render_silence_once_config(render_once_config)?;
-    let render_loop_config = RenderSilenceLoopConfig {
-        enabled: config.render_silence_loop_after_start,
-        iterations: config.render_silence_loop_iterations,
-        frames_per_write: config.render_silence_loop_frames_per_write,
-    };
-    validate_render_silence_loop_config(
-        render_loop_config,
-        config.open_wasapi_context_on_start,
-        config.start_audio_client_on_start,
-    )?;
-    let render_padding_loop_config = RenderPaddingLoopConfig {
-        enabled: config.render_padding_loop_after_start,
-        iterations: config.render_padding_loop_iterations,
-        max_frames_per_write: config.render_padding_loop_max_frames_per_write,
-    };
-    validate_render_padding_loop_config(
-        render_padding_loop_config,
+    let stage_configs = RealOutputThreadStageConfigs::from_spawn_config(config);
+    validate_thread_stage_configs(
+        stage_configs,
         config.open_wasapi_context_on_start,
         config.start_audio_client_on_start,
     )?;
 
-    // Optionally open WasapiContext inside the thread.
-    // Context is owned locally — never stored in handle or returned to caller.
     let mut context: Option<WasapiContext> = None;
     let mut com_initialized = false;
     let mut wasapi_context_opened = false;
-    let audio_client_start_requested = config.start_audio_client_on_start;
     let mut audio_client_started = false;
     let mut audio_client_stop_requested = false;
     let mut audio_client_stopped = false;
     let mut started_guard = None;
 
     if config.open_wasapi_context_on_start {
-        let mut ctx = WasapiContext::new();
-        ctx.open()
+        let mut opened_context = WasapiContext::new();
+        opened_context
+            .open()
             .map_err(RealOutputThreadSkeletonError::WasapiContextOpen)?;
-        // If open() succeeded on Windows, COM is initialized and context is open.
-        com_initialized = ctx.is_open();
-        wasapi_context_opened = ctx.is_open();
-        context = Some(ctx);
+        com_initialized = opened_context.is_open();
+        wasapi_context_opened = opened_context.is_open();
+        context = Some(opened_context);
     }
 
-    let render_once_outcome =
-        maybe_write_render_silence_once(context.as_ref(), render_once_config)?;
+    let render_once_outcome = run_render_once_stage(context.as_ref(), stage_configs)?;
 
     if config.start_audio_client_on_start {
-        if !config.open_wasapi_context_on_start {
-            return Err(RealOutputThreadSkeletonError::AudioClientStartRequiresOpenContext);
-        }
-
         let context_ref = context
             .as_ref()
             .ok_or(RealOutputThreadSkeletonError::AudioClientStartRequiresOpenContext)?;
@@ -129,20 +98,9 @@ fn run_real_output_thread_entry(
         started_guard = Some(guard);
     }
 
-    let render_loop_result =
-        run_bounded_render_silence_loop(context.as_ref(), audio_client_started, render_loop_config);
-    let render_padding_loop_result = if render_loop_result.is_ok() {
-        run_bounded_render_padding_loop(
-            context.as_ref(),
-            audio_client_started,
-            render_padding_loop_config,
-        )
-    } else {
-        Ok(RenderPaddingLoopOutcome::skipped_after_prior_failure(
-            render_padding_loop_config,
-        ))
-    };
-    let worker_loop_result = if render_loop_result.is_ok() && render_padding_loop_result.is_ok() {
+    let stage_results =
+        run_post_start_stages(context.as_ref(), audio_client_started, stage_configs);
+    let worker_loop_result = if stage_results.can_run_worker_loop() {
         let (dummy_sender, _) = mpsc::channel();
         let channel = OutputThreadRealTransportChannel::from_parts(dummy_sender, receiver);
         let loop_config = OutputThreadWorkerLoopRunConfig {
@@ -154,7 +112,6 @@ fn run_real_output_thread_entry(
         None
     };
 
-    // Close context (drop) before returning — happens inside the thread.
     let stop_result = if let Some(mut guard) = started_guard.take() {
         audio_client_stop_requested = true;
         let result = guard.stop();
@@ -167,65 +124,30 @@ fn run_real_output_thread_entry(
     };
 
     let mut wasapi_context_closed = false;
-    if let Some(mut ctx) = context {
-        ctx.close();
+    if let Some(mut opened_context) = context {
+        opened_context.close();
         wasapi_context_closed = true;
     }
-    let com_uninitialized = wasapi_context_closed;
 
-    stop_result.map_err(RealOutputThreadSkeletonError::AudioClientStopFailed)?;
-    let render_loop_outcome = render_loop_result?;
-    let render_padding_loop_outcome = render_padding_loop_result?;
-    let loop_result = match worker_loop_result {
-        Some(loop_result) => loop_result,
-        None => return Err(RealOutputThreadSkeletonError::WorkerDidNotReport),
-    };
-    let report = loop_result.report;
-
-    Ok(RealOutputThreadReport {
-        thread_started,
-        owned_state_validated: true,
-        shutdown_received: report.stopped_by_close_transport,
-        exited_cleanly: report.final_state.is_terminal() || !loop_result.stopped_early,
-        commands_processed: report.commands_handled,
-        loop_result: Some(loop_result),
-        panicked: false,
-        com_initialized,
-        com_uninitialized,
-        wasapi_context_open_requested: config.open_wasapi_context_on_start,
-        wasapi_context_opened,
-        wasapi_context_closed,
-        audio_client_start_requested,
-        audio_client_started,
-        audio_client_stop_requested,
-        audio_client_stopped,
-        render_silence_once_requested: render_once_outcome.requested,
-        render_silence_once_written: render_once_outcome.written,
-        render_silence_once_frames_requested: render_once_outcome.frames_requested,
-        render_silence_once_frames_written: render_once_outcome.frames_written,
-        render_silence_once_used_silent_flag: render_once_outcome.used_silent_flag,
-        render_silence_loop_requested: render_loop_outcome.requested,
-        render_silence_loop_started: render_loop_outcome.started,
-        render_silence_loop_completed: render_loop_outcome.completed,
-        render_silence_loop_iterations_requested: render_loop_outcome.iterations_requested,
-        render_silence_loop_iterations_completed: render_loop_outcome.iterations_completed,
-        render_silence_loop_frames_per_write: render_loop_outcome.frames_per_write,
-        render_silence_loop_frames_written_total: render_loop_outcome.frames_written_total,
-        render_silence_loop_used_silent_flag: render_loop_outcome.used_silent_flag,
-        render_padding_loop_requested: render_padding_loop_outcome.requested,
-        render_padding_loop_started: render_padding_loop_outcome.started,
-        render_padding_loop_completed: render_padding_loop_outcome.completed,
-        render_padding_loop_iterations_requested: render_padding_loop_outcome.iterations_requested,
-        render_padding_loop_iterations_completed: render_padding_loop_outcome.iterations_completed,
-        render_padding_loop_iterations_skipped_no_available: render_padding_loop_outcome
-            .iterations_skipped_no_available,
-        render_padding_loop_max_frames_per_write: render_padding_loop_outcome.max_frames_per_write,
-        render_padding_loop_frames_written_total: render_padding_loop_outcome.frames_written_total,
-        render_padding_loop_last_capacity: render_padding_loop_outcome.last_capacity,
-        render_padding_loop_last_padding: render_padding_loop_outcome.last_padding,
-        render_padding_loop_last_available: render_padding_loop_outcome.last_available,
-        render_padding_loop_used_silent_flag: render_padding_loop_outcome.used_silent_flag,
-    })
+    let resolved = resolve_thread_stage_results(stop_result, stage_results, worker_loop_result)?;
+    Ok(build_real_output_thread_report(
+        RealOutputThreadLifecycleReportFields {
+            thread_started: true,
+            owned_state_validated: true,
+            panicked: false,
+            com_initialized,
+            com_uninitialized: wasapi_context_closed,
+            wasapi_context_open_requested: config.open_wasapi_context_on_start,
+            wasapi_context_opened,
+            wasapi_context_closed,
+            audio_client_start_requested: config.start_audio_client_on_start,
+            audio_client_started,
+            audio_client_stop_requested,
+            audio_client_stopped,
+        },
+        render_once_outcome,
+        resolved,
+    ))
 }
 
 #[allow(dead_code)]

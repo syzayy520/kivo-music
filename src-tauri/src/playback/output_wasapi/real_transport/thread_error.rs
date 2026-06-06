@@ -62,4 +62,26 @@ pub(crate) enum RealOutputThreadSkeletonError {
     RenderPaddingLoopPaddingStateFailed(String),
     /// Padding-aware render loop failed while writing silence.
     RenderPaddingLoopWriteFailed(String),
+    /// Ring-buffer boundary was requested without opening WasapiContext.
+    RenderRingBufferBoundaryRequiresOpenContext,
+    /// Ring-buffer boundary was requested before audio client start succeeded.
+    RenderRingBufferBoundaryRequiresStartedClient,
+    /// Ring-buffer boundary was requested with zero iterations.
+    RenderRingBufferBoundaryInvalidIterationCount,
+    /// Ring-buffer boundary was requested with zero frames per write.
+    RenderRingBufferBoundaryInvalidFrameCount,
+    /// Ring-buffer boundary iteration count exceeded the ticket bound.
+    RenderRingBufferBoundaryIterationCountTooLarge,
+    /// Ring-buffer boundary frames per write exceeded the ticket bound.
+    RenderRingBufferBoundaryFrameCountTooLarge,
+    /// Synthetic seed frame count exceeded the ticket bound.
+    RenderRingBufferBoundarySyntheticSeedFrameCountTooLarge,
+    /// Ring-buffer boundary could not read the opened format cache.
+    RenderRingBufferBoundaryMissingFormatCache,
+    /// Ring-buffer boundary does not support the cached render format.
+    RenderRingBufferBoundaryUnsupportedFormat,
+    /// Ring-buffer boundary failed before a write/commit divergence.
+    RenderRingBufferBoundaryFailed(String),
+    /// WASAPI accepted bytes but the source commit failed.
+    RenderRingBufferBoundaryCommitAfterWriteFailed(String),
 }

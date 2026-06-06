@@ -101,4 +101,30 @@ pub(crate) struct RealOutputThreadReport {
     pub render_padding_loop_last_available: u32,
     /// Whether every padding-aware write used AUDCLNT_BUFFERFLAGS_SILENT.
     pub render_padding_loop_used_silent_flag: bool,
+
+    // --- Synthetic RingBuffer render boundary flags (P0-079B) ---
+    /// Ring-buffer boundary execution was requested by config.
+    pub render_ring_buffer_boundary_requested: bool,
+    /// Ring-buffer boundary entered its bounded runner.
+    pub render_ring_buffer_boundary_started: bool,
+    /// Ring-buffer boundary completed all requested iterations.
+    pub render_ring_buffer_boundary_completed: bool,
+    /// Ring-buffer boundary was skipped after an earlier stage failure.
+    pub render_ring_buffer_boundary_skipped_after_prior_failure: bool,
+    /// Iterations requested for the ring-buffer boundary.
+    pub render_ring_buffer_boundary_iterations_requested: u32,
+    /// Iterations completed by the ring-buffer boundary.
+    pub render_ring_buffer_boundary_iterations_completed: u32,
+    /// Number of write attempts made by the ring-buffer boundary.
+    pub render_ring_buffer_boundary_write_attempts: u32,
+    /// Total frames written to the render boundary.
+    pub render_ring_buffer_boundary_frames_written_total: u32,
+    /// Total frames committed from the synthetic source.
+    pub render_ring_buffer_boundary_frames_committed_total: u32,
+    /// Frames initially seeded into the synthetic source.
+    pub render_ring_buffer_boundary_source_seeded_frames: u32,
+    /// Frames left in the synthetic source after the boundary.
+    pub render_ring_buffer_boundary_source_remaining_frames: u32,
+    /// Whether the boundary reported use of the silent flag.
+    pub render_ring_buffer_boundary_used_silent_flag: bool,
 }
