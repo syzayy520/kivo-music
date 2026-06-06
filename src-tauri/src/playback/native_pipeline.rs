@@ -1,5 +1,6 @@
 use std::fmt;
 
+use super::audio_route_pipeline_tap::AudioRoutePipelineTap;
 use super::decoder::AudioDecoder;
 use super::native_output::KivoNativeOutputSink;
 use super::native_pipeline_buffer::NativePipelineBuffer;
@@ -13,6 +14,7 @@ pub struct NativePipeline {
     pub(super) output: KivoNativeOutputSink,
     pub(super) buffer: NativePipelineBuffer,
     pub(super) clock: NativePipelineClock,
+    pub(super) route_tap: Option<AudioRoutePipelineTap>,
 }
 
 impl Default for NativePipeline {
@@ -23,6 +25,7 @@ impl Default for NativePipeline {
             output: KivoNativeOutputSink::default(),
             buffer: NativePipelineBuffer::new(),
             clock: NativePipelineClock::new(),
+            route_tap: None,
         }
     }
 }

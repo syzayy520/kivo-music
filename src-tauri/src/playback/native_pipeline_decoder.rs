@@ -89,6 +89,7 @@ impl NativePipeline {
                     position_ms: frame.position_ms,
                     samples: frame.samples,
                 };
+                self.tap_audio_route_output_frame_non_fatal(&output_frame);
                 self.state.last_decoded_frame = Some(output_frame.clone());
                 self.enqueue_decoded_frame(output_frame);
                 Ok(())

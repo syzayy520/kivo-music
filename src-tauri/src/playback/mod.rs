@@ -6,6 +6,7 @@ pub mod audio_bridge;
 pub mod audio_route;
 pub mod audio_route_coordinator;
 pub mod audio_route_integration;
+pub mod audio_route_pipeline_tap;
 pub mod audio_buffer;
 pub mod backend_status;
 pub mod backends;
@@ -62,6 +63,7 @@ mod native_pipeline_drain;
 mod native_pipeline_loop;
 mod native_pipeline_output;
 mod native_pipeline_progress;
+mod native_pipeline_route_tap;
 mod native_pipeline_runtime;
 mod native_pipeline_state;
 mod native_pipeline_worker;
@@ -89,6 +91,9 @@ mod audio_route_coordinator_tests;
 
 #[cfg(test)]
 mod audio_route_integration_tests;
+
+#[cfg(test)]
+mod audio_route_pipeline_tap_tests;
 
 #[cfg(test)]
 mod command_activity_tests;
@@ -128,6 +133,9 @@ mod native_pipeline_loop_tests;
 
 #[cfg(test)]
 mod native_pipeline_progress_tests;
+
+#[cfg(test)]
+mod native_pipeline_route_tap_tests;
 
 #[cfg(test)]
 mod native_pipeline_tests;
