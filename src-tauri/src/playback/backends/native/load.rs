@@ -1,4 +1,4 @@
-use super::KivoNativeEngine;
+use super::{tap_diagnostic, KivoNativeEngine};
 use crate::playback::decoder_request::AudioDecoderOpenRequest;
 use crate::playback::errors::{PlaybackError, PlaybackResult};
 use crate::playback::state::PlaybackState;
@@ -20,7 +20,12 @@ fn load_pipeline_until_output_boundary(
     track: &PlaybackTrack,
 ) -> PlaybackResult<()> {
     let request = AudioDecoderOpenRequest::from_track(track);
-    engine.pipeline.open_decoder(request, 0)?;
+    let session = engine.pipeline.open_decoder(request, 0)?;
+    tap_diagnostic::open_after_decoder_open(
+        &mut engine.tap_diagnostic,
+        &mut engine.pipeline,
+        session.stream_info,
+    );
     engine.pipeline.schedule_decode_step()?;
 
     match engine.pipeline.schedule_output_submit_step() {

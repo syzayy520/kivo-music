@@ -1,4 +1,4 @@
-use super::{control, load, KivoNativeEngine};
+use super::{control, load, tap_diagnostic, KivoNativeEngine};
 use crate::playback::backends::backend_types::PlaybackBackendDescriptor;
 use crate::playback::engine::PlaybackEngine;
 use crate::playback::errors::PlaybackResult;
@@ -30,6 +30,7 @@ impl PlaybackEngine for KivoNativeEngine {
     }
 
     fn stop(&mut self) -> PlaybackResult<PlaybackState> {
+        tap_diagnostic::close_on_stop(&mut self.tap_diagnostic, &mut self.pipeline);
         let result = self.playback.stop();
         control::apply_status_result(self, result)
     }
@@ -55,6 +56,7 @@ impl PlaybackEngine for KivoNativeEngine {
     }
 
     fn shutdown(&mut self) -> PlaybackResult<()> {
+        tap_diagnostic::close_on_shutdown(&mut self.tap_diagnostic, &mut self.pipeline);
         self.pipeline.shutdown()?;
         let _ = self.playback.stop();
         Ok(())

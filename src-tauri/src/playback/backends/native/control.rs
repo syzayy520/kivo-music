@@ -1,4 +1,4 @@
-use super::KivoNativeEngine;
+use super::{tap_diagnostic, KivoNativeEngine};
 use crate::playback::errors::{PlaybackError, PlaybackResult};
 use crate::playback::state::PlaybackState;
 use crate::playback::types::PlaybackStatus;
@@ -34,7 +34,9 @@ pub(super) fn apply_status_result(
 }
 
 pub(super) fn seek_decoder(engine: &mut KivoNativeEngine, position_ms: u64) {
-    let _ = engine.pipeline.seek_decoder(position_ms);
+    if engine.pipeline.seek_decoder(position_ms).is_ok() {
+        tap_diagnostic::reset_after_seek_success(&mut engine.tap_diagnostic, &mut engine.pipeline);
+    }
 }
 
 pub(super) fn set_output_volume(engine: &mut KivoNativeEngine, level: f32) {
