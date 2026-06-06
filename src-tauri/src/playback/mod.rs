@@ -3,11 +3,11 @@ pub mod activity_log;
 pub mod activity_recorder;
 pub mod activity_snapshot;
 pub mod audio_bridge;
+pub mod audio_buffer;
 pub mod audio_route;
 pub mod audio_route_coordinator;
 pub mod audio_route_integration;
 pub mod audio_route_pipeline_tap;
-pub mod audio_buffer;
 pub mod backend_status;
 pub mod backends;
 pub mod capabilities;
@@ -155,6 +155,9 @@ mod native_pipeline_worker_runtime_tests;
 
 #[cfg(test)]
 mod output_frame_tests;
+
+#[cfg(test)]
+mod output_sink_contract_tests;
 
 #[cfg(test)]
 mod output_sink_tests;
