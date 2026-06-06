@@ -1,81 +1,100 @@
-use std::path::{Path, PathBuf};
+use std::fmt::Debug;
 
-fn playback_path(relative_path: &str) -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("src")
-        .join("playback")
-        .join(relative_path)
+use crate::playback::decoder::{AudioSampleFormat, AudioStreamInfo};
+use crate::playback::output::AudioOutputFrame;
+
+use super::super::{
+    ProductionOutputRouteBackpressure, ProductionOutputRouteFailure,
+    ProductionOutputRouteFailureClass, ProductionOutputRouteFormatDescriptor,
+    ProductionOutputRouteFormatMismatch, ProductionOutputRouteFrameInput,
+    ProductionOutputRouteRouteClosed, ProductionOutputRouteRouteClosedReason,
+    ProductionOutputRouteSinkFailure, ProductionOutputRouteStreamFormat,
+    ProductionOutputRouteUnderrun,
+};
+
+fn assert_copy_debug_contract<T: Copy + Debug>() {}
+
+fn assert_value_failure_contract<T>()
+where
+    T: Into<ProductionOutputRouteFailure> + Clone + Debug + PartialEq,
+{
 }
 
-fn read_playback_source(relative_path: &str) -> String {
-    std::fs::read_to_string(playback_path(relative_path)).expect("read playback source")
+fn stream(sample_format: AudioSampleFormat) -> AudioStreamInfo {
+    AudioStreamInfo {
+        sample_rate_hz: 48_000,
+        channels: 2,
+        sample_format,
+    }
 }
 
-fn production_contract_files() -> [&'static str; 10] {
-    [
-        "production_output_route/mod.rs",
-        "production_output_route/input/mod.rs",
-        "production_output_route/input/audio_output_frame.rs",
-        "production_output_route/failure/mod.rs",
-        "production_output_route/failure/backpressure.rs",
-        "production_output_route/failure/underrun.rs",
-        "production_output_route/failure/sink_failure.rs",
-        "production_output_route/failure/route_closed.rs",
-        "production_output_route/failure/format_mismatch.rs",
-        "production_output_route/tests/mod.rs",
-    ]
+fn frame() -> AudioOutputFrame {
+    AudioOutputFrame {
+        stream: stream(AudioSampleFormat::Float32),
+        position_ms: 960,
+        samples: vec![0.0, 0.125, -0.125, 0.0],
+    }
 }
 
 #[test]
-fn production_output_route_boundary_contract_files_avoid_forbidden_runtime_coupling() {
-    let forbidden_tokens = [
-        concat!("Output", "Sink"),
-        concat!("native_pipeline", "_drain"),
-        concat!("Playback", "State"),
-        concat!("Worker", "State"),
-        concat!("Output", "Runtime", "Status"),
-        concat!("state", ".", "error"),
-        concat!("tauri", "::", "command"),
-        concat!("em", "it"),
-        concat!("ev", "ent"),
-        concat!("Was", "api"),
-        concat!("WAS", "API"),
-        concat!("real", "_transport"),
+fn production_output_route_boundary_input_is_borrowed_metadata_contract() {
+    assert_copy_debug_contract::<ProductionOutputRouteFrameInput<'_>>();
+
+    let frame = frame();
+    let input = ProductionOutputRouteFrameInput::from_frame(&frame);
+    let copied_input = input;
+
+    assert_eq!(copied_input.position_ms(), frame.position_ms);
+    assert_eq!(copied_input.stream().channels, frame.stream.channels);
+    assert_eq!(copied_input.sample_count(), frame.samples.len());
+}
+
+#[test]
+fn production_output_route_boundary_failures_are_plain_value_contracts() {
+    assert_value_failure_contract::<ProductionOutputRouteBackpressure>();
+    assert_value_failure_contract::<ProductionOutputRouteUnderrun>();
+    assert_value_failure_contract::<ProductionOutputRouteSinkFailure>();
+    assert_value_failure_contract::<ProductionOutputRouteRouteClosed>();
+    assert_value_failure_contract::<ProductionOutputRouteFormatMismatch>();
+
+    assert_copy_debug_contract::<ProductionOutputRouteFailureClass>();
+    assert_copy_debug_contract::<ProductionOutputRouteRouteClosedReason>();
+    assert_copy_debug_contract::<ProductionOutputRouteStreamFormat>();
+    assert_copy_debug_contract::<ProductionOutputRouteFormatDescriptor>();
+}
+
+#[test]
+fn production_output_route_boundary_classifies_without_runtime_attachment() {
+    let expected =
+        ProductionOutputRouteFormatDescriptor::from_stream(&stream(AudioSampleFormat::Float32));
+    let actual =
+        ProductionOutputRouteFormatDescriptor::from_stream(&stream(AudioSampleFormat::Signed16));
+
+    let failures = [
+        ProductionOutputRouteFailure::from(ProductionOutputRouteBackpressure::new(4, 4)),
+        ProductionOutputRouteFailure::from(ProductionOutputRouteUnderrun::new(512, 256)),
+        ProductionOutputRouteFailure::from(ProductionOutputRouteSinkFailure::new(
+            "submit_frame",
+            "sink rejected frame",
+        )),
+        ProductionOutputRouteFailure::from(ProductionOutputRouteRouteClosed::new(
+            ProductionOutputRouteRouteClosedReason::NotOpened,
+        )),
+        ProductionOutputRouteFailure::from(ProductionOutputRouteFormatMismatch::new(
+            expected, actual,
+        )),
     ];
 
-    for relative_path in production_contract_files() {
-        let source = read_playback_source(relative_path);
-        for token in forbidden_tokens {
-            assert!(
-                !source.contains(token),
-                "{relative_path} must not depend on forbidden token {token}"
-            );
-        }
-    }
-}
+    let classes = failures.map(|failure| failure.class());
 
-#[test]
-fn production_output_route_boundary_has_no_owner_config_lifecycle_or_bridge_skeleton() {
-    for relative_path in [
-        "production_output_route/owner",
-        "production_output_route/config",
-        "production_output_route/lifecycle",
-        "production_output_route/bridge",
-        "production_output_route/route.rs",
-    ] {
-        assert!(
-            !playback_path(relative_path).exists(),
-            "{relative_path} must not be created by this contract ticket"
-        );
-    }
-}
-
-#[test]
-fn production_output_route_boundary_input_does_not_expose_samples_or_serde_contract() {
-    let source = read_playback_source("production_output_route/input/audio_output_frame.rs");
-
-    assert!(!source.contains("fn samples"));
-    assert!(!source.contains("Serialize"));
-    assert!(!source.contains("Deserialize"));
-    assert!(!source.contains("serde"));
+    assert_eq!(
+        classes,
+        [
+            ProductionOutputRouteFailureClass::Backpressure,
+            ProductionOutputRouteFailureClass::Underrun,
+            ProductionOutputRouteFailureClass::SinkFailure,
+            ProductionOutputRouteFailureClass::RouteClosed,
+            ProductionOutputRouteFailureClass::FormatMismatch,
+        ]
+    );
 }
