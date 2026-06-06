@@ -40,6 +40,16 @@ fn production_output_route_contract_lint_anchor(frame: &crate::playback::output:
     let _lifecycle_gate = ProductionOutputRouteLifecycleInputGate::new();
     let _lifecycle_state = ProductionOutputRouteLifecycleState::AcceptingInput;
 
+    // P0-112: lifecycle transition matrix contract symbols
+    use lifecycle::transition::{
+        ProductionOutputRouteLifecycleTransitionDecision,
+        ProductionOutputRouteLifecycleTransitionMatrix,
+    };
+    let _transition_matrix = ProductionOutputRouteLifecycleTransitionMatrix::new();
+    let _transition_decision =
+        _transition_matrix.validate_transition(ProductionOutputRouteLifecycleState::NotReadyForInput, ProductionOutputRouteLifecycleState::AcceptingInput);
+    let _decision_type = std::any::type_name::<ProductionOutputRouteLifecycleTransitionDecision>();
+
     let _ = (
         input.position_ms(),
         input.sample_count(),
@@ -58,6 +68,9 @@ fn production_output_route_contract_lint_anchor(frame: &crate::playback::output:
         _config_authority_type,
         _lifecycle_gate,
         _lifecycle_state,
+        _transition_matrix,
+        _transition_decision,
+        _decision_type,
     );
 }
 
