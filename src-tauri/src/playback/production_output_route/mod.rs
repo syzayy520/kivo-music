@@ -2,6 +2,7 @@ pub(crate) mod authority;
 pub(crate) mod config;
 mod failure;
 mod input;
+pub(crate) mod lifecycle;
 
 pub(crate) use failure::{
     ProductionOutputRouteBackpressure, ProductionOutputRouteFailure,
@@ -34,6 +35,11 @@ fn production_output_route_contract_lint_anchor(frame: &crate::playback::output:
     let _identity_try = ProductionOutputRouteIdentity::try_new(2);
     let _config_authority_type = std::any::type_name::<ProductionOutputRouteConfigAuthority>();
 
+    // P0-110: lifecycle input gate contract symbols
+    use lifecycle::{ProductionOutputRouteLifecycleInputGate, ProductionOutputRouteLifecycleState};
+    let _lifecycle_gate = ProductionOutputRouteLifecycleInputGate::new();
+    let _lifecycle_state = ProductionOutputRouteLifecycleState::AcceptingInput;
+
     let _ = (
         input.position_ms(),
         input.sample_count(),
@@ -50,6 +56,8 @@ fn production_output_route_contract_lint_anchor(frame: &crate::playback::output:
         _identity.value(),
         _identity_try.is_some(),
         _config_authority_type,
+        _lifecycle_gate,
+        _lifecycle_state,
     );
 }
 
