@@ -13,7 +13,7 @@ impl TapDiagnosticState {
         self.policy = Some(policy);
     }
 
-    #[cfg(test)]
+    #[cfg_attr(not(test), allow(dead_code))]
     pub(in crate::playback::backends::native) fn policy(
         &self,
     ) -> Option<&NativePipelineRouteTapDiagnosticPolicy> {

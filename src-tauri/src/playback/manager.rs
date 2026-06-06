@@ -4,8 +4,13 @@ use super::backends::{backend_types::PlaybackBackendDescriptor, mpv, native::Kiv
 use super::queue::PlaybackQueue;
 
 mod controls;
+#[cfg_attr(not(test), allow(dead_code, unused_imports))]
+mod diagnostic_query;
 mod queue_controls;
 mod service;
+
+#[cfg(test)]
+mod diagnostic_query_tests;
 
 #[derive(Debug)]
 pub struct PlaybackManager {

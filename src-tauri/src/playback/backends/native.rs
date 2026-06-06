@@ -45,7 +45,7 @@ impl KivoNativeEngine {
     }
 
     #[cfg(test)]
-    fn new_with_tap_diagnostic_policy(
+    pub(in crate::playback) fn new_with_tap_diagnostic_policy(
         config: super::super::native_pipeline_route_tap_diagnostic_policy::NativeTapDiagnosticConfig,
     ) -> Self {
         let mut engine = Self::new();

@@ -1,7 +1,7 @@
 mod close;
 mod config;
 mod open;
-#[cfg(test)]
+#[cfg_attr(not(test), allow(dead_code))]
 mod query;
 mod seek;
 mod state;
