@@ -17,6 +17,14 @@ pub enum PlaybackError {
     InvalidControlInput(String),
     #[error("unsupported operation: {0}")]
     UnsupportedOperation(String),
+    #[error("no track: {0}")]
+    NoTrack(String),
+    #[error("invalid control state: {0}")]
+    InvalidControlState(String),
+    #[error("seek out of range: position {position_ms}ms exceeds duration {duration_ms}ms")]
+    SeekOutOfRange { position_ms: u64, duration_ms: u64 },
+    #[error("seek transaction failed: {0}")]
+    SeekTransactionFailed(String),
     #[error("playback failed: {0}")]
     Playback(String),
 }
