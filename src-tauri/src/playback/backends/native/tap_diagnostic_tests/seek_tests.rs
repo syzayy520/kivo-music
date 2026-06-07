@@ -17,7 +17,10 @@ fn seek_does_not_reset_diagnostic_tap() {
 
     // Loaded/Idle seek succeeds — tap diagnostic must not reset
     let result = engine.seek(0);
-    assert!(result.is_ok(), "seek on loaded idle should succeed, got {result:?}");
+    assert!(
+        result.is_ok(),
+        "seek on loaded idle should succeed, got {result:?}"
+    );
 
     let after = engine
         .tap_diagnostic_current_report()
@@ -30,7 +33,7 @@ fn seek_does_not_reset_diagnostic_tap() {
 }
 
 #[test]
-fn seek_does_not_reset_diagnostic_tap_when_decoder_closed() {
+fn seek_out_of_range_does_not_reset_diagnostic_tap_when_decoder_closed() {
     let mut engine = KivoNativeEngine::new();
     enable_diagnostic(&mut engine, 4);
     let (track, path) = wav_track("seek-failure", 44_100);
@@ -43,11 +46,17 @@ fn seek_does_not_reset_diagnostic_tap_when_decoder_closed() {
         .tap_diagnostic_current_report()
         .expect("diagnostic report before seek");
 
-    // Decoder closed → seek transaction fails — tap diagnostic must not reset
+    // Known duration rejects the out-of-range seek before decoder transaction.
     let result = engine.seek(10);
     match result {
-        Err(PlaybackError::SeekTransactionFailed(_)) => {}
-        other => panic!("expected seek transaction failed, got {other:?}"),
+        Err(PlaybackError::SeekOutOfRange {
+            position_ms,
+            duration_ms,
+        }) => {
+            assert_eq!(position_ms, 10);
+            assert_eq!(duration_ms, 0);
+        }
+        other => panic!("expected seek out of range, got {other:?}"),
     }
 
     let after = engine
