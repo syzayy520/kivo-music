@@ -1,8 +1,9 @@
 mod clock;
-mod error;
+pub(in crate::playback) mod error;
 mod frame;
 mod status;
-mod submit;
+pub(in crate::playback) mod submit;
+pub(in crate::playback) mod submit_error_observation;
 
 use super::errors::PlaybackResult;
 use super::native_pipeline::NativePipeline;
