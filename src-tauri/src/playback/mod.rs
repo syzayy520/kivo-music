@@ -40,6 +40,7 @@ pub mod output;
 pub mod output_frame;
 pub mod output_policy;
 pub mod output_sink;
+pub(crate) mod output_submit_error;
 pub mod output_wasapi;
 pub mod path;
 pub mod playback_event_bridge;
