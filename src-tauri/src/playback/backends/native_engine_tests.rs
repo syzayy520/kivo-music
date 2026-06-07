@@ -85,5 +85,6 @@ mod mute_tests;
 mod pause_tests;
 mod play_tests;
 mod resume_tests;
+mod seek_tests;
 mod stop_tests;
 mod volume_tests;

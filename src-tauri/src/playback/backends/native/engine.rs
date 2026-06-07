@@ -1,4 +1,6 @@
-use super::{control, load, mute, pause, resume, stop, tap_diagnostic, volume, KivoNativeEngine};
+use super::{
+    control, load, mute, pause, resume, seek, stop, tap_diagnostic, volume, KivoNativeEngine,
+};
 use crate::playback::backends::backend_types::PlaybackBackendDescriptor;
 use crate::playback::engine::PlaybackEngine;
 use crate::playback::errors::{PlaybackError, PlaybackResult};
@@ -51,9 +53,7 @@ impl PlaybackEngine for KivoNativeEngine {
     }
 
     fn seek(&mut self, position_ms: u64) -> PlaybackResult<PlaybackState> {
-        control::seek_decoder(self, position_ms);
-        let result = self.playback.seek(position_ms);
-        control::apply_status_result(self, result)
+        seek::seek_track(self, position_ms)
     }
 
     fn set_volume(&mut self, level: f32) -> PlaybackResult<PlaybackState> {

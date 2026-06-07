@@ -27,7 +27,7 @@ fn play_records_playback_error_as_state_error() {
 }
 
 #[test]
-fn seek_records_playback_error_as_state_error() {
+fn seek_returns_unsupported_without_recording_state_error() {
     let mut engine = KivoNativeEngine::new();
 
     let result = engine.seek(1_000);
@@ -43,18 +43,17 @@ fn seek_records_playback_error_as_state_error() {
     }
 
     let state = engine.current_state();
-    assert_eq!(
-        state.error.as_deref(),
-        Some("unsupported operation: kivo core audio native playback seek is not implemented yet")
-    );
+    assert!(state.error.is_none(), "seek must not record error in state");
 }
 
 #[test]
-fn seek_after_wav_load_moves_pipeline_decoder_but_keeps_public_seek_unsupported() {
+fn seek_after_wav_load_does_not_mutate_pipeline() {
     let mut engine = KivoNativeEngine::new();
     let (track, path) = wav_track();
 
     let _ = engine.load(track);
+    let pipeline_before = engine.pipeline_state();
+
     let result = engine.seek(0);
 
     match result {
@@ -67,13 +66,17 @@ fn seek_after_wav_load_moves_pipeline_decoder_but_keeps_public_seek_unsupported(
         other => panic!("expected unsupported operation, got {other:?}"),
     }
 
-    let pipeline = engine.pipeline_state();
-    let session = pipeline
-        .decoder_session
-        .expect("decoder session should stay open");
-
-    assert_eq!(session.last_position_ms, 0);
-    assert!(pipeline.last_decoded_frame.is_none());
+    let pipeline_after = engine.pipeline_state();
+    assert_eq!(
+        pipeline_before.decoder_session.is_some(),
+        pipeline_after.decoder_session.is_some(),
+        "seek must not change decoder session presence"
+    );
+    assert_eq!(
+        pipeline_before.last_decoded_frame.is_some(),
+        pipeline_after.last_decoded_frame.is_some(),
+        "seek must not change last_decoded_frame presence"
+    );
 
     std::fs::remove_file(path).expect("remove wav file");
 }

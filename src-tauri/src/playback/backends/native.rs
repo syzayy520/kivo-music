@@ -13,6 +13,7 @@ mod load;
 mod mute;
 mod pause;
 mod resume;
+mod seek;
 mod stop;
 mod tap_diagnostic;
 mod volume;
