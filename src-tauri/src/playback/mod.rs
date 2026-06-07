@@ -111,6 +111,9 @@ mod decoder_runtime_state_tests;
 mod decoder_session_tests;
 
 #[cfg(test)]
+mod errors_tests;
+
+#[cfg(test)]
 mod lifecycle_activity_log_tests;
 
 #[cfg(test)]
