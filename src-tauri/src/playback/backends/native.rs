@@ -11,6 +11,8 @@ mod control;
 mod engine;
 mod load;
 mod mute;
+mod pause;
+mod resume;
 mod stop;
 mod tap_diagnostic;
 mod volume;

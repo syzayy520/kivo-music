@@ -13,16 +13,20 @@ fn public_native_engine_keeps_native_control_contract() {
         Err(PlaybackError::UnsupportedOperation(_))
     ));
 
-    let result = engine.pause();
+    let pause_state = engine
+        .pause()
+        .expect("native pause without track should succeed after P0-147");
     assert!(matches!(
-        result,
-        Err(PlaybackError::UnsupportedOperation(_))
+        pause_state.status,
+        crate::playback::types::PlaybackStatus::Idle
     ));
 
-    let result = engine.resume();
+    let resume_state = engine
+        .resume()
+        .expect("native resume without track should succeed after P0-147");
     assert!(matches!(
-        result,
-        Err(PlaybackError::UnsupportedOperation(_))
+        resume_state.status,
+        crate::playback::types::PlaybackStatus::Idle
     ));
 
     let result = engine.stop();

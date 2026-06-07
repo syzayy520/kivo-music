@@ -32,6 +32,16 @@ impl KivoNativePlayback {
         self.status.clone()
     }
 
+    pub fn mark_paused(&mut self) -> PlaybackStatus {
+        self.status = PlaybackStatus::Paused;
+        self.status.clone()
+    }
+
+    pub fn mark_resumed(&mut self) -> PlaybackStatus {
+        self.status = PlaybackStatus::Playing;
+        self.status.clone()
+    }
+
     pub fn play(&self) -> PlaybackResult<PlaybackStatus> {
         unsupported_operation("native playback play")
     }

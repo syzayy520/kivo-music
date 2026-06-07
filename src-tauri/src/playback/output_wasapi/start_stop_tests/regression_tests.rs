@@ -84,13 +84,19 @@ fn public_native_engine_keeps_native_control_contract_after_start_stop_boundary(
         engine.play(),
         Err(PlaybackError::UnsupportedOperation(_))
     ));
+    let pause_state = engine
+        .pause()
+        .expect("native pause without track should succeed after P0-147");
     assert!(matches!(
-        engine.pause(),
-        Err(PlaybackError::UnsupportedOperation(_))
+        pause_state.status,
+        crate::playback::types::PlaybackStatus::Idle
     ));
+    let resume_state = engine
+        .resume()
+        .expect("native resume without track should succeed after P0-147");
     assert!(matches!(
-        engine.resume(),
-        Err(PlaybackError::UnsupportedOperation(_))
+        resume_state.status,
+        crate::playback::types::PlaybackStatus::Idle
     ));
     assert!(engine.stop().is_ok(), "stop should succeed");
     assert!(matches!(
