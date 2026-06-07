@@ -2,12 +2,12 @@ use std::fs;
 
 use super::super::super::engine::PlaybackEngine;
 use super::super::super::errors::PlaybackError;
-use super::super::super::types::{PlaybackTrack, TrackId};
+use super::super::super::types::{PlaybackStatus, PlaybackTrack, TrackId};
 use super::super::native::KivoNativeEngine;
 use super::{track, wav_track};
 
 #[test]
-fn load_keeps_track_and_returns_typed_unsupported() {
+fn native_playback_load_failure_does_not_commit_track_or_status_success() {
     let mut engine = KivoNativeEngine::new();
 
     let result = engine.load(track());
@@ -20,29 +20,29 @@ fn load_keeps_track_and_returns_typed_unsupported() {
     }
 
     let state = engine.current_state();
+    assert!(state.current_track.is_none());
+    assert!(matches!(state.status, PlaybackStatus::Idle));
+    assert_eq!(state.error.as_deref(), Some("unsupported format: flac"));
+}
+
+#[test]
+fn native_playback_load_sets_track_and_idle_after_existing_null_boundary_submit() {
+    let mut engine = KivoNativeEngine::new();
+    let (track, path) = wav_track();
+
+    let state = engine
+        .load(track)
+        .expect("native load should succeed after pipeline boundary succeeds");
+
+    assert!(matches!(state.status, PlaybackStatus::Idle));
     assert_eq!(
         state
             .current_track
             .as_ref()
             .map(|track| track.title.as_str()),
-        Some("Track 1")
+        Some("WAV Load")
     );
-    assert_eq!(state.error.as_deref(), Some("unsupported format: flac"));
-}
-
-#[test]
-fn load_opens_wav_decoder_session_and_decodes_one_frame_submitted_to_null_sink() {
-    let mut engine = KivoNativeEngine::new();
-    let (track, path) = wav_track();
-
-    let result = engine.load(track);
-
-    match result {
-        Err(PlaybackError::UnsupportedOperation(message)) => {
-            assert_eq!(message, "kivo core audio load is not implemented yet");
-        }
-        other => panic!("expected unsupported operation, got {other:?}"),
-    }
+    assert!(state.error.is_none());
 
     let pipeline = engine.pipeline_state();
     let session = pipeline
@@ -66,7 +66,7 @@ fn load_opens_wav_decoder_session_and_decodes_one_frame_submitted_to_null_sink()
 }
 
 #[test]
-fn load_with_track_without_source_path_extension_is_still_typed_unsupported() {
+fn native_playback_load_without_source_path_extension_returns_real_pipeline_error() {
     let mut engine = KivoNativeEngine::new();
     let track = PlaybackTrack {
         id: TrackId("track-no-ext".to_string()),
@@ -83,11 +83,21 @@ fn load_with_track_without_source_path_extension_is_still_typed_unsupported() {
         }
         other => panic!("expected unsupported operation, got {other:?}"),
     }
+
+    let state = engine.current_state();
+    assert_eq!(
+        state.error.as_deref(),
+        Some("unsupported format: missing file extension")
+    );
 }
 
 #[test]
-fn load_records_pipeline_error_when_decoder_open_fails_but_keeps_public_load_unsupported() {
+fn native_playback_load_failure_keeps_existing_loaded_track() {
     let mut engine = KivoNativeEngine::new();
+    let (loaded_track, path) = wav_track();
+    engine
+        .load(loaded_track)
+        .expect("initial native load should succeed");
 
     let result = engine.load(track());
 
@@ -104,7 +114,9 @@ fn load_records_pipeline_error_when_decoder_open_fails_but_keeps_public_load_uns
             .current_track
             .as_ref()
             .map(|track| track.title.as_str()),
-        Some("Track 1")
+        Some("WAV Load")
     );
     assert_eq!(state.error.as_deref(), Some("unsupported format: flac"));
+
+    fs::remove_file(path).expect("remove wav file");
 }

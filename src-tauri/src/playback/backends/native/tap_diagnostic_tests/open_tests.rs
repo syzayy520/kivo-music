@@ -2,8 +2,8 @@ use crate::playback::engine::PlaybackEngine;
 
 use super::super::KivoNativeEngine;
 use super::fixtures::{
-    assert_unsupported, enable_diagnostic, remove_wav, signed16_wav_track, unsupported_track,
-    wav_track,
+    assert_loaded, assert_unsupported, enable_diagnostic, remove_wav, signed16_wav_track,
+    unsupported_track, wav_track,
 };
 
 #[test]
@@ -12,10 +12,7 @@ fn decoder_open_success_attaches_before_first_decode() {
     enable_diagnostic(&mut engine, 4);
     let (track, path) = wav_track("open-success", 44_100);
 
-    assert_unsupported(
-        engine.load(track),
-        "kivo core audio load is not implemented yet",
-    );
+    assert_loaded(engine.load(track));
     let report = engine
         .tap_diagnostic_current_report()
         .expect("diagnostic report after decoder open");
@@ -95,15 +92,9 @@ fn diagnostic_creation_failure_does_not_change_load_result() {
     enable_diagnostic(&mut engine, 4);
     let (track, path) = signed16_wav_track("diagnostic-create-failure");
 
-    assert_unsupported(
-        engine.load(track),
-        "kivo core audio load is not implemented yet",
-    );
+    assert_loaded(engine.load(track));
 
     assert!(engine.tap_diagnostic_current_report().is_none());
-    assert_eq!(
-        engine.current_state().error.as_deref(),
-        Some("kivo core audio load is not implemented yet")
-    );
+    assert!(engine.current_state().error.is_none());
     remove_wav(path);
 }

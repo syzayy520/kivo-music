@@ -1,7 +1,8 @@
 use super::{control, load, tap_diagnostic, KivoNativeEngine};
 use crate::playback::backends::backend_types::PlaybackBackendDescriptor;
 use crate::playback::engine::PlaybackEngine;
-use crate::playback::errors::PlaybackResult;
+use crate::playback::errors::{PlaybackError, PlaybackResult};
+use crate::playback::native_pipeline_loop::NativePipelineLoopStep;
 use crate::playback::state::PlaybackState;
 use crate::playback::types::PlaybackTrack;
 
@@ -15,8 +16,26 @@ impl PlaybackEngine for KivoNativeEngine {
     }
 
     fn play(&mut self) -> PlaybackResult<PlaybackState> {
-        let result = self.playback.play();
-        control::apply_status_result(self, result)
+        if self.state.current_track.is_none() {
+            let result = self.playback.play();
+            return control::apply_status_result(self, result);
+        }
+
+        match self.pipeline.pump_once() {
+            Ok(NativePipelineLoopStep::Drained) => {
+                self.playback.mark_playing();
+                self.state.status = self.playback.current_status();
+                self.state.error = None;
+                Ok(self.state.clone())
+            }
+            Ok(NativePipelineLoopStep::EndOfStream) => control::record_error(
+                self,
+                PlaybackError::Backend(
+                    "native pipeline reached end-of-stream before NullOutput submit".to_string(),
+                ),
+            ),
+            Err(error) => control::record_error(self, error),
+        }
     }
 
     fn pause(&mut self) -> PlaybackResult<PlaybackState> {

@@ -8,11 +8,19 @@ pub(super) fn load_track(
     engine: &mut KivoNativeEngine,
     track: PlaybackTrack,
 ) -> PlaybackResult<PlaybackState> {
-    let pipeline_error = load_pipeline_until_output_boundary(engine, &track).err();
+    if let Err(error) = load_pipeline_until_output_boundary(engine, &track) {
+        engine.state.error = Some(error.to_string());
+        return Err(PlaybackError::UnsupportedOperation(
+            super::super::native_unsupported::unsupported_operation_message("load"),
+        ));
+    }
+
     engine.playback.load_track(track);
     engine.state.current_track = engine.playback.current_track();
     engine.state.status = engine.playback.current_status();
-    unsupported_load(engine, pipeline_error)
+    engine.state.error = None;
+
+    Ok(engine.state.clone())
 }
 
 fn load_pipeline_until_output_boundary(
@@ -33,14 +41,4 @@ fn load_pipeline_until_output_boundary(
         Err(PlaybackError::UnsupportedOperation(_)) => Ok(()),
         Err(error) => Err(error),
     }
-}
-
-fn unsupported_load(
-    engine: &mut KivoNativeEngine,
-    pipeline_error: Option<PlaybackError>,
-) -> PlaybackResult<PlaybackState> {
-    let message = super::super::native_unsupported::unsupported_operation_message("load");
-    engine.state.error =
-        Some(pipeline_error.map_or_else(|| message.clone(), |error| error.to_string()));
-    Err(PlaybackError::UnsupportedOperation(message))
 }

@@ -1,7 +1,7 @@
 use crate::playback::errors::{PlaybackError, PlaybackResult};
 use crate::playback::native_pipeline_route_tap_diagnostic_policy::NativeTapDiagnosticConfig;
 use crate::playback::state::PlaybackState;
-use crate::playback::types::{PlaybackTrack, TrackId};
+use crate::playback::types::{PlaybackStatus, PlaybackTrack, TrackId};
 
 use super::super::KivoNativeEngine;
 
@@ -78,6 +78,17 @@ pub(super) fn assert_unsupported(result: PlaybackResult<PlaybackState>, expected
             assert_eq!(message, expected_message);
         }
         other => panic!("expected unsupported operation, got {other:?}"),
+    }
+}
+
+pub(super) fn assert_loaded(result: PlaybackResult<PlaybackState>) -> PlaybackState {
+    match result {
+        Ok(state) => {
+            assert!(matches!(state.status, PlaybackStatus::Idle));
+            assert!(state.error.is_none());
+            state
+        }
+        other => panic!("expected loaded native state, got {other:?}"),
     }
 }
 
