@@ -79,51 +79,27 @@ fn seek_after_wav_load_moves_pipeline_decoder_but_keeps_public_seek_unsupported(
 }
 
 #[test]
-fn set_volume_updates_state_and_returns_typed_unsupported() {
+fn set_volume_updates_state_and_returns_ok() {
     let mut engine = KivoNativeEngine::new();
 
-    let result = engine.set_volume(1.5);
-
-    match result {
-        Err(PlaybackError::UnsupportedOperation(message)) => {
-            assert_eq!(message, "kivo core audio set volume is not implemented yet");
-        }
-        other => panic!("expected unsupported operation, got {other:?}"),
-    }
-
-    let state = engine.current_state();
+    let state = engine.set_volume(1.5).expect("volume should succeed");
     let pipeline = engine.pipeline_state();
 
     assert_eq!(state.volume.level, 1.0);
     assert_eq!(pipeline.output_status.controls.volume_level, 1.0);
     assert!(pipeline.output_status.last_error.is_none());
-    assert_eq!(
-        state.error.as_deref(),
-        Some("kivo core audio set volume is not implemented yet")
-    );
+    assert!(state.error.is_none());
 }
 
 #[test]
-fn set_muted_updates_state_and_returns_typed_unsupported() {
+fn set_muted_updates_state_and_returns_ok() {
     let mut engine = KivoNativeEngine::new();
 
-    let result = engine.set_muted(true);
-
-    match result {
-        Err(PlaybackError::UnsupportedOperation(message)) => {
-            assert_eq!(message, "kivo core audio set muted is not implemented yet");
-        }
-        other => panic!("expected unsupported operation, got {other:?}"),
-    }
-
-    let state = engine.current_state();
+    let state = engine.set_muted(true).expect("mute should succeed");
     let pipeline = engine.pipeline_state();
 
     assert!(state.volume.muted);
     assert!(pipeline.output_status.controls.muted);
     assert!(pipeline.output_status.last_error.is_none());
-    assert_eq!(
-        state.error.as_deref(),
-        Some("kivo core audio set muted is not implemented yet")
-    );
+    assert!(state.error.is_none());
 }

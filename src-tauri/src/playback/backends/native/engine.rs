@@ -1,4 +1,4 @@
-use super::{control, load, stop, tap_diagnostic, KivoNativeEngine};
+use super::{control, load, mute, stop, tap_diagnostic, volume, KivoNativeEngine};
 use crate::playback::backends::backend_types::PlaybackBackendDescriptor;
 use crate::playback::engine::PlaybackEngine;
 use crate::playback::errors::{PlaybackError, PlaybackResult};
@@ -59,13 +59,11 @@ impl PlaybackEngine for KivoNativeEngine {
     }
 
     fn set_volume(&mut self, level: f32) -> PlaybackResult<PlaybackState> {
-        control::set_output_volume(self, level);
-        control::unsupported(self, "set volume")
+        volume::set_volume(self, level)
     }
 
     fn set_muted(&mut self, muted: bool) -> PlaybackResult<PlaybackState> {
-        control::set_output_muted(self, muted);
-        control::unsupported(self, "set muted")
+        mute::set_muted(self, muted)
     }
 
     fn current_state(&self) -> PlaybackState {

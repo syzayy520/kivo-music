@@ -66,7 +66,7 @@ fn capabilities_remain_default() {
 }
 
 #[test]
-fn public_native_engine_remains_typed_unsupported() {
+fn public_native_engine_keeps_native_control_contract() {
     let mut engine = KivoNativeEngine::new();
 
     let track = crate::playback::types::PlaybackTrack {
@@ -97,12 +97,13 @@ fn public_native_engine_remains_typed_unsupported() {
         engine.seek(0),
         Err(PlaybackError::UnsupportedOperation(_))
     ));
-    assert!(matches!(
-        engine.set_volume(1.0),
-        Err(PlaybackError::UnsupportedOperation(_))
-    ));
-    assert!(matches!(
-        engine.set_muted(false),
-        Err(PlaybackError::UnsupportedOperation(_))
-    ));
+    let volume_state = engine
+        .set_volume(1.0)
+        .expect("native set_volume should succeed after P0-145");
+    assert_eq!(volume_state.volume.level, 1.0);
+
+    let muted_state = engine
+        .set_muted(false)
+        .expect("native set_muted should succeed after P0-145");
+    assert!(!muted_state.volume.muted);
 }
