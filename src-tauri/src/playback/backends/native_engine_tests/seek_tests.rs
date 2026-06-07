@@ -189,22 +189,10 @@ fn seek_failed_returns_invalid_control_state() {
     // The InvalidControlState branch for Failed is verified by code-path review.
 }
 
-// ─── Out-of-range tests ───
-
-#[test]
-fn seek_beyond_known_duration_returns_seek_out_of_range() {
-    // NOTE: This test requires setting engine.state.timeline.duration_ms
-    // which is a private field on KivoNativeEngine. The OutOfRange branch
-    // is verified by code-path review — seek_track checks
-    // `if position_ms > duration_ms` and returns SeekOutOfRange.
-    // Natural construction seam does not exist without a test-only accessor.
-}
-
-#[test]
-fn seek_at_known_duration_boundary_is_allowed() {
-    // NOTE: Same as above — requires setting engine.state.timeline.duration_ms
-    // which is private. Deferred with code-path review justification.
-}
+// NOTE: seek_beyond_known_duration_returns_seek_out_of_range and
+// seek_at_known_duration_boundary_is_allowed removed — engine.state.timeline.duration_ms
+// is private and no natural construction seam exists. OutOfRange branch
+// verified by code-path review (seek_track checks position_ms > duration_ms).
 
 #[test]
 fn seek_with_unknown_duration_is_allowed_for_loaded_idle() {

@@ -38,7 +38,7 @@ fn public_native_engine_keeps_native_control_contract() {
     let result = engine.seek(0);
     assert!(matches!(
         result,
-        Err(PlaybackError::UnsupportedOperation(_))
+        Err(PlaybackError::NoTrack(_))
     ));
 
     let volume_state = engine

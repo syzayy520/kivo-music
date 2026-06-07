@@ -162,10 +162,13 @@ fn pause_does_not_change_seek_contract() {
     engine.pause().expect("pause should succeed");
     let result = engine.seek(0);
 
-    assert!(matches!(
-        result,
-        Err(PlaybackError::UnsupportedOperation(_))
-    ));
+    // No track loaded → engine is Idle → seek returns NoTrack
+    match result {
+        Err(PlaybackError::NoTrack(message)) => {
+            assert_eq!(message, "seek requires a loaded track");
+        }
+        other => panic!("expected no track error, got {other:?}"),
+    }
 }
 
 #[test]

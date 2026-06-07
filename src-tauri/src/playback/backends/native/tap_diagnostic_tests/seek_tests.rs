@@ -1,7 +1,8 @@
 use crate::playback::engine::PlaybackEngine;
+use crate::playback::errors::PlaybackError;
 
 use super::super::KivoNativeEngine;
-use super::fixtures::{assert_unsupported, enable_diagnostic, remove_wav, wav_track};
+use super::fixtures::{enable_diagnostic, remove_wav, wav_track};
 
 #[test]
 fn seek_does_not_reset_diagnostic_tap() {
@@ -14,10 +15,9 @@ fn seek_does_not_reset_diagnostic_tap() {
         .tap_diagnostic_current_report()
         .expect("diagnostic report before seek");
 
-    assert_unsupported(
-        engine.seek(0),
-        "kivo core audio native playback seek is not implemented yet",
-    );
+    // Loaded/Idle seek succeeds — tap diagnostic must not reset
+    let result = engine.seek(0);
+    assert!(result.is_ok(), "seek on loaded idle should succeed, got {result:?}");
 
     let after = engine
         .tap_diagnostic_current_report()
@@ -43,10 +43,12 @@ fn seek_does_not_reset_diagnostic_tap_when_decoder_closed() {
         .tap_diagnostic_current_report()
         .expect("diagnostic report before seek");
 
-    assert_unsupported(
-        engine.seek(10),
-        "kivo core audio native playback seek is not implemented yet",
-    );
+    // Decoder closed → seek transaction fails — tap diagnostic must not reset
+    let result = engine.seek(10);
+    match result {
+        Err(PlaybackError::SeekTransactionFailed(_)) => {}
+        other => panic!("expected seek transaction failed, got {other:?}"),
+    }
 
     let after = engine
         .tap_diagnostic_current_report()

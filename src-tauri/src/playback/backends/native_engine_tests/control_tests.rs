@@ -27,19 +27,16 @@ fn play_records_playback_error_as_state_error() {
 }
 
 #[test]
-fn seek_returns_unsupported_without_recording_state_error() {
+fn seek_returns_no_track_without_recording_state_error() {
     let mut engine = KivoNativeEngine::new();
 
     let result = engine.seek(1_000);
 
     match result {
-        Err(PlaybackError::UnsupportedOperation(message)) => {
-            assert_eq!(
-                message,
-                "kivo core audio native playback seek is not implemented yet"
-            );
+        Err(PlaybackError::NoTrack(message)) => {
+            assert_eq!(message, "seek requires a loaded track");
         }
-        other => panic!("expected unsupported operation, got {other:?}"),
+        other => panic!("expected no track error, got {other:?}"),
     }
 
     let state = engine.current_state();
@@ -47,7 +44,7 @@ fn seek_returns_unsupported_without_recording_state_error() {
 }
 
 #[test]
-fn seek_after_wav_load_does_not_mutate_pipeline() {
+fn seek_after_wav_load_succeeds_for_loaded_idle() {
     let mut engine = KivoNativeEngine::new();
     let (track, path) = wav_track();
 
@@ -56,15 +53,10 @@ fn seek_after_wav_load_does_not_mutate_pipeline() {
 
     let result = engine.seek(0);
 
-    match result {
-        Err(PlaybackError::UnsupportedOperation(message)) => {
-            assert_eq!(
-                message,
-                "kivo core audio native playback seek is not implemented yet"
-            );
-        }
-        other => panic!("expected unsupported operation, got {other:?}"),
-    }
+    assert!(
+        result.is_ok(),
+        "seek on loaded idle should succeed, got {result:?}"
+    );
 
     let pipeline_after = engine.pipeline_state();
     assert_eq!(
@@ -72,11 +64,9 @@ fn seek_after_wav_load_does_not_mutate_pipeline() {
         pipeline_after.decoder_session.is_some(),
         "seek must not change decoder session presence"
     );
-    assert_eq!(
-        pipeline_before.last_decoded_frame.is_some(),
-        pipeline_after.last_decoded_frame.is_some(),
-        "seek must not change last_decoded_frame presence"
-    );
+    // NOTE: seek_decoder() resets decoder state, clearing last_decoded_frame.
+    // This is correct behavior — decoder must be repositioned, old frame is invalid.
+    // We only verify decoder_session presence is preserved (seek does not close session).
 
     std::fs::remove_file(path).expect("remove wav file");
 }
