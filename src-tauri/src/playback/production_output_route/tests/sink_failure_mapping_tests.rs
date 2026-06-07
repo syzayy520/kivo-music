@@ -113,3 +113,100 @@ fn route_adapter_mapper_is_stateless_zst() {
         0
     );
 }
+
+#[test]
+fn route_mapper_maps_borrowed_classification_ref() {
+    let classification = OutputSubmitErrorClassification::new(
+        OutputSubmitOperation::SubmitFrame,
+        "borrowed classification".into(),
+    );
+
+    match mapper().map_output_submit_classification_ref(&classification) {
+        ProductionOutputRouteSinkFailureMappingResult::Mapped(failure) => {
+            assert_eq!(failure.operation(), "submit_frame");
+            assert_eq!(failure.message(), "borrowed classification");
+        }
+        ProductionOutputRouteSinkFailureMappingResult::Unmapped(_) => {
+            panic!("expected mapped classification")
+        }
+    }
+    assert_eq!(classification.message(), "borrowed classification");
+}
+
+#[test]
+fn route_mapper_maps_borrowed_classified_output_submit_result_ref() {
+    let result =
+        OutputSubmitErrorClassificationResult::Classified(OutputSubmitErrorClassification::new(
+            OutputSubmitOperation::SubmitFrame,
+            "borrowed result".into(),
+        ));
+
+    assert!(matches!(
+        mapper().map_output_submit_classification_result_ref(&result),
+        ProductionOutputRouteSinkFailureMappingResult::Mapped(failure)
+            if failure.operation() == "submit_frame" && failure.message() == "borrowed result"
+    ));
+    assert!(matches!(
+        result,
+        OutputSubmitErrorClassificationResult::Classified(_)
+    ));
+}
+
+#[test]
+fn route_mapper_maps_borrowed_unmapped_result_without_consuming_result() {
+    let result = OutputSubmitErrorClassificationResult::Unmapped(PlaybackError::Backend(
+        "borrowed backend".into(),
+    ));
+
+    assert!(matches!(
+        mapper().map_output_submit_classification_result_ref(&result),
+        ProductionOutputRouteSinkFailureMappingResult::Unmapped(
+            PlaybackError::Backend(message)
+        ) if message == "borrowed backend"
+    ));
+    assert!(matches!(
+        result,
+        OutputSubmitErrorClassificationResult::Unmapped(PlaybackError::Backend(ref message))
+            if message == "borrowed backend"
+    ));
+}
+
+#[test]
+fn route_mapper_owned_unmapped_result_still_moves_original_error_by_value() {
+    let result =
+        OutputSubmitErrorClassificationResult::Unmapped(PlaybackError::Queue("owned queue".into()));
+
+    assert!(matches!(
+        mapper().map_output_submit_classification_result(result),
+        ProductionOutputRouteSinkFailureMappingResult::Unmapped(PlaybackError::Queue(message))
+            if message == "owned queue"
+    ));
+}
+
+#[test]
+fn route_mapper_borrowed_unmapped_does_not_rerun_classifier_or_remap_output_error() {
+    let result = OutputSubmitErrorClassificationResult::Unmapped(PlaybackError::Output(
+        "explicitly unmapped".into(),
+    ));
+
+    assert!(matches!(
+        mapper().map_output_submit_classification_result_ref(&result),
+        ProductionOutputRouteSinkFailureMappingResult::Unmapped(PlaybackError::Output(message))
+            if message == "explicitly unmapped"
+    ));
+}
+
+#[test]
+fn route_mapper_preserves_existing_owned_classified_mapping() {
+    let result =
+        OutputSubmitErrorClassificationResult::Classified(OutputSubmitErrorClassification::new(
+            OutputSubmitOperation::SubmitFrame,
+            "owned classified".into(),
+        ));
+
+    assert!(matches!(
+        mapper().map_output_submit_classification_result(result),
+        ProductionOutputRouteSinkFailureMappingResult::Mapped(failure)
+            if failure.operation() == "submit_frame" && failure.message() == "owned classified"
+    ));
+}

@@ -14,7 +14,7 @@ impl NativePipelineDrainSubmitErrorObservation {
         }
     }
 
-    #[cfg(test)]
+    #[allow(dead_code)]
     pub(in crate::playback) fn classification_result(
         &self,
     ) -> &OutputSubmitErrorClassificationResult {

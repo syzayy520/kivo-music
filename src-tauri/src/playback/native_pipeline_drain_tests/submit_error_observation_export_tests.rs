@@ -2,7 +2,9 @@ use crate::playback::errors::{PlaybackError, PlaybackResult};
 use crate::playback::native_pipeline::NativePipeline;
 use crate::playback::native_pipeline_drain::error::handle_drain_submit_error_with_exporter;
 use crate::playback::native_pipeline_drain::submit::observe_submit_frame_result;
-use crate::playback::native_pipeline_drain::submit_error_observation::NativePipelineDrainSubmitErrorObservation;
+use crate::playback::native_pipeline_drain::submit_error_observation::{
+    observe_submit_frame_error, NativePipelineDrainSubmitErrorObservation,
+};
 use crate::playback::output::{AudioOutputFrame, OutputRuntimeStatus, OutputSettings, OutputSink};
 use crate::playback::output_submit_error::operation::OutputSubmitOperation;
 use crate::playback::output_submit_error::result::OutputSubmitErrorClassificationResult;
@@ -150,4 +152,56 @@ fn submit_error_exports_unmapped_observation_before_returning_original_error() {
             panic!("expected unmapped backend observation");
         }
     }
+}
+
+#[test]
+fn observation_exposes_classification_result_without_consuming_error() {
+    let observed =
+        observe_submit_frame_error(PlaybackError::Output("borrowed observation".to_string()));
+
+    assert!(matches!(
+        observed.observation().classification_result(),
+        OutputSubmitErrorClassificationResult::Classified(_)
+    ));
+    assert!(matches!(
+        observed.into_error(),
+        PlaybackError::Output(message) if message == "borrowed observation"
+    ));
+}
+
+#[test]
+fn observation_into_error_still_returns_original_output_error() {
+    let observed = observe_submit_frame_error(PlaybackError::Output("same output".to_string()));
+
+    assert!(matches!(
+        observed.into_error(),
+        PlaybackError::Output(message) if message == "same output"
+    ));
+}
+
+#[test]
+fn observation_into_error_still_returns_original_unmapped_error() {
+    let observed = observe_submit_frame_error(PlaybackError::Backend("same backend".to_string()));
+
+    assert!(matches!(
+        observed.into_error(),
+        PlaybackError::Backend(message) if message == "same backend"
+    ));
+}
+
+#[test]
+fn observation_classification_result_is_reachable_from_playback_sibling_context_without_mod_rs_changes(
+) {
+    fn classification_result_from_sibling(
+        observation: &NativePipelineDrainSubmitErrorObservation,
+    ) -> &OutputSubmitErrorClassificationResult {
+        observation.classification_result()
+    }
+
+    let observed = observe_submit_frame_error(PlaybackError::Output("reachable".to_string()));
+
+    assert!(matches!(
+        classification_result_from_sibling(observed.observation()),
+        OutputSubmitErrorClassificationResult::Classified(_)
+    ));
 }
