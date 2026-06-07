@@ -1,4 +1,5 @@
 use super::super::errors::PlaybackError;
+use super::super::types::PlaybackStatus;
 use super::native_playback::KivoNativePlayback;
 
 fn assert_unsupported<T>(result: Result<T, PlaybackError>, operation: &str) {
@@ -36,10 +37,28 @@ fn resume_is_typed_unsupported() {
 }
 
 #[test]
-fn stop_is_typed_unsupported() {
-    let playback = KivoNativePlayback::new();
+fn stop_without_track_returns_idle() {
+    let mut playback = KivoNativePlayback::new();
 
-    assert_unsupported(playback.stop(), "stop");
+    let status = playback.stop().expect("stop should succeed");
+
+    assert!(matches!(status, PlaybackStatus::Idle));
+}
+
+#[test]
+fn stop_with_track_returns_stopped() {
+    let mut playback = KivoNativePlayback::new();
+    let track = crate::playback::types::PlaybackTrack {
+        id: crate::playback::types::TrackId("test".to_string()),
+        title: "Test".to_string(),
+        artist: "Artist".to_string(),
+        source_path: "/test.wav".to_string(),
+    };
+    playback.load_track(track);
+
+    let status = playback.stop().expect("stop should succeed");
+
+    assert!(matches!(status, PlaybackStatus::Stopped));
 }
 
 #[test]

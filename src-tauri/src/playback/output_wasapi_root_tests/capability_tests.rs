@@ -75,10 +75,7 @@ fn public_native_engine_remains_typed_unsupported() {
         engine.resume(),
         Err(PlaybackError::UnsupportedOperation(_))
     ));
-    assert!(matches!(
-        engine.stop(),
-        Err(PlaybackError::UnsupportedOperation(_))
-    ));
+    assert!(engine.stop().is_ok(), "stop should succeed");
     assert!(matches!(
         engine.seek(0),
         Err(PlaybackError::UnsupportedOperation(_))

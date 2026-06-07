@@ -12,6 +12,7 @@ const PRODUCTION_FILES: &[&str] = &[
     "src/playback/backends/native/load.rs",
     "src/playback/backends/native/control.rs",
     "src/playback/backends/native/engine.rs",
+    "src/playback/backends/native/stop.rs",
 ];
 
 const TEST_FILES: &[&str] = &[
@@ -93,14 +94,16 @@ fn lifecycle_files_only_call_small_diagnostic_helpers() -> Result<(), String> {
     let load = read("src/playback/backends/native/load.rs")?;
     let control = read("src/playback/backends/native/control.rs")?;
     let engine = read("src/playback/backends/native/engine.rs")?;
+    let stop = read("src/playback/backends/native/stop.rs")?;
 
     assert!(load.contains("tap_diagnostic::open_after_decoder_open"));
     assert!(control.contains("tap_diagnostic::reset_after_seek_success"));
-    assert!(engine.contains("tap_diagnostic::close_on_stop"));
+    assert!(stop.contains("tap_diagnostic::close_on_stop"));
     assert!(engine.contains("tap_diagnostic::close_on_shutdown"));
     assert!(!load.contains("NativePipelineRouteTapDiagnosticPolicy"));
     assert!(!control.contains("NativePipelineRouteTapDiagnosticPolicy"));
     assert!(!engine.contains("NativePipelineRouteTapDiagnosticPolicy"));
+    assert!(!stop.contains("NativePipelineRouteTapDiagnosticPolicy"));
     Ok(())
 }
 

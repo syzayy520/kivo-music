@@ -26,10 +26,7 @@ fn public_native_engine_remains_typed_unsupported() {
     ));
 
     let result = engine.stop();
-    assert!(matches!(
-        result,
-        Err(PlaybackError::UnsupportedOperation(_))
-    ));
+    assert!(result.is_ok(), "stop should succeed even without a loaded track");
 
     let result = engine.seek(0);
     assert!(matches!(

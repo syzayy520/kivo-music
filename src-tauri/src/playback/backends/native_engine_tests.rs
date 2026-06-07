@@ -82,3 +82,4 @@ mod control_tests;
 mod lifecycle_tests;
 mod load_tests;
 mod play_tests;
+mod stop_tests;

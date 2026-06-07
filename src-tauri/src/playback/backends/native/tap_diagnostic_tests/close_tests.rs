@@ -1,7 +1,7 @@
 use crate::playback::engine::PlaybackEngine;
 
 use super::super::KivoNativeEngine;
-use super::fixtures::{assert_unsupported, enable_diagnostic, remove_wav, wav_track};
+use super::fixtures::{enable_diagnostic, remove_wav, wav_track};
 
 #[test]
 fn stop_best_effort_closes_and_detaches_diagnostic_tap() {
@@ -10,10 +10,10 @@ fn stop_best_effort_closes_and_detaches_diagnostic_tap() {
     let (track, path) = wav_track("stop", 44_100);
     let _ = engine.load(track);
 
-    assert_unsupported(
-        engine.stop(),
-        "kivo core audio native playback stop is not implemented yet",
-    );
+    let state = engine.stop().expect("stop should succeed");
+
+    assert!(matches!(state.status, crate::playback::types::PlaybackStatus::Stopped));
+    assert!(state.error.is_none());
 
     assert!(engine.tap_diagnostic_current_report().is_none());
     assert!(engine

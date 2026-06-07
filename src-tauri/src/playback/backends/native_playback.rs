@@ -44,8 +44,13 @@ impl KivoNativePlayback {
         unsupported_operation("native playback resume")
     }
 
-    pub fn stop(&self) -> PlaybackResult<PlaybackStatus> {
-        unsupported_operation("native playback stop")
+    pub fn stop(&mut self) -> PlaybackResult<PlaybackStatus> {
+        self.status = if self.current_track.is_some() {
+            PlaybackStatus::Stopped
+        } else {
+            PlaybackStatus::Idle
+        };
+        Ok(self.status.clone())
     }
 
     pub fn seek(&self, _position_ms: u64) -> PlaybackResult<PlaybackStatus> {

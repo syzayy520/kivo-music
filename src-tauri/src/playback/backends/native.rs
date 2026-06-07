@@ -10,6 +10,7 @@ use tap_diagnostic::TapDiagnosticState;
 mod control;
 mod engine;
 mod load;
+mod stop;
 mod tap_diagnostic;
 
 #[cfg(test)]
