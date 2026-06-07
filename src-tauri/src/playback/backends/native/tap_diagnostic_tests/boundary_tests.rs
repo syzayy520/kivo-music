@@ -128,7 +128,7 @@ fn forbidden_consumers_have_no_tap_diagnostic_reference() -> Result<(), String> 
         "src/playback/queue.rs",
         "src/playback/commands.rs",
         "src/playback/events.rs",
-        "src/playback/output.rs",
+        "src/playback/output/mod.rs",
         "src/playback/output_sink.rs",
     ];
 
