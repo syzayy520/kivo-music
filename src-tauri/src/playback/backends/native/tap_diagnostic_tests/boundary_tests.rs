@@ -5,7 +5,6 @@ const PRODUCTION_FILES: &[&str] = &[
     "src/playback/backends/native/tap_diagnostic/state.rs",
     "src/playback/backends/native/tap_diagnostic/config.rs",
     "src/playback/backends/native/tap_diagnostic/open.rs",
-    "src/playback/backends/native/tap_diagnostic/seek.rs",
     "src/playback/backends/native/tap_diagnostic/close.rs",
     "src/playback/backends/native/tap_diagnostic/query.rs",
     "src/playback/backends/native.rs",
@@ -80,7 +79,7 @@ fn diagnostic_family_has_no_forbidden_layer_coupling() -> Result<(), String> {
         "state.error",
     ];
 
-    for file in &PRODUCTION_FILES[..7] {
+    for file in &PRODUCTION_FILES[..6] {
         let source = read(file)?;
         for token in forbidden {
             assert!(!source.contains(token), "{file}: {token}");
@@ -97,7 +96,7 @@ fn lifecycle_files_only_call_small_diagnostic_helpers() -> Result<(), String> {
     let stop = read("src/playback/backends/native/stop.rs")?;
 
     assert!(load.contains("tap_diagnostic::open_after_decoder_open"));
-    assert!(control.contains("tap_diagnostic::reset_after_seek_success"));
+    assert!(!control.contains("tap_diagnostic"));
     assert!(stop.contains("tap_diagnostic::close_on_stop"));
     assert!(engine.contains("tap_diagnostic::close_on_shutdown"));
     assert!(!load.contains("NativePipelineRouteTapDiagnosticPolicy"));
@@ -110,15 +109,12 @@ fn lifecycle_files_only_call_small_diagnostic_helpers() -> Result<(), String> {
 #[test]
 fn lifecycle_diagnostic_failures_are_explicitly_contained() -> Result<(), String> {
     let open = read("src/playback/backends/native/tap_diagnostic/open.rs")?;
-    let seek = read("src/playback/backends/native/tap_diagnostic/seek.rs")?;
     let close = read("src/playback/backends/native/tap_diagnostic/close.rs")?;
 
     assert!(open.contains("let _ = policy.open_new_track"));
-    assert!(seek.contains("let _ = policy.reset_on_seek"));
     assert!(close.contains("let _ = policy.close_detach_on_stop"));
     assert!(close.contains("let _ = policy.close_detach_on_shutdown"));
     assert!(!open.contains('?'));
-    assert!(!seek.contains('?'));
     assert!(!close.contains('?'));
     Ok(())
 }
