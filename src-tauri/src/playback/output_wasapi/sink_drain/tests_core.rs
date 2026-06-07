@@ -5,7 +5,6 @@ use crate::playback::output_wasapi::ring_buffer::types::RingBufferFormat;
 use crate::playback::output_wasapi::wasapi_context::WasapiRenderWriteReport;
 
 use super::drain_once::drain_ring_buffer_once_with_writer;
-use super::report::WasapiRingBufferDrainReport;
 
 pub(super) fn sample_format() -> RingBufferFormat {
     RingBufferFormat {
@@ -35,7 +34,7 @@ fn drain_zero_requested_noop() {
     let mut pending = 2;
     let writer_called = std::cell::Cell::new(false);
 
-    let report = drain_ring_buffer_once_with_writer(&mut rb, &mut pending, 0, |frames, bytes| {
+    let report = drain_ring_buffer_once_with_writer(&mut rb, &mut pending, 0, |frames, _bytes| {
         writer_called.set(true);
         Ok(sample_write_report(frames))
     })
@@ -55,7 +54,7 @@ fn drain_empty_ring_buffer_noop() {
     let mut pending = 0;
     let writer_called = std::cell::Cell::new(false);
 
-    let report = drain_ring_buffer_once_with_writer(&mut rb, &mut pending, 5, |frames, bytes| {
+    let report = drain_ring_buffer_once_with_writer(&mut rb, &mut pending, 5, |frames, _bytes| {
         writer_called.set(true);
         Ok(sample_write_report(frames))
     })
@@ -77,7 +76,7 @@ fn writer_success_consumes_and_decrements_pending() {
 
     let mut pending = 2;
 
-    let report = drain_ring_buffer_once_with_writer(&mut rb, &mut pending, 2, |frames, bytes| {
+    let report = drain_ring_buffer_once_with_writer(&mut rb, &mut pending, 2, |frames, _bytes| {
         Ok(sample_write_report(frames))
     })
     .unwrap();
@@ -105,7 +104,7 @@ fn writer_success_partial_available() {
         &mut rb,
         &mut pending,
         5, // requested 5, only 1 available
-        |frames, bytes| Ok(sample_write_report(frames)),
+        |frames, _bytes| Ok(sample_write_report(frames)),
     )
     .unwrap();
 

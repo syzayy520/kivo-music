@@ -17,7 +17,7 @@ fn writer_error_does_not_consume() {
 
     let mut pending = 2;
 
-    let result = drain_ring_buffer_once_with_writer(&mut rb, &mut pending, 2, |frames, bytes| {
+    let result = drain_ring_buffer_once_with_writer(&mut rb, &mut pending, 2, |_frames, _bytes| {
         Err(WasapiRenderWriteError::NotOpen)
     });
 
@@ -37,7 +37,7 @@ fn writer_frame_mismatch_does_not_consume() {
 
     let mut pending = 2;
 
-    let result = drain_ring_buffer_once_with_writer(&mut rb, &mut pending, 2, |frames, bytes| {
+    let result = drain_ring_buffer_once_with_writer(&mut rb, &mut pending, 2, |_frames, _bytes| {
         // Writer reports wrong frame count
         Ok(sample_write_report(1))
     });
@@ -61,7 +61,7 @@ fn pending_underflow_does_not_consume() {
 
     let mut pending = 1; // Only 1 pending, but 2 frames available
 
-    let result = drain_ring_buffer_once_with_writer(&mut rb, &mut pending, 2, |frames, bytes| {
+    let result = drain_ring_buffer_once_with_writer(&mut rb, &mut pending, 2, |frames, _bytes| {
         Ok(sample_write_report(frames))
     });
 
@@ -84,7 +84,7 @@ fn writer_byte_mismatch_does_not_consume() {
 
     let mut pending = 2;
 
-    let result = drain_ring_buffer_once_with_writer(&mut rb, &mut pending, 2, |frames, bytes| {
+    let result = drain_ring_buffer_once_with_writer(&mut rb, &mut pending, 2, |frames, _bytes| {
         // Writer reports correct frames but wrong bytes
         Ok(WasapiRenderWriteReport {
             frames_written: frames,
