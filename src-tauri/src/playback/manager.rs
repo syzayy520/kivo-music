@@ -10,6 +10,8 @@ mod queue_controls;
 mod service;
 
 #[cfg(test)]
+mod controls_tests;
+#[cfg(test)]
 mod diagnostic_query_tests;
 
 #[derive(Debug)]

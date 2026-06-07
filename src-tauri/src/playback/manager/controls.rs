@@ -1,7 +1,7 @@
 use super::PlaybackManager;
 use crate::playback::backends::backend_types::PlaybackBackendDescriptor;
 use crate::playback::engine::PlaybackEngine;
-use crate::playback::errors::PlaybackResult;
+use crate::playback::errors::{PlaybackError, PlaybackResult};
 use crate::playback::state::PlaybackState;
 use crate::playback::types::PlaybackTrack;
 
@@ -38,8 +38,10 @@ impl PlaybackManager {
         self.primary_engine.stop()
     }
 
-    pub fn seek(&mut self, position_ms: u64) -> PlaybackResult<PlaybackState> {
-        self.primary_engine.seek(position_ms)
+    pub fn seek(&mut self, _position_ms: u64) -> PlaybackResult<PlaybackState> {
+        Err(PlaybackError::UnsupportedOperation(
+            "native playback seek".to_string(),
+        ))
     }
 
     pub fn set_volume(&mut self, level: f32) -> PlaybackResult<PlaybackState> {
