@@ -67,6 +67,7 @@ mod native_pipeline_output;
 mod native_pipeline_progress;
 mod native_pipeline_route_tap;
 mod native_pipeline_runtime;
+mod native_pipeline_seek_transaction;
 mod native_pipeline_state;
 mod native_pipeline_worker;
 pub(crate) mod production_output_route;

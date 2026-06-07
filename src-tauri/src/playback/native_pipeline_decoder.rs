@@ -103,19 +103,7 @@ impl NativePipeline {
     }
 
     pub fn seek_decoder(&mut self, position_ms: u64) -> PlaybackResult<()> {
-        let decoder = self.decoder.as_mut().ok_or_else(|| {
-            PlaybackError::Backend("native pipeline decoder is not open".to_string())
-        })?;
-
-        decoder.seek(position_ms).inspect_err(|error| {
-            self.state.decoder_state.mark_failed(error.to_string());
-        })?;
-
-        self.update_decoder_position(position_ms);
-        self.state.last_decoded_frame = None;
-        self.clear_buffer();
-        self.clock.set_position(position_ms);
-        Ok(())
+        super::native_pipeline_seek_transaction::seek_decoder_transaction(self, position_ms)
     }
 
     pub fn close_decoder(&mut self) -> PlaybackResult<()> {
