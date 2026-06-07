@@ -4,7 +4,7 @@ use super::super::super::engine::PlaybackEngine;
 use super::super::super::errors::PlaybackError;
 use super::super::super::types::{PlaybackStatus, PlaybackTrack, TrackId};
 use super::super::native::KivoNativeEngine;
-use super::{track, wav_track};
+use super::{multi_frame_wav_track, track, wav_track};
 
 #[test]
 fn native_playback_load_failure_does_not_commit_track_or_status_success() {
@@ -53,6 +53,7 @@ fn native_playback_load_sets_track_and_idle_after_existing_null_boundary_submit(
         .expect("native engine load should decode one frame");
 
     assert_eq!(session.track_id, "track-wav-load");
+    assert_eq!(session.duration_ms, Some(0));
     assert_eq!(session.stream_info.sample_rate_hz, 44_100);
     assert_eq!(session.stream_info.channels, 2);
     assert_eq!(session.decoded_frame_count, 1);
@@ -61,6 +62,35 @@ fn native_playback_load_sets_track_and_idle_after_existing_null_boundary_submit(
     assert_eq!(frame.samples.len(), 4);
     assert!(pipeline.output_status.last_error.is_none());
     assert_eq!(pipeline.output_status.pending_frames, 1);
+
+    fs::remove_file(path).expect("remove wav file");
+}
+
+#[test]
+fn native_playback_load_sets_known_duration_ms_from_decoder_session() {
+    let mut engine = KivoNativeEngine::new();
+    let (track, path) = multi_frame_wav_track();
+
+    let state = engine
+        .load(track)
+        .expect("native load should succeed after pipeline boundary succeeds");
+
+    assert!(matches!(state.status, PlaybackStatus::Idle));
+    assert_eq!(state.timeline.position_ms, 0);
+    assert_eq!(state.timeline.duration_ms, Some(46));
+    assert_eq!(
+        state
+            .current_track
+            .as_ref()
+            .map(|track| track.title.as_str()),
+        Some("WAV Play")
+    );
+
+    let pipeline = engine.pipeline_state();
+    let session = pipeline
+        .decoder_session
+        .expect("native engine load should open decoder session");
+    assert_eq!(session.duration_ms, Some(46));
 
     fs::remove_file(path).expect("remove wav file");
 }

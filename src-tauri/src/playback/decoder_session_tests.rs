@@ -28,9 +28,22 @@ fn from_open_request_builds_session_with_initial_counters() {
 
     assert_eq!(session.track_id, "track-9");
     assert_eq!(session.source_path, "C:/Music/track-9.wav");
+    assert!(session.duration_ms.is_none());
     assert_eq!(session.opened_at_ms, 1_000);
     assert_eq!(session.last_position_ms, 0);
     assert_eq!(session.decoded_frame_count, 0);
+}
+
+#[test]
+fn from_open_request_with_duration_preserves_known_duration() {
+    let session = DecoderSession::from_open_request_with_duration(
+        &open_request(),
+        stream_info(),
+        1_000,
+        Some(46),
+    );
+
+    assert_eq!(session.duration_ms, Some(46));
 }
 
 #[test]

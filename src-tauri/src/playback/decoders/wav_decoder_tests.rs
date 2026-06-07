@@ -48,6 +48,18 @@ fn wav_decoder_open_reads_stream_info() {
 }
 
 #[test]
+fn wav_decoder_open_reports_duration_ms() {
+    let path = create_test_wav();
+    let mut decoder = WavDecoder::default();
+
+    decoder
+        .open(path.to_str().expect("wav path should be utf8"))
+        .expect("open wav decoder");
+
+    assert_eq!(decoder.duration_ms(), Some(100));
+}
+
+#[test]
 fn wav_decoder_next_frame_reads_pcm_samples() {
     let path = create_test_wav();
     let mut decoder = WavDecoder::default();

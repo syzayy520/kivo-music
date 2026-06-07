@@ -169,50 +169,63 @@ fn manager_seek_no_track_returns_no_track() {
 
 /// SeekOutOfRange: seek beyond known duration after loading a 1-second WAV.
 /// External JSON shape: {"SeekOutOfRange": {"position_ms": N, "duration_ms": M}}
-///
-/// **LIMITATION**: `engine.state.timeline.duration_ms` is `None` after `load()` — the decoder
-/// does not propagate stream duration to the timeline. Without `duration_ms`, the backend
-/// seek code (`seek_track`) skips the range check entirely, so `SeekOutOfRange` can never
-/// be triggered through the manager API.
-///
-/// This branch is verified by code-path review only (see `backends/native/seek.rs` L46-53
-/// and `backends/native_engine_tests/seek_tests.rs` L192-195).
-///
-/// The test below verifies that seek with unknown duration is allowed (Ok), which is the
-/// only natural behavior possible given the current backend.
 #[test]
 fn manager_seek_out_of_range_returns_seek_out_of_range() {
     let mut manager = PlaybackManager::new();
     let (track, path) = long_wav_track();
 
-    let _ = manager.load(track);
+    manager.load(track).expect("load must succeed");
+    let duration_ms = manager
+        .current_state()
+        .timeline
+        .duration_ms
+        .expect("load should expose known duration");
+    assert_eq!(duration_ms, 1_000);
+    let position_ms = duration_ms + 1;
 
-    // Verify duration_ms is None — this is the backend limitation
-    let duration_ms = manager.current_state().timeline.duration_ms;
-    assert!(
-        duration_ms.is_none(),
-        "backend does not set duration_ms after load; expected None, got {duration_ms:?}"
-    );
+    let result = manager.seek(position_ms);
 
-    // With unknown duration, backend allows any seek position
-    let result = manager.seek(5000);
-    assert!(
-        result.is_ok(),
-        "seek with unknown duration must succeed (backend skips range check), got: {result:?}"
-    );
+    match result {
+        Err(PlaybackError::SeekOutOfRange {
+            position_ms: actual_position_ms,
+            duration_ms: actual_duration_ms,
+        }) => {
+            assert_eq!(actual_position_ms, position_ms);
+            assert_eq!(actual_duration_ms, duration_ms);
+        }
+        other => panic!("expected SeekOutOfRange, got {other:?}"),
+    }
 
-    let state = result.unwrap();
-    assert_eq!(
-        state.timeline.position_ms, 5000,
-        "position_ms must reflect seek target"
-    );
+    let state = manager.current_state();
+    assert_eq!(state.timeline.position_ms, 0);
 
     let _ = std::fs::remove_file(&path);
 }
 
+/// Known-duration boundary: seeking exactly at duration is allowed.
+#[test]
+fn manager_seek_at_known_duration_boundary_succeeds() {
+    let mut manager = PlaybackManager::new();
+    let (track, path) = long_wav_track();
+
+    manager.load(track).expect("load must succeed");
+    let duration_ms = manager
+        .current_state()
+        .timeline
+        .duration_ms
+        .expect("load should expose known duration");
+    assert_eq!(duration_ms, 1_000);
+
+    let state = manager
+        .seek(duration_ms)
+        .expect("seek at known duration boundary should succeed");
+    assert_eq!(state.timeline.position_ms, duration_ms);
+
+    let _ = std::fs::remove_file(&path);
+}
 /// Paused InvalidControlState: seek while paused.
 /// External JSON shape: {"InvalidControlState": "seek while paused requires output flush contract"}
-/// Natural seam: requires engine in Paused state. load() → Idle, play() → Playing, pause() → Paused.
+/// Natural seam: requires engine in Paused state. load -> Idle, play -> Playing, pause -> Paused.
 #[test]
 fn manager_seek_paused_returns_invalid_control_state() {
     let mut manager = PlaybackManager::new();
@@ -220,7 +233,7 @@ fn manager_seek_paused_returns_invalid_control_state() {
 
     let _ = manager.load(track);
 
-    // Transition to Paused state — test environment must support WASAPI
+    // Transition to Paused state; test environment must support WASAPI
     manager
         .play()
         .expect("test environment must enter Playing for paused seek proof");
@@ -244,7 +257,7 @@ fn manager_seek_paused_returns_invalid_control_state() {
 
 /// Playing InvalidControlState: seek while playing.
 /// External JSON shape: {"InvalidControlState": "seek while playing requires output flush contract"}
-/// Natural seam: requires engine in Playing state. load() → Idle, play() → Playing.
+/// Natural seam: requires engine in Playing state. load -> Idle, play -> Playing.
 #[test]
 fn manager_seek_playing_returns_invalid_control_state() {
     let mut manager = PlaybackManager::new();
@@ -252,7 +265,7 @@ fn manager_seek_playing_returns_invalid_control_state() {
 
     let _ = manager.load(track);
 
-    // Transition to Playing state — test environment must support WASAPI
+    // Transition to Playing state; test environment must support WASAPI
     manager
         .play()
         .expect("test environment must enter Playing for playing seek proof");

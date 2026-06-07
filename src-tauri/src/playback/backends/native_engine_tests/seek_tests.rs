@@ -2,7 +2,7 @@ use super::super::super::engine::PlaybackEngine;
 use super::super::super::errors::PlaybackError;
 use super::super::super::types::PlaybackStatus;
 use super::super::native::KivoNativeEngine;
-use super::wav_track;
+use super::{multi_frame_wav_track, wav_track};
 
 // ─── Success-path tests ───
 
@@ -189,25 +189,87 @@ fn seek_failed_returns_invalid_control_state() {
     // The InvalidControlState branch for Failed is verified by code-path review.
 }
 
-// NOTE: seek_beyond_known_duration_returns_seek_out_of_range and
-// seek_at_known_duration_boundary_is_allowed removed — engine.state.timeline.duration_ms
-// is private and no natural construction seam exists. OutOfRange branch
-// verified by code-path review (seek_track checks position_ms > duration_ms).
+// Known-duration bounds are verified through the natural WAV load path.
 
 #[test]
-fn seek_with_unknown_duration_is_allowed_for_loaded_idle() {
+fn seek_at_known_duration_boundary_is_allowed() {
+    let mut engine = KivoNativeEngine::new();
+    let (track, path) = multi_frame_wav_track();
+
+    engine.load(track).expect("load should succeed");
+    let duration_ms = engine
+        .current_state()
+        .timeline
+        .duration_ms
+        .expect("load should expose known duration");
+    assert_eq!(duration_ms, 46);
+
+    let state = engine
+        .seek(duration_ms)
+        .expect("seek at known duration boundary should succeed");
+    assert_eq!(state.timeline.position_ms, duration_ms);
+
+    std::fs::remove_file(&path).expect("remove wav file");
+}
+
+#[test]
+fn seek_beyond_known_duration_returns_seek_out_of_range() {
+    let mut engine = KivoNativeEngine::new();
+    let (track, path) = multi_frame_wav_track();
+
+    engine.load(track).expect("load should succeed");
+    let duration_ms = engine
+        .current_state()
+        .timeline
+        .duration_ms
+        .expect("load should expose known duration");
+    let position_ms = duration_ms + 1;
+
+    let result = engine.seek(position_ms);
+
+    match result {
+        Err(PlaybackError::SeekOutOfRange {
+            position_ms: actual_position_ms,
+            duration_ms: actual_duration_ms,
+        }) => {
+            assert_eq!(actual_position_ms, position_ms);
+            assert_eq!(actual_duration_ms, duration_ms);
+        }
+        other => panic!("expected seek out of range, got {other:?}"),
+    }
+
+    std::fs::remove_file(&path).expect("remove wav file");
+}
+
+#[test]
+fn seek_zero_duration_allows_zero_and_rejects_positive_position() {
     let mut engine = KivoNativeEngine::new();
     let (track, path) = wav_track();
 
-    let _ = engine.load(track);
-    // duration_ms is None by default for WAV test tracks
+    engine.load(track).expect("load should succeed");
+    let duration_ms = engine
+        .current_state()
+        .timeline
+        .duration_ms
+        .expect("load should expose known duration");
+    assert_eq!(duration_ms, 0);
 
-    let result = engine.seek(0);
+    let state = engine
+        .seek(duration_ms)
+        .expect("seek at zero duration should succeed");
+    assert_eq!(state.timeline.position_ms, 0);
 
-    assert!(
-        result.is_ok(),
-        "seek with unknown duration should be allowed for loaded idle, got {result:?}"
-    );
+    let result = engine.seek(duration_ms + 1);
+    match result {
+        Err(PlaybackError::SeekOutOfRange {
+            position_ms,
+            duration_ms,
+        }) => {
+            assert_eq!(position_ms, 1);
+            assert_eq!(duration_ms, 0);
+        }
+        other => panic!("expected seek out of range, got {other:?}"),
+    }
 
     std::fs::remove_file(&path).expect("remove wav file");
 }
@@ -215,42 +277,45 @@ fn seek_with_unknown_duration_is_allowed_for_loaded_idle() {
 // ─── Transaction failure test ───
 
 #[test]
-fn seek_transaction_failure_maps_to_seek_transaction_failed() {
+fn seek_beyond_known_duration_blocks_unbounded_transaction_target() {
     let mut engine = KivoNativeEngine::new();
     let (track, path) = wav_track();
 
-    let _ = engine.load(track);
-    // u64::MAX triggers WAV decoder seek failure (natural seam from P0-153)
+    engine.load(track).expect("load should succeed");
     let result = engine.seek(u64::MAX);
 
     match result {
-        Err(PlaybackError::SeekTransactionFailed(message)) => {
-            assert_eq!(message, "native pipeline seek transaction failed");
+        Err(PlaybackError::SeekOutOfRange {
+            position_ms,
+            duration_ms,
+        }) => {
+            assert_eq!(position_ms, u64::MAX);
+            assert_eq!(duration_ms, 0);
         }
-        other => panic!("expected seek transaction failed, got {other:?}"),
+        other => panic!("expected seek out of range, got {other:?}"),
     }
 
     std::fs::remove_file(&path).expect("remove wav file");
 }
 
 #[test]
-fn seek_transaction_failure_leaves_public_state_unchanged() {
+fn seek_out_of_range_leaves_public_state_unchanged() {
     let mut engine = KivoNativeEngine::new();
     let (track, path) = wav_track();
 
-    let _ = engine.load(track);
+    engine.load(track).expect("load should succeed");
     let before = engine.current_state();
 
-    let _ = engine.seek(u64::MAX);
+    let _ = engine.seek(1);
 
     let after = engine.current_state();
     assert_eq!(
         before.timeline.position_ms, after.timeline.position_ms,
-        "position_ms must not change on transaction failure"
+        "position_ms must not change on out-of-range seek"
     );
     assert!(
         matches!(after.status, PlaybackStatus::Idle),
-        "status must remain Idle after transaction failure"
+        "status must remain Idle after out-of-range seek"
     );
 
     std::fs::remove_file(&path).expect("remove wav file");

@@ -30,8 +30,14 @@ impl NativePipeline {
         let stream_info = decoder.open(&request.source_path).inspect_err(|error| {
             self.state.decoder_state.mark_failed(error.to_string());
         })?;
+        let duration_ms = decoder.duration_ms();
 
-        let session = DecoderSession::from_open_request(&request, stream_info, opened_at_ms);
+        let session = DecoderSession::from_open_request_with_duration(
+            &request,
+            stream_info,
+            opened_at_ms,
+            duration_ms,
+        );
         self.state.decoder_session = Some(session.clone());
         self.state.decoder_state.mark_open();
         self.decoder = Some(decoder);

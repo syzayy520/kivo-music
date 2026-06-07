@@ -26,6 +26,9 @@ pub struct DecodedAudioFrame {
 
 pub trait AudioDecoder: Send {
     fn open(&mut self, path: &str) -> PlaybackResult<AudioStreamInfo>;
+    fn duration_ms(&self) -> Option<u64> {
+        None
+    }
     fn next_frame(&mut self) -> PlaybackResult<Option<DecodedAudioFrame>>;
     fn seek(&mut self, position_ms: u64) -> PlaybackResult<()>;
     fn close(&mut self) -> PlaybackResult<()>;

@@ -8,16 +8,20 @@ pub(super) fn load_track(
     engine: &mut KivoNativeEngine,
     track: PlaybackTrack,
 ) -> PlaybackResult<PlaybackState> {
-    if let Err(error) = load_pipeline_until_output_boundary(engine, &track) {
-        engine.state.error = Some(error.to_string());
-        return Err(PlaybackError::UnsupportedOperation(
-            super::super::native_unsupported::unsupported_operation_message("load"),
-        ));
-    }
+    let duration_ms = match load_pipeline_until_output_boundary(engine, &track) {
+        Ok(duration_ms) => duration_ms,
+        Err(error) => {
+            engine.state.error = Some(error.to_string());
+            return Err(PlaybackError::UnsupportedOperation(
+                super::super::native_unsupported::unsupported_operation_message("load"),
+            ));
+        }
+    };
 
     engine.playback.load_track(track);
     engine.state.current_track = engine.playback.current_track();
     engine.state.status = engine.playback.current_status();
+    engine.state.timeline.duration_ms = duration_ms;
     engine.state.error = None;
 
     Ok(engine.state.clone())
@@ -26,9 +30,10 @@ pub(super) fn load_track(
 fn load_pipeline_until_output_boundary(
     engine: &mut KivoNativeEngine,
     track: &PlaybackTrack,
-) -> PlaybackResult<()> {
+) -> PlaybackResult<Option<u64>> {
     let request = AudioDecoderOpenRequest::from_track(track);
     let session = engine.pipeline.open_decoder(request, 0)?;
+    let duration_ms = session.duration_ms;
     tap_diagnostic::open_after_decoder_open(
         &mut engine.tap_diagnostic,
         &mut engine.pipeline,
@@ -37,8 +42,8 @@ fn load_pipeline_until_output_boundary(
     engine.pipeline.schedule_decode_step()?;
 
     match engine.pipeline.schedule_output_submit_step() {
-        Ok(()) => Ok(()),
-        Err(PlaybackError::UnsupportedOperation(_)) => Ok(()),
+        Ok(()) => Ok(duration_ms),
+        Err(PlaybackError::UnsupportedOperation(_)) => Ok(duration_ms),
         Err(error) => Err(error),
     }
 }

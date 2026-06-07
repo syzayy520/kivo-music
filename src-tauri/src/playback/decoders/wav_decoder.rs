@@ -15,6 +15,7 @@ pub struct WavDecoder {
     reader: Option<WavReader<BufReader<File>>>,
     stream: Option<AudioStreamInfo>,
     sample_kind: Option<WavSampleKind>,
+    duration_ms: Option<u64>,
     samples_read: u64,
 }
 
@@ -56,13 +57,19 @@ impl AudioDecoder for WavDecoder {
             channels: spec.channels,
             sample_format,
         };
+        let duration_ms = wav_duration_ms(reader.duration(), spec.sample_rate);
 
         self.reader = Some(reader);
         self.stream = Some(stream.clone());
         self.sample_kind = Some(sample_kind);
+        self.duration_ms = duration_ms;
         self.samples_read = 0;
 
         Ok(stream)
+    }
+
+    fn duration_ms(&self) -> Option<u64> {
+        self.duration_ms
     }
 
     fn next_frame(&mut self) -> PlaybackResult<Option<DecodedAudioFrame>> {
@@ -153,7 +160,16 @@ impl AudioDecoder for WavDecoder {
         self.reader = None;
         self.stream = None;
         self.sample_kind = None;
+        self.duration_ms = None;
         self.samples_read = 0;
         Ok(())
     }
+}
+
+fn wav_duration_ms(duration_frames: u32, sample_rate_hz: u32) -> Option<u64> {
+    if sample_rate_hz == 0 {
+        return None;
+    }
+
+    Some(u64::from(duration_frames) * 1000 / u64::from(sample_rate_hz))
 }
