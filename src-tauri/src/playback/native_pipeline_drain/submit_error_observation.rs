@@ -32,7 +32,6 @@ pub(in crate::playback) struct NativePipelineDrainObservedSubmitError {
 }
 
 impl NativePipelineDrainObservedSubmitError {
-    #[cfg(test)]
     pub(in crate::playback) fn observation(&self) -> &NativePipelineDrainSubmitErrorObservation {
         &self.observation
     }
