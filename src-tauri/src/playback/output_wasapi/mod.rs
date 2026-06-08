@@ -9,6 +9,7 @@ pub mod format;
 pub mod frame_bridge;
 pub mod initialize;
 pub mod output_thread_boundary;
+pub mod output_thread_state;
 
 include!("output_thread_core_modules.rs");
 
@@ -42,5 +43,8 @@ pub(crate) mod wasapi_context;
 pub(crate) mod zero_pcm_render;
 #[cfg(test)]
 mod zero_pcm_render_tests;
+
+#[cfg(test)]
+mod output_thread_state_tests;
 
 include!("output_thread_test_modules.rs");
