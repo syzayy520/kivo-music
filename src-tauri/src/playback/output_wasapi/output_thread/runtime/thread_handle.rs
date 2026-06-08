@@ -7,21 +7,12 @@
 /// Opaque handle to a running output thread.
 ///
 /// Used to correlate commands and events with a specific thread instance.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
 pub struct ThreadHandle {
     /// Unique identifier for this thread instance.
     pub id: u64,
     /// Monotonic generation counter (incremented on restart).
     pub generation: u64,
-}
-
-impl Default for ThreadHandle {
-    fn default() -> Self {
-        Self {
-            id: 0,
-            generation: 0,
-        }
-    }
 }
 
 impl ThreadHandle {

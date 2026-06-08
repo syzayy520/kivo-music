@@ -3,7 +3,7 @@
 //! Defines events representing render cycle completions in the output thread.
 
 /// Events emitted after render cycle completions.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
 pub enum RenderEvent {
     /// A batch of frames was rendered to the output device.
     FramesRendered {
@@ -18,11 +18,6 @@ pub enum RenderEvent {
         frame_count: u64,
     },
     /// Render cycle completed with no output.
+    #[default]
     EmptyRender,
-}
-
-impl Default for RenderEvent {
-    fn default() -> Self {
-        Self::EmptyRender
-    }
 }
