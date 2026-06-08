@@ -3,6 +3,7 @@
 //! Pure data types representing state transitions for the output thread lifecycle.
 //! No transition execution logic — only data definitions.
 
+pub mod rules;
 pub mod transition;
 pub mod transition_error;
 pub mod transition_result;
