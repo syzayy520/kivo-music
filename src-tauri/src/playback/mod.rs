@@ -43,9 +43,11 @@ pub mod output_sink;
 pub(crate) mod output_submit_error;
 pub mod output_wasapi;
 pub mod path;
-pub mod playback_event_bridge;
-pub mod playback_event_bus;
-pub mod playback_event_dispatcher;
+mod playback_event;
+
+pub use self::playback_event::playback_event_bridge;
+pub use self::playback_event::playback_event_bus;
+pub use self::playback_event::playback_event_dispatcher;
 pub mod playback_worker_command;
 pub mod playback_worker_state;
 pub mod playback_worker_transition;
