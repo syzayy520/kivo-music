@@ -3,6 +3,7 @@
 pub mod command_contract_tests;
 pub mod config_contract_tests;
 pub mod event_contract_tests;
+pub mod runtime_channel_contract_tests;
 pub mod runtime_contract_tests;
 pub mod runtime_driver_contract_tests;
 pub mod runtime_driver_step_behavior_tests;
