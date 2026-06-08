@@ -152,19 +152,79 @@ fn seek_without_track_returns_no_track() {
 
 #[test]
 fn seek_paused_returns_invalid_control_state() {
-    // NOTE: Paused seek test requires constructing Paused state.
-    // Current native engine does not support pause→Paused transition
-    // through the standard load→play→pause path without output.
-    // This test is deferred — see missing seam report.
-    // The InvalidControlState branch for Paused is verified by code-path review.
+    let mut engine = KivoNativeEngine::new();
+    let (track, path) = multi_frame_wav_track();
+
+    engine.load(track).expect("load should succeed");
+    engine.play().expect("play should succeed");
+    engine.pause().expect("pause should succeed");
+
+    let before = engine.current_state();
+    assert!(
+        matches!(before.status, PlaybackStatus::Paused),
+        "state must be Paused before seek"
+    );
+
+    let result = engine.seek(0);
+    match result {
+        Err(PlaybackError::InvalidControlState(message)) => {
+            assert_eq!(
+                message, "seek while paused requires output flush contract",
+                "Paused error message must match exact contract"
+            );
+        }
+        other => panic!("expected InvalidControlState for paused seek, got {other:?}"),
+    }
+
+    let after = engine.current_state();
+    assert!(
+        matches!(after.status, PlaybackStatus::Paused),
+        "status must remain Paused after failed seek"
+    );
+    assert_eq!(
+        after.timeline.position_ms, before.timeline.position_ms,
+        "position_ms must not change on failed paused seek"
+    );
+
+    std::fs::remove_file(&path).expect("remove wav file");
 }
 
 #[test]
 fn seek_playing_returns_invalid_control_state() {
-    // NOTE: Playing seek test requires constructing Playing state.
-    // Current native engine play() requires pipeline pump_once which
-    // needs a fully decoded pipeline. This test is deferred.
-    // The InvalidControlState branch for Playing is verified by code-path review.
+    let mut engine = KivoNativeEngine::new();
+    let (track, path) = multi_frame_wav_track();
+
+    engine.load(track).expect("load should succeed");
+    engine.play().expect("play should succeed");
+
+    let before = engine.current_state();
+    assert!(
+        matches!(before.status, PlaybackStatus::Playing),
+        "state must be Playing before seek"
+    );
+
+    let result = engine.seek(0);
+    match result {
+        Err(PlaybackError::InvalidControlState(message)) => {
+            assert_eq!(
+                message, "seek while playing requires output flush contract",
+                "Playing error message must match exact contract"
+            );
+        }
+        other => panic!("expected InvalidControlState for playing seek, got {other:?}"),
+    }
+
+    let after = engine.current_state();
+    assert!(
+        matches!(after.status, PlaybackStatus::Playing),
+        "status must remain Playing after failed seek"
+    );
+    assert_eq!(
+        after.timeline.position_ms, before.timeline.position_ms,
+        "position_ms must not change on failed playing seek"
+    );
+
+    std::fs::remove_file(&path).expect("remove wav file");
 }
 
 #[test]
