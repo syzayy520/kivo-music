@@ -5,6 +5,7 @@
 
 pub mod driver_result;
 pub mod driver_step;
+pub mod step_logic;
 pub mod thread_driver;
 
 // Re-export primary types for convenience.
