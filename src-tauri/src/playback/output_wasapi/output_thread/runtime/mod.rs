@@ -4,6 +4,7 @@
 //! ThreadHandle, ThreadSnapshot, and ThreadControl. No actual thread spawning.
 
 pub mod queue;
+pub mod state_machine;
 pub mod thread_control;
 pub mod thread_handle;
 pub mod thread_snapshot;
