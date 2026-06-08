@@ -27,7 +27,7 @@ fn zero_capacity_is_rejected_without_enabling_sidecar() {
 #[test]
 fn config_keeps_diagnostic_route_capacity_name() -> Result<(), String> {
     let path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src/playback/native_pipeline_route_tap_diagnostic_policy/config.rs");
+        .join("src/playback/native_pipeline/route_tap_diagnostic_policy/config.rs");
     let source = std::fs::read_to_string(path).map_err(|error| error.to_string())?;
 
     assert!(source.contains("diagnostic_route_capacity_frames"));

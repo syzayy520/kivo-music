@@ -1,198 +1,68 @@
-pub mod activity_entry;
-pub mod activity_log;
-pub mod activity_recorder;
-pub mod activity_snapshot;
+mod activity;
 pub mod audio_bridge;
 pub mod audio_buffer;
 pub mod audio_route;
-pub mod audio_route_coordinator;
-pub mod audio_route_integration;
-pub mod audio_route_pipeline_tap;
-pub mod backend_status;
+mod backend;
 pub mod backends;
-pub mod capabilities;
 pub mod clock;
-pub mod command_activity;
 pub mod commands;
-pub mod core_profile;
 pub mod decoder;
-pub mod decoder_request;
-pub mod decoder_runtime_state;
-pub mod decoder_session;
 pub mod decoders;
 pub mod engine;
 pub mod errors;
 pub mod events;
 pub mod lifecycle;
-
-pub use self::lifecycle::lifecycle_activity_log;
-pub use self::lifecycle::lifecycle_activity_snapshot;
-pub use self::lifecycle::lifecycle_commands;
-pub use self::lifecycle::lifecycle_event;
-pub use self::lifecycle::lifecycle_recorder;
-pub mod lyrics_clock;
 pub mod manager;
-pub mod manager_queue;
 pub mod metadata;
-pub mod native_output;
 pub mod native_pipeline;
-pub mod native_pipeline_route_tap_diagnostic_policy;
 pub mod output;
-pub mod output_frame;
-pub mod output_policy;
-pub mod output_sink;
-pub(crate) mod output_submit_error;
+pub mod output_flush_contract;
 pub mod output_wasapi;
 pub mod path;
 mod playback_event;
-
-pub use self::playback_event::playback_event_bridge;
-pub use self::playback_event::playback_event_bus;
-pub use self::playback_event::playback_event_dispatcher;
-pub mod playback_worker_command;
-pub mod playback_worker_state;
-pub mod playback_worker_transition;
-pub mod queue;
-pub mod queue_policy;
-pub mod state;
-pub mod timeline;
-pub mod types;
-pub mod volume;
-pub mod windows_audio;
-
-mod native_null_output;
-mod native_pipeline_buffer;
-mod native_pipeline_clock;
-mod native_pipeline_decoder;
-mod native_pipeline_drain;
-mod native_pipeline_loop;
-mod native_pipeline_output;
-mod native_pipeline_progress;
-mod native_pipeline_route_tap;
-mod native_pipeline_runtime;
-mod native_pipeline_seek_transaction;
-mod native_pipeline_state;
-mod native_pipeline_worker;
-pub mod output_flush_contract;
-pub mod wasapi_seek_barrier_contract;
 pub(crate) mod production_output_route;
+pub mod queue;
+pub mod state;
+pub mod types;
+pub mod wasapi_seek_barrier_contract;
+mod worker;
 
-#[cfg(test)]
-mod activity_log_tests;
-
-#[cfg(test)]
-mod activity_log_state_tests;
-
-#[cfg(test)]
-mod activity_recorder_tests;
-
-#[cfg(test)]
-mod audio_buffer_tests;
-
-#[cfg(test)]
-mod audio_bridge_tests;
-
-#[cfg(test)]
-mod audio_route_tests;
-
-#[cfg(test)]
-mod audio_route_coordinator_tests;
-
-#[cfg(test)]
-mod audio_route_integration_tests;
-
-#[cfg(test)]
-mod audio_route_pipeline_tap_tests;
-
-#[cfg(test)]
-mod command_activity_tests;
-
-#[cfg(test)]
-mod decoder_request_tests;
-
-#[cfg(test)]
-mod decoder_runtime_state_tests;
-
-#[cfg(test)]
-mod decoder_session_tests;
-
-#[cfg(test)]
-mod errors_tests;
-
-#[cfg(test)]
-mod lifecycle_activity_log_tests;
-
-#[cfg(test)]
-mod lifecycle_event_tests;
-
-#[cfg(test)]
-mod lifecycle_recorder_tests;
-
-#[cfg(test)]
-mod manager_queue_tests;
-
-#[cfg(test)]
-mod native_pipeline_buffer_tests;
-
-#[cfg(test)]
-mod native_pipeline_clock_tests;
-
-#[cfg(test)]
-mod native_pipeline_drain_tests;
-
-#[cfg(test)]
-mod native_pipeline_loop_tests;
-
-#[cfg(test)]
-mod native_pipeline_progress_tests;
-
-#[cfg(test)]
-mod native_pipeline_route_tap_tests;
-
-#[cfg(test)]
-mod native_pipeline_route_tap_diagnostic_policy_tests;
-
-#[cfg(test)]
-mod native_pipeline_tests;
-
-#[cfg(test)]
-mod native_pipeline_worker_route_tests;
-
-#[cfg(test)]
-mod native_pipeline_worker_route_edge_tests;
-
-#[cfg(test)]
-mod native_pipeline_worker_runtime_tests;
-
-#[cfg(test)]
-mod output_frame_tests;
-
-#[cfg(test)]
-mod output_sink_contract_tests;
-
-#[cfg(test)]
-mod output_sink_tests;
-
-#[cfg(test)]
-mod output_wasapi_root_tests;
-
-#[cfg(test)]
-mod queue_policy_tests;
-
-#[cfg(test)]
-mod playback_worker_command_tests;
-
-#[cfg(test)]
-mod playback_event_dispatcher_tests;
-
-#[cfg(test)]
-mod playback_event_bus_tests;
-
-#[cfg(test)]
-mod playback_event_bridge_tests;
-
-#[cfg(test)]
-mod playback_worker_state_tests;
-
-#[cfg(test)]
-mod playback_worker_transition_tests;
+pub use self::activity::{
+    command_activity, entry as activity_entry, log as activity_log, recorder as activity_recorder,
+    snapshot as activity_snapshot,
+};
+pub use self::audio_route::{
+    coordinator as audio_route_coordinator, integration as audio_route_integration,
+    pipeline_tap as audio_route_pipeline_tap,
+};
+pub use self::backend::{capabilities, core_profile, status as backend_status};
+pub use self::clock::lyrics as lyrics_clock;
+pub use self::decoder::{
+    request as decoder_request, runtime_state as decoder_runtime_state, session as decoder_session,
+};
+pub use self::lifecycle::{
+    lifecycle_activity_log, lifecycle_activity_snapshot, lifecycle_commands, lifecycle_event,
+    lifecycle_recorder,
+};
+pub use self::manager::queue_state as manager_queue;
+pub use self::native_pipeline::route_tap_diagnostic_policy as native_pipeline_route_tap_diagnostic_policy;
+pub(in crate::playback) use self::native_pipeline::{
+    buffer as native_pipeline_buffer, clock as native_pipeline_clock,
+    loop_step as native_pipeline_loop, seek_transaction as native_pipeline_seek_transaction,
+    state as native_pipeline_state,
+};
+pub(in crate::playback) use self::output::native_null as native_null_output;
+pub(crate) use self::output::submit_error as output_submit_error;
+pub use self::output::{
+    native as native_output, policy as output_policy, root_frame as output_frame,
+    unsupported_sink as output_sink, windows_audio,
+};
+pub use self::playback_event::{
+    playback_event_bridge, playback_event_bus, playback_event_dispatcher,
+};
+pub use self::queue::policy as queue_policy;
+pub use self::state::{timeline, volume};
+pub use self::worker::{
+    command as playback_worker_command, state as playback_worker_state,
+    transition as playback_worker_transition,
+};

@@ -18,7 +18,11 @@ fn float32_stream(channels: u16, sample_rate_hz: u32) -> AudioStreamInfo {
     }
 }
 
-fn make_frame(channels: u16, sample_rate_hz: u32, samples: Vec<f32>) -> crate::playback::output::AudioOutputFrame {
+fn make_frame(
+    channels: u16,
+    sample_rate_hz: u32,
+    samples: Vec<f32>,
+) -> crate::playback::output::AudioOutputFrame {
     crate::playback::output::AudioOutputFrame {
         stream: float32_stream(channels, sample_rate_hz),
         position_ms: 0,

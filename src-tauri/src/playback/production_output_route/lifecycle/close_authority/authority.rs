@@ -1,7 +1,7 @@
+use super::super::transition::ProductionOutputRouteLifecycleTransitionMatrix;
 use super::super::ProductionOutputRouteLifecycleState;
 use super::super::ProductionOutputRouteLifecycleStateCell;
 use super::super::ProductionOutputRouteLifecycleStateOwnerUpdateDecision;
-use super::super::transition::ProductionOutputRouteLifecycleTransitionMatrix;
 use super::decision::ProductionOutputRouteLifecycleCloseDecision;
 
 /// Lifecycle close authority: evaluates close requests at lifecycle contract layer.

@@ -32,16 +32,14 @@ fn frame_with_stream(stream: AudioStreamInfo) -> AudioOutputFrame {
 
 fn accepting_policy() -> ProductionOutputRouteInputAcceptancePolicy {
     let capacity = ProductionOutputRouteCapacity::new(10).expect("capacity must be nonzero");
-    let expected_format =
-        ProductionOutputRouteExpectedFormat::from_stream(&matching_stream());
+    let expected_format = ProductionOutputRouteExpectedFormat::from_stream(&matching_stream());
     ProductionOutputRouteInputAcceptancePolicy::new(capacity, expected_format)
 }
 
 fn rejecting_policy() -> ProductionOutputRouteInputAcceptancePolicy {
     // Small capacity that will reject when pending_frames is high
     let capacity = ProductionOutputRouteCapacity::new(1).expect("capacity must be nonzero");
-    let expected_format =
-        ProductionOutputRouteExpectedFormat::from_stream(&matching_stream());
+    let expected_format = ProductionOutputRouteExpectedFormat::from_stream(&matching_stream());
     ProductionOutputRouteInputAcceptancePolicy::new(capacity, expected_format)
 }
 
@@ -161,7 +159,10 @@ fn input_admission_returns_allowed_when_both_accept() {
             assert_eq!(allowed_input.position_ms(), input.position_ms());
             assert_eq!(allowed_input.stream().sample_rate_hz, 48_000);
             assert_eq!(allowed_input.stream().channels, 2);
-            assert!(matches!(allowed_input.stream().sample_format, AudioSampleFormat::Float32));
+            assert!(matches!(
+                allowed_input.stream().sample_format,
+                AudioSampleFormat::Float32
+            ));
         }
         other => panic!("expected Allowed, got {:?}", other),
     }

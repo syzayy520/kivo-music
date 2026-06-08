@@ -170,5 +170,3 @@ fn submit_frame_path_has_no_wasapi_device_calls() {
     // This is verified by the module's imports — no Windows API types present.
     assert!(true);
 }
-
-

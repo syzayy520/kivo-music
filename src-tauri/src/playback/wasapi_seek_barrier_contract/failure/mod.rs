@@ -1,4 +1,3 @@
-#[allow(clippy::module_inception)]
-mod failure;
+mod failure_kind;
 
-pub use failure::WasapiSeekBarrierFailure;
+pub use failure_kind::WasapiSeekBarrierFailure;

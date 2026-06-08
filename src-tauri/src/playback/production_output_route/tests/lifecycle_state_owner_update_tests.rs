@@ -1,7 +1,7 @@
+use super::super::lifecycle::transition::ProductionOutputRouteLifecycleTransitionMatrix;
 use super::super::lifecycle::ProductionOutputRouteLifecycleState;
 use super::super::lifecycle::ProductionOutputRouteLifecycleStateCell;
 use super::super::lifecycle::ProductionOutputRouteLifecycleStateOwnerUpdateDecision;
-use super::super::lifecycle::transition::ProductionOutputRouteLifecycleTransitionMatrix;
 
 #[test]
 fn lifecycle_state_owner_update_allowed_transition_updates_state() {
@@ -10,13 +10,17 @@ fn lifecycle_state_owner_update_allowed_transition_updates_state() {
     );
     let matrix = ProductionOutputRouteLifecycleTransitionMatrix::new();
 
-    let decision = cell.try_update_state(
-        ProductionOutputRouteLifecycleState::AcceptingInput,
-        &matrix,
-    );
+    let decision =
+        cell.try_update_state(ProductionOutputRouteLifecycleState::AcceptingInput, &matrix);
 
-    assert_eq!(decision, ProductionOutputRouteLifecycleStateOwnerUpdateDecision::Updated);
-    assert_eq!(cell.current_state(), ProductionOutputRouteLifecycleState::AcceptingInput);
+    assert_eq!(
+        decision,
+        ProductionOutputRouteLifecycleStateOwnerUpdateDecision::Updated
+    );
+    assert_eq!(
+        cell.current_state(),
+        ProductionOutputRouteLifecycleState::AcceptingInput
+    );
 }
 
 #[test]
@@ -31,9 +35,15 @@ fn lifecycle_state_owner_update_rejected_transition_does_not_update_state() {
         &matrix,
     );
 
-    assert_eq!(decision, ProductionOutputRouteLifecycleStateOwnerUpdateDecision::Rejected);
+    assert_eq!(
+        decision,
+        ProductionOutputRouteLifecycleStateOwnerUpdateDecision::Rejected
+    );
     // State must remain unchanged.
-    assert_eq!(cell.current_state(), ProductionOutputRouteLifecycleState::AcceptingInput);
+    assert_eq!(
+        cell.current_state(),
+        ProductionOutputRouteLifecycleState::AcceptingInput
+    );
 }
 
 #[test]
@@ -43,14 +53,18 @@ fn lifecycle_state_owner_update_same_state_idempotent() {
     );
     let matrix = ProductionOutputRouteLifecycleTransitionMatrix::new();
 
-    let decision = cell.try_update_state(
-        ProductionOutputRouteLifecycleState::AcceptingInput,
-        &matrix,
-    );
+    let decision =
+        cell.try_update_state(ProductionOutputRouteLifecycleState::AcceptingInput, &matrix);
 
     // Same-state is allowed by the matrix.
-    assert_eq!(decision, ProductionOutputRouteLifecycleStateOwnerUpdateDecision::Updated);
-    assert_eq!(cell.current_state(), ProductionOutputRouteLifecycleState::AcceptingInput);
+    assert_eq!(
+        decision,
+        ProductionOutputRouteLifecycleStateOwnerUpdateDecision::Updated
+    );
+    assert_eq!(
+        cell.current_state(),
+        ProductionOutputRouteLifecycleState::AcceptingInput
+    );
 }
 
 #[test]
@@ -65,14 +79,20 @@ fn lifecycle_state_owner_update_all_allowed_transitions() {
         cell.try_update_state(ProductionOutputRouteLifecycleState::AcceptingInput, &matrix),
         ProductionOutputRouteLifecycleStateOwnerUpdateDecision::Updated,
     );
-    assert_eq!(cell.current_state(), ProductionOutputRouteLifecycleState::AcceptingInput);
+    assert_eq!(
+        cell.current_state(),
+        ProductionOutputRouteLifecycleState::AcceptingInput
+    );
 
     // AcceptingInput → Closed
     assert_eq!(
         cell.try_update_state(ProductionOutputRouteLifecycleState::Closed, &matrix),
         ProductionOutputRouteLifecycleStateOwnerUpdateDecision::Updated,
     );
-    assert_eq!(cell.current_state(), ProductionOutputRouteLifecycleState::Closed);
+    assert_eq!(
+        cell.current_state(),
+        ProductionOutputRouteLifecycleState::Closed
+    );
 }
 
 #[test]
@@ -84,27 +104,41 @@ fn lifecycle_state_owner_update_all_rejected_transitions() {
         ProductionOutputRouteLifecycleState::AcceptingInput,
     );
     assert_eq!(
-        cell.try_update_state(ProductionOutputRouteLifecycleState::NotReadyForInput, &matrix),
+        cell.try_update_state(
+            ProductionOutputRouteLifecycleState::NotReadyForInput,
+            &matrix
+        ),
         ProductionOutputRouteLifecycleStateOwnerUpdateDecision::Rejected,
     );
-    assert_eq!(cell.current_state(), ProductionOutputRouteLifecycleState::AcceptingInput);
+    assert_eq!(
+        cell.current_state(),
+        ProductionOutputRouteLifecycleState::AcceptingInput
+    );
 
     // Closed → AcceptingInput (rejected)
-    let mut cell = ProductionOutputRouteLifecycleStateCell::new(
-        ProductionOutputRouteLifecycleState::Closed,
-    );
+    let mut cell =
+        ProductionOutputRouteLifecycleStateCell::new(ProductionOutputRouteLifecycleState::Closed);
     assert_eq!(
         cell.try_update_state(ProductionOutputRouteLifecycleState::AcceptingInput, &matrix),
         ProductionOutputRouteLifecycleStateOwnerUpdateDecision::Rejected,
     );
-    assert_eq!(cell.current_state(), ProductionOutputRouteLifecycleState::Closed);
+    assert_eq!(
+        cell.current_state(),
+        ProductionOutputRouteLifecycleState::Closed
+    );
 
     // Closed → NotReadyForInput (rejected)
     assert_eq!(
-        cell.try_update_state(ProductionOutputRouteLifecycleState::NotReadyForInput, &matrix),
+        cell.try_update_state(
+            ProductionOutputRouteLifecycleState::NotReadyForInput,
+            &matrix
+        ),
         ProductionOutputRouteLifecycleStateOwnerUpdateDecision::Rejected,
     );
-    assert_eq!(cell.current_state(), ProductionOutputRouteLifecycleState::Closed);
+    assert_eq!(
+        cell.current_state(),
+        ProductionOutputRouteLifecycleState::Closed
+    );
 }
 
 #[test]
@@ -136,13 +170,14 @@ fn lifecycle_state_owner_update_delegates_to_matrix() {
     let matrix = ProductionOutputRouteLifecycleTransitionMatrix::new();
 
     // This call delegates to matrix.validate_transition(NotReadyForInput, AcceptingInput).
-    let decision = cell.try_update_state(
-        ProductionOutputRouteLifecycleState::AcceptingInput,
-        &matrix,
-    );
+    let decision =
+        cell.try_update_state(ProductionOutputRouteLifecycleState::AcceptingInput, &matrix);
 
     // If we get here, the delegation worked.
-    assert_eq!(decision, ProductionOutputRouteLifecycleStateOwnerUpdateDecision::Updated);
+    assert_eq!(
+        decision,
+        ProductionOutputRouteLifecycleStateOwnerUpdateDecision::Updated
+    );
 }
 
 #[test]
@@ -154,8 +189,6 @@ fn lifecycle_state_owner_update_api_shape() {
     let matrix = ProductionOutputRouteLifecycleTransitionMatrix::new();
 
     // Method exists with correct signature.
-    let _decision = cell.try_update_state(
-        ProductionOutputRouteLifecycleState::AcceptingInput,
-        &matrix,
-    );
+    let _decision =
+        cell.try_update_state(ProductionOutputRouteLifecycleState::AcceptingInput, &matrix);
 }

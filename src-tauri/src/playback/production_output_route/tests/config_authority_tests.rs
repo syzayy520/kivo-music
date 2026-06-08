@@ -25,10 +25,9 @@ fn frame_with_stream(stream: AudioStreamInfo) -> AudioOutputFrame {
 }
 
 fn policy_with_capacity(capacity_frames: usize) -> ProductionOutputRouteInputAcceptancePolicy {
-    let capacity = ProductionOutputRouteCapacity::new(capacity_frames)
-        .expect("capacity must be nonzero");
-    let expected_format =
-        ProductionOutputRouteExpectedFormat::from_stream(&matching_stream());
+    let capacity =
+        ProductionOutputRouteCapacity::new(capacity_frames).expect("capacity must be nonzero");
+    let expected_format = ProductionOutputRouteExpectedFormat::from_stream(&matching_stream());
     ProductionOutputRouteInputAcceptancePolicy::new(capacity, expected_format)
 }
 
@@ -56,7 +55,9 @@ fn config_authority_returns_format_mismatch() {
     let frame = frame_with_stream(wrong_stream);
     let input = ProductionOutputRouteFrameInput::from_frame(&frame);
 
-    let err = authority.accept(input, 0).expect_err("format mismatch expected");
+    let err = authority
+        .accept(input, 0)
+        .expect_err("format mismatch expected");
     match err {
         ProductionOutputRouteFailure::FormatMismatch(_) => {}
         other => panic!(
@@ -74,7 +75,9 @@ fn config_authority_returns_backpressure() {
     let input = ProductionOutputRouteFrameInput::from_frame(&frame);
 
     // pending_frames already at capacity
-    let err = authority.accept(input, 5).expect_err("backpressure expected");
+    let err = authority
+        .accept(input, 5)
+        .expect_err("backpressure expected");
     match err {
         ProductionOutputRouteFailure::Backpressure(_) => {}
         other => panic!(

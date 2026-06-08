@@ -1,7 +1,9 @@
 use crate::playback::decoder::{AudioSampleFormat, AudioStreamInfo};
 use crate::playback::output::AudioOutputFrame;
 
-use super::super::failure::{ProductionOutputRouteFailureClass, ProductionOutputRouteRouteClosedReason};
+use super::super::failure::{
+    ProductionOutputRouteFailureClass, ProductionOutputRouteRouteClosedReason,
+};
 use super::super::input::ProductionOutputRouteFrameInput;
 use super::super::lifecycle::{
     ProductionOutputRouteLifecycleInputGate, ProductionOutputRouteLifecycleState,
@@ -49,7 +51,10 @@ fn lifecycle_input_gate_not_ready_for_input_rejects_with_route_closed_not_opened
     assert_eq!(err.class(), ProductionOutputRouteFailureClass::RouteClosed);
     match err {
         super::super::failure::ProductionOutputRouteFailure::RouteClosed(closed) => {
-            assert_eq!(closed.reason(), ProductionOutputRouteRouteClosedReason::NotOpened);
+            assert_eq!(
+                closed.reason(),
+                ProductionOutputRouteRouteClosedReason::NotOpened
+            );
         }
         _ => panic!("expected RouteClosed variant"),
     }
@@ -68,7 +73,10 @@ fn lifecycle_input_gate_closed_rejects_with_route_closed_rejected_after_close() 
     assert_eq!(err.class(), ProductionOutputRouteFailureClass::RouteClosed);
     match err {
         super::super::failure::ProductionOutputRouteFailure::RouteClosed(closed) => {
-            assert_eq!(closed.reason(), ProductionOutputRouteRouteClosedReason::RejectedAfterClose);
+            assert_eq!(
+                closed.reason(),
+                ProductionOutputRouteRouteClosedReason::RejectedAfterClose
+            );
         }
         _ => panic!("expected RouteClosed variant"),
     }
@@ -155,7 +163,10 @@ fn lifecycle_input_gate_is_stateless() {
     let audio_frame3 = frame();
     let input3 = ProductionOutputRouteFrameInput::from_frame(&audio_frame3);
     let err = gate
-        .gate_input(ProductionOutputRouteLifecycleState::NotReadyForInput, input3)
+        .gate_input(
+            ProductionOutputRouteLifecycleState::NotReadyForInput,
+            input3,
+        )
         .expect_err("NotReadyForInput should reject");
     assert_eq!(err.class(), ProductionOutputRouteFailureClass::RouteClosed);
 }

@@ -6,9 +6,7 @@ use crate::playback::output_wasapi::wasapi_context::WasapiRenderWriteError;
 
 use super::error::WasapiRingBufferDrainError;
 use super::render_loop_error::WasapiRenderLoopStepError;
-use super::render_loop_report::{
-    WasapiRenderLoopStepPlan, WasapiRenderLoopStepSkipReason,
-};
+use super::render_loop_report::{WasapiRenderLoopStepPlan, WasapiRenderLoopStepSkipReason};
 use super::render_loop_step::run_manual_drain_render_loop_step;
 use super::tests_core::sample_format;
 use super::tick_error::WasapiDrainTickError;

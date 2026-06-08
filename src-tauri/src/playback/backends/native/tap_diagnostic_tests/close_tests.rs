@@ -12,7 +12,10 @@ fn stop_best_effort_closes_and_detaches_diagnostic_tap() {
 
     let state = engine.stop().expect("stop should succeed");
 
-    assert!(matches!(state.status, crate::playback::types::PlaybackStatus::Stopped));
+    assert!(matches!(
+        state.status,
+        crate::playback::types::PlaybackStatus::Stopped
+    ));
     assert!(state.error.is_none());
 
     assert!(engine.tap_diagnostic_current_report().is_none());

@@ -1,4 +1,3 @@
-#[allow(clippy::module_inception)]
-mod ordering;
+mod barrier_ordering;
 
-pub use ordering::WasapiSeekBarrierOrdering;
+pub use barrier_ordering::WasapiSeekBarrierOrdering;

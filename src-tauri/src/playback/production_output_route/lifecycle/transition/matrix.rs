@@ -1,5 +1,5 @@
-use super::decision::ProductionOutputRouteLifecycleTransitionDecision;
 use super::super::state::ProductionOutputRouteLifecycleState;
+use super::decision::ProductionOutputRouteLifecycleTransitionDecision;
 
 /// Stateless lifecycle transition validation matrix.
 ///
@@ -42,9 +42,7 @@ impl ProductionOutputRouteLifecycleTransitionMatrix {
             | (S::NotReadyForInput, S::Closed)
             | (S::AcceptingInput, S::AcceptingInput)
             | (S::AcceptingInput, S::Closed)
-            | (S::Closed, S::Closed) => {
-                ProductionOutputRouteLifecycleTransitionDecision::Allowed
-            }
+            | (S::Closed, S::Closed) => ProductionOutputRouteLifecycleTransitionDecision::Allowed,
             (S::AcceptingInput, S::NotReadyForInput)
             | (S::Closed, S::AcceptingInput)
             | (S::Closed, S::NotReadyForInput) => {

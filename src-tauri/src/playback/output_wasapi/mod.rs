@@ -17,20 +17,20 @@ include!("output_thread_mock_modules.rs");
 include!("output_thread_runtime_modules.rs");
 
 pub mod padding_query;
-pub mod platform;
 pub(crate) mod pcm_adapter;
 #[cfg(test)]
 mod pcm_adapter_tests;
+pub mod platform;
 pub mod render_client;
 pub mod reset_boundary;
 pub mod ring_buffer;
+pub mod ring_buffer_output_thread;
 pub(crate) mod ring_buffer_render_boundary;
 #[cfg(test)]
 mod ring_buffer_render_boundary_tests;
 pub(crate) mod ring_buffer_source;
 #[cfg(test)]
 mod ring_buffer_source_tests;
-pub mod ring_buffer_output_thread;
 pub mod silent_loop;
 pub mod sink;
 pub(crate) mod sink_drain;

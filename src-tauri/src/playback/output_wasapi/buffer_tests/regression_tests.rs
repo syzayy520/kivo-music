@@ -101,10 +101,7 @@ fn public_native_engine_keeps_native_control_contract_after_buffer_boundary() {
         crate::playback::types::PlaybackStatus::Idle
     ));
     assert!(engine.stop().is_ok(), "stop should succeed");
-    assert!(matches!(
-        engine.seek(0),
-        Err(PlaybackError::NoTrack(_))
-    ));
+    assert!(matches!(engine.seek(0), Err(PlaybackError::NoTrack(_))));
     let volume_state = engine
         .set_volume(1.0)
         .expect("native set_volume should succeed after P0-145");

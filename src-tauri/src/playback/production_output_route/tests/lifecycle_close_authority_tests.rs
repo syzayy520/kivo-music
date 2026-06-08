@@ -1,15 +1,14 @@
-use super::super::lifecycle::ProductionOutputRouteLifecycleCloseDecision as CloseDecision;
+use super::super::lifecycle::transition::ProductionOutputRouteLifecycleTransitionMatrix;
 use super::super::lifecycle::ProductionOutputRouteLifecycleCloseAuthority;
+use super::super::lifecycle::ProductionOutputRouteLifecycleCloseDecision as CloseDecision;
 use super::super::lifecycle::ProductionOutputRouteLifecycleState as LifecycleState;
 use super::super::lifecycle::ProductionOutputRouteLifecycleStateCell;
-use super::super::lifecycle::transition::ProductionOutputRouteLifecycleTransitionMatrix;
 
 #[test]
 fn close_authority_closes_not_ready_route() {
     let authority = ProductionOutputRouteLifecycleCloseAuthority;
-    let mut state_cell = ProductionOutputRouteLifecycleStateCell::new(
-        LifecycleState::NotReadyForInput,
-    );
+    let mut state_cell =
+        ProductionOutputRouteLifecycleStateCell::new(LifecycleState::NotReadyForInput);
     let matrix = ProductionOutputRouteLifecycleTransitionMatrix::new();
 
     let decision = authority.request_close(&mut state_cell, &matrix);
@@ -21,9 +20,8 @@ fn close_authority_closes_not_ready_route() {
 #[test]
 fn close_authority_closes_accepting_route() {
     let authority = ProductionOutputRouteLifecycleCloseAuthority;
-    let mut state_cell = ProductionOutputRouteLifecycleStateCell::new(
-        LifecycleState::AcceptingInput,
-    );
+    let mut state_cell =
+        ProductionOutputRouteLifecycleStateCell::new(LifecycleState::AcceptingInput);
     let matrix = ProductionOutputRouteLifecycleTransitionMatrix::new();
 
     let decision = authority.request_close(&mut state_cell, &matrix);
@@ -35,9 +33,7 @@ fn close_authority_closes_accepting_route() {
 #[test]
 fn close_authority_reports_already_closed_without_update() {
     let authority = ProductionOutputRouteLifecycleCloseAuthority;
-    let mut state_cell = ProductionOutputRouteLifecycleStateCell::new(
-        LifecycleState::Closed,
-    );
+    let mut state_cell = ProductionOutputRouteLifecycleStateCell::new(LifecycleState::Closed);
     let matrix = ProductionOutputRouteLifecycleTransitionMatrix::new();
 
     let decision = authority.request_close(&mut state_cell, &matrix);
@@ -69,9 +65,8 @@ fn close_authority_decision_is_reasonless_closed_set() {
 #[test]
 fn close_authority_request_close_uses_caller_provided_state_and_matrix() {
     let authority = ProductionOutputRouteLifecycleCloseAuthority;
-    let mut state_cell = ProductionOutputRouteLifecycleStateCell::new(
-        LifecycleState::AcceptingInput,
-    );
+    let mut state_cell =
+        ProductionOutputRouteLifecycleStateCell::new(LifecycleState::AcceptingInput);
     let matrix = ProductionOutputRouteLifecycleTransitionMatrix::new();
 
     // Pass &mut state_cell and &matrix into request_close.
@@ -81,9 +76,8 @@ fn close_authority_request_close_uses_caller_provided_state_and_matrix() {
 #[test]
 fn close_authority_request_close_returns_decision_only() {
     let authority = ProductionOutputRouteLifecycleCloseAuthority;
-    let mut state_cell = ProductionOutputRouteLifecycleStateCell::new(
-        LifecycleState::NotReadyForInput,
-    );
+    let mut state_cell =
+        ProductionOutputRouteLifecycleStateCell::new(LifecycleState::NotReadyForInput);
     let matrix = ProductionOutputRouteLifecycleTransitionMatrix::new();
 
     // Assign to explicitly typed variable.

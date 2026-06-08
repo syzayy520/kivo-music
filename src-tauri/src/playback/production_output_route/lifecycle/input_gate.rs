@@ -1,9 +1,9 @@
 use super::state::ProductionOutputRouteLifecycleState;
-use crate::playback::production_output_route::input::ProductionOutputRouteFrameInput;
 use crate::playback::production_output_route::failure::{
     ProductionOutputRouteFailure, ProductionOutputRouteRouteClosed,
     ProductionOutputRouteRouteClosedReason,
 };
+use crate::playback::production_output_route::input::ProductionOutputRouteFrameInput;
 
 /// Stateless lifecycle input gate.
 ///
@@ -32,20 +32,16 @@ impl ProductionOutputRouteLifecycleInputGate {
     ) -> Result<ProductionOutputRouteFrameInput<'a>, ProductionOutputRouteFailure> {
         match state {
             ProductionOutputRouteLifecycleState::AcceptingInput => Ok(input),
-            ProductionOutputRouteLifecycleState::NotReadyForInput => {
-                Err(ProductionOutputRouteFailure::from(
-                    ProductionOutputRouteRouteClosed::new(
-                        ProductionOutputRouteRouteClosedReason::NotOpened,
-                    ),
-                ))
-            }
-            ProductionOutputRouteLifecycleState::Closed => {
-                Err(ProductionOutputRouteFailure::from(
-                    ProductionOutputRouteRouteClosed::new(
-                        ProductionOutputRouteRouteClosedReason::RejectedAfterClose,
-                    ),
-                ))
-            }
+            ProductionOutputRouteLifecycleState::NotReadyForInput => Err(
+                ProductionOutputRouteFailure::from(ProductionOutputRouteRouteClosed::new(
+                    ProductionOutputRouteRouteClosedReason::NotOpened,
+                )),
+            ),
+            ProductionOutputRouteLifecycleState::Closed => Err(ProductionOutputRouteFailure::from(
+                ProductionOutputRouteRouteClosed::new(
+                    ProductionOutputRouteRouteClosedReason::RejectedAfterClose,
+                ),
+            )),
         }
     }
 }

@@ -33,3 +33,6 @@ impl PlaybackLifecycle {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests;

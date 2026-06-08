@@ -13,3 +13,6 @@ use super::activity_snapshot;
 use super::errors;
 use super::events;
 use super::state;
+
+#[cfg(test)]
+mod tests;

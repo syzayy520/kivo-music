@@ -30,7 +30,7 @@ fn manager_diagnostic_files_stay_in_family_tree() {
 
 #[test]
 fn manager_diagnostic_manager_rs_only_registers_diagnostic_module() -> Result<(), String> {
-    let source = read("src/playback/manager.rs")?;
+    let source = read("src/playback/manager/mod.rs")?;
 
     assert!(source.contains("mod diagnostic_query;"));
     assert!(source.contains("mod diagnostic_query_tests;"));
@@ -69,11 +69,11 @@ fn manager_diagnostic_query_avoids_forbidden_exposure_paths() -> Result<(), Stri
 #[test]
 fn manager_diagnostic_query_does_not_expand_product_exposure_surfaces() -> Result<(), String> {
     for file in [
-        "src/playback/commands.rs",
-        "src/playback/events.rs",
-        "src/playback/state.rs",
-        "src/playback/playback_worker_state.rs",
-        "src/playback/engine.rs",
+        "src/playback/commands/mod.rs",
+        "src/playback/events/mod.rs",
+        "src/playback/state/mod.rs",
+        "src/playback/worker/state.rs",
+        "src/playback/engine/mod.rs",
         "src/playback/backends/mpv.rs",
     ] {
         assert!(!read(file)?.contains("tap_diagnostic"), "{file}");

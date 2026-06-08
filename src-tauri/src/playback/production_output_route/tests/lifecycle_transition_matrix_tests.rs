@@ -1,9 +1,9 @@
 use super::super::lifecycle::{
-    ProductionOutputRouteLifecycleState as S,
     transition::{
         ProductionOutputRouteLifecycleTransitionDecision as D,
         ProductionOutputRouteLifecycleTransitionMatrix,
     },
+    ProductionOutputRouteLifecycleState as S,
 };
 
 fn matrix() -> ProductionOutputRouteLifecycleTransitionMatrix {
@@ -31,9 +31,18 @@ fn transition_matrix_allows_accepting_to_closed() {
 #[test]
 fn transition_matrix_allows_same_state_idempotent_decisions() {
     // Same-state transitions are idempotent validation decisions, not mutation.
-    assert_eq!(matrix().validate_transition(S::NotReadyForInput, S::NotReadyForInput), D::Allowed);
-    assert_eq!(matrix().validate_transition(S::AcceptingInput, S::AcceptingInput), D::Allowed);
-    assert_eq!(matrix().validate_transition(S::Closed, S::Closed), D::Allowed);
+    assert_eq!(
+        matrix().validate_transition(S::NotReadyForInput, S::NotReadyForInput),
+        D::Allowed
+    );
+    assert_eq!(
+        matrix().validate_transition(S::AcceptingInput, S::AcceptingInput),
+        D::Allowed
+    );
+    assert_eq!(
+        matrix().validate_transition(S::Closed, S::Closed),
+        D::Allowed
+    );
 }
 
 #[test]

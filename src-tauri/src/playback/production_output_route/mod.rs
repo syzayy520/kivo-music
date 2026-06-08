@@ -1,8 +1,8 @@
 pub(crate) mod authority;
 pub(crate) mod config;
 mod failure;
-pub(crate) mod input_admission;
 mod input;
+pub(crate) mod input_admission;
 pub(crate) mod lifecycle;
 pub(crate) mod sink_failure_mapping;
 
@@ -48,8 +48,10 @@ fn production_output_route_contract_lint_anchor(frame: &crate::playback::output:
         ProductionOutputRouteLifecycleTransitionMatrix,
     };
     let _transition_matrix = ProductionOutputRouteLifecycleTransitionMatrix::new();
-    let _transition_decision =
-        _transition_matrix.validate_transition(ProductionOutputRouteLifecycleState::NotReadyForInput, ProductionOutputRouteLifecycleState::AcceptingInput);
+    let _transition_decision = _transition_matrix.validate_transition(
+        ProductionOutputRouteLifecycleState::NotReadyForInput,
+        ProductionOutputRouteLifecycleState::AcceptingInput,
+    );
     let _decision_type = std::any::type_name::<ProductionOutputRouteLifecycleTransitionDecision>();
 
     // P0-114: lifecycle state owner contract symbols
@@ -57,24 +59,26 @@ fn production_output_route_contract_lint_anchor(frame: &crate::playback::output:
         ProductionOutputRouteLifecycleStateCell,
         ProductionOutputRouteLifecycleStateOwnerUpdateDecision,
     };
-    let _state_cell = ProductionOutputRouteLifecycleStateCell::new(ProductionOutputRouteLifecycleState::NotReadyForInput);
-    let _update_decision_type = std::any::type_name::<ProductionOutputRouteLifecycleStateOwnerUpdateDecision>();
+    let _state_cell = ProductionOutputRouteLifecycleStateCell::new(
+        ProductionOutputRouteLifecycleState::NotReadyForInput,
+    );
+    let _update_decision_type =
+        std::any::type_name::<ProductionOutputRouteLifecycleStateOwnerUpdateDecision>();
 
     // P0-116: lifecycle close authority contract symbols
     use lifecycle::{
-        ProductionOutputRouteLifecycleCloseAuthority,
-        ProductionOutputRouteLifecycleCloseDecision,
+        ProductionOutputRouteLifecycleCloseAuthority, ProductionOutputRouteLifecycleCloseDecision,
     };
     let _close_authority = ProductionOutputRouteLifecycleCloseAuthority;
     let _close_decision_type = std::any::type_name::<ProductionOutputRouteLifecycleCloseDecision>();
 
     // P0-119: input admission contract symbols
     use input_admission::{
-        ProductionOutputRouteInputAdmission,
-        ProductionOutputRouteInputAdmissionResult,
+        ProductionOutputRouteInputAdmission, ProductionOutputRouteInputAdmissionResult,
     };
     let _input_admission = ProductionOutputRouteInputAdmission;
-    let _input_admission_result_type = std::any::type_name::<ProductionOutputRouteInputAdmissionResult<'_>>();
+    let _input_admission_result_type =
+        std::any::type_name::<ProductionOutputRouteInputAdmissionResult<'_>>();
 
     let _ = (
         input.position_ms(),

@@ -122,13 +122,13 @@ fn lifecycle_diagnostic_failures_are_explicitly_contained() -> Result<(), String
 #[test]
 fn forbidden_consumers_have_no_tap_diagnostic_reference() -> Result<(), String> {
     let files = [
-        "src/playback/manager.rs",
-        "src/playback/manager_queue.rs",
-        "src/playback/queue.rs",
-        "src/playback/commands.rs",
-        "src/playback/events.rs",
+        "src/playback/manager/mod.rs",
+        "src/playback/manager/queue_state.rs",
+        "src/playback/queue/mod.rs",
+        "src/playback/commands/mod.rs",
+        "src/playback/events/mod.rs",
         "src/playback/output/mod.rs",
-        "src/playback/output_sink.rs",
+        "src/playback/output/unsupported_sink.rs",
     ];
 
     for file in files {
