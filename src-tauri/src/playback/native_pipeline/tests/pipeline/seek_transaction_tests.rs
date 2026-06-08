@@ -32,7 +32,7 @@ fn seek_transaction_success_commits_decoder_position() {
     assert_eq!(after_session.last_position_ms, 2);
 
     pipeline.shutdown().expect("shutdown");
-    fs::remove_file(path).expect("remove wav");
+    let _ = fs::remove_file(path);
 }
 
 #[test]
@@ -51,7 +51,7 @@ fn seek_transaction_success_clears_last_decoded_frame() {
     );
 
     pipeline.shutdown().expect("shutdown");
-    fs::remove_file(path).expect("remove wav");
+    let _ = fs::remove_file(path);
 }
 
 #[test]
@@ -72,7 +72,7 @@ fn seek_transaction_success_clears_buffer() {
     );
 
     pipeline.shutdown().expect("shutdown");
-    fs::remove_file(path).expect("remove wav");
+    let _ = fs::remove_file(path);
 }
 
 #[test]
@@ -89,7 +89,7 @@ fn seek_transaction_success_updates_clock() {
     );
 
     pipeline.shutdown().expect("shutdown");
-    fs::remove_file(path).expect("remove wav");
+    let _ = fs::remove_file(path);
 }
 
 // ── Decoder-not-open test ───────────────────────────────────────────
@@ -167,7 +167,7 @@ fn seek_transaction_decoder_seek_failure_restores_decoder_state() {
     );
 
     pipeline.shutdown().expect("shutdown");
-    fs::remove_file(path).expect("remove wav");
+    let _ = fs::remove_file(path);
 }
 
 #[test]
@@ -189,7 +189,7 @@ fn seek_transaction_failure_does_not_clear_buffer() {
     );
 
     pipeline.shutdown().expect("shutdown");
-    fs::remove_file(path).expect("remove wav");
+    let _ = fs::remove_file(path);
 }
 
 #[test]
@@ -209,7 +209,7 @@ fn seek_transaction_failure_does_not_clear_last_frame() {
     );
 
     pipeline.shutdown().expect("shutdown");
-    fs::remove_file(path).expect("remove wav");
+    let _ = fs::remove_file(path);
 }
 
 #[test]
@@ -227,5 +227,5 @@ fn seek_transaction_failure_does_not_move_clock() {
     );
 
     pipeline.shutdown().expect("shutdown");
-    fs::remove_file(path).expect("remove wav");
+    let _ = fs::remove_file(path);
 }
