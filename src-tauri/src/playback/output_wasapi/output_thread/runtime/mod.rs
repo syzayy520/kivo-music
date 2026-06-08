@@ -4,6 +4,7 @@
 //! ThreadHandle, ThreadSnapshot, and ThreadControl. No actual thread spawning.
 
 pub mod driver;
+pub mod event_buffer;
 pub mod queue;
 pub mod spawn;
 pub mod state_machine;
