@@ -1,6 +1,6 @@
-use super::ordering::FlushOrdering;
-use super::request::OutputFlushRequest;
-use super::target::FlushTarget;
+use super::super::ordering::FlushOrdering;
+use super::super::request::OutputFlushRequest;
+use super::super::target::FlushTarget;
 
 /// Decision returned by the contract layer after evaluating a flush request.
 ///
