@@ -6,6 +6,7 @@ pub mod command;
 pub mod config;
 pub mod event;
 pub mod runtime;
+pub mod sink_boundary;
 pub mod state;
 
 #[cfg(test)]
