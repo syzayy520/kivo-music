@@ -71,7 +71,10 @@ impl PlaybackEngine for KivoNativeEngine {
     fn shutdown(&mut self) -> PlaybackResult<()> {
         tap_diagnostic::close_on_shutdown(&mut self.tap_diagnostic, &mut self.pipeline);
         self.pipeline.shutdown()?;
-        let _ = self.playback.stop();
+        let status = self.playback.stop()?;
+        self.state.status = status;
+        self.state.current_track = self.playback.current_track();
+        self.state.error = None;
         Ok(())
     }
 }
