@@ -13,6 +13,7 @@ pub mod state_machine;
 pub mod thread_control;
 pub mod thread_handle;
 pub mod thread_loop;
+pub mod thread_runtime;
 pub mod thread_snapshot;
 
 // Re-export primary types for convenience.
