@@ -19,10 +19,16 @@ struct FakeConsumer {
 
 impl FakeConsumer {
     fn with_result(result: Result<SinkResult, SinkError>) -> Self {
-        Self { ready: true, response: result }
+        Self {
+            ready: true,
+            response: result,
+        }
     }
     fn not_ready() -> Self {
-        Self { ready: false, response: Ok(SinkResult::Noop) }
+        Self {
+            ready: false,
+            response: Ok(SinkResult::Noop),
+        }
     }
 }
 
@@ -33,8 +39,12 @@ impl SinkConsumer for FakeConsumer {
             Err(e) => Err(e.clone()),
         }
     }
-    fn snapshot(&self) -> ConsumerSnapshot { ConsumerSnapshot::default() }
-    fn is_ready(&self) -> bool { self.ready }
+    fn snapshot(&self) -> ConsumerSnapshot {
+        ConsumerSnapshot::default()
+    }
+    fn is_ready(&self) -> bool {
+        self.ready
+    }
     fn reset(&mut self) {}
 }
 
@@ -46,18 +56,28 @@ fn invoker_success_maps_to_outcome() {
     }));
     let ctx = DispatchContext::default();
     let result = invoke_sink_consumer(&mut c, &SinkRequest::Noop, &ctx).unwrap();
-    assert_eq!(result, DispatchOutcome::Success {
-        frames_processed: 512,
-        bytes_written: 2048,
-    });
+    assert_eq!(
+        result,
+        DispatchOutcome::Success {
+            frames_processed: 512,
+            bytes_written: 2048,
+        }
+    );
 }
 
 #[test]
 fn invoker_silence_filled_maps_to_outcome() {
-    let mut c = FakeConsumer::with_result(Ok(SinkResult::SilenceFilled { frames_written: 256 }));
+    let mut c = FakeConsumer::with_result(Ok(SinkResult::SilenceFilled {
+        frames_written: 256,
+    }));
     let ctx = DispatchContext::default();
     let result = invoke_sink_consumer(&mut c, &SinkRequest::Noop, &ctx).unwrap();
-    assert_eq!(result, DispatchOutcome::SilenceFilled { frames_written: 256 });
+    assert_eq!(
+        result,
+        DispatchOutcome::SilenceFilled {
+            frames_written: 256
+        }
+    );
 }
 
 #[test]
@@ -89,7 +109,10 @@ fn invoker_sink_error_buffer_underrun() {
     let mut c = FakeConsumer::with_result(Err(SinkError::BufferUnderrun { frames_missing: 64 }));
     let ctx = DispatchContext::default();
     let result = invoke_sink_consumer(&mut c, &SinkRequest::Noop, &ctx);
-    assert_eq!(result.unwrap_err(), DispatchError::BufferUnderrun { frames_missing: 64 });
+    assert_eq!(
+        result.unwrap_err(),
+        DispatchError::BufferUnderrun { frames_missing: 64 }
+    );
 }
 
 #[test]
@@ -102,7 +125,9 @@ fn invoker_sink_error_device_lost() {
 
 #[test]
 fn invoker_sink_error_invalid_request() {
-    let mut c = FakeConsumer::with_result(Err(SinkError::InvalidRequest { reason: "bad".into() }));
+    let mut c = FakeConsumer::with_result(Err(SinkError::InvalidRequest {
+        reason: "bad".into(),
+    }));
     let ctx = DispatchContext::default();
     let result = invoke_sink_consumer(&mut c, &SinkRequest::Noop, &ctx);
     match result.unwrap_err() {
@@ -113,7 +138,9 @@ fn invoker_sink_error_invalid_request() {
 
 #[test]
 fn invoker_sink_error_internal() {
-    let mut c = FakeConsumer::with_result(Err(SinkError::Internal { description: "oops".into() }));
+    let mut c = FakeConsumer::with_result(Err(SinkError::Internal {
+        description: "oops".into(),
+    }));
     let ctx = DispatchContext::default();
     let result = invoke_sink_consumer(&mut c, &SinkRequest::Noop, &ctx);
     match result.unwrap_err() {
@@ -128,10 +155,13 @@ fn map_result_success() {
         frames_processed: 10,
         bytes_written: 40,
     });
-    assert_eq!(result, DispatchOutcome::Success {
-        frames_processed: 10,
-        bytes_written: 40,
-    });
+    assert_eq!(
+        result,
+        DispatchOutcome::Success {
+            frames_processed: 10,
+            bytes_written: 40,
+        }
+    );
 }
 
 #[test]
@@ -142,12 +172,18 @@ fn map_result_silence_filled() {
 
 #[test]
 fn map_result_skipped() {
-    assert_eq!(map_sink_result_to_outcome(&SinkResult::Skipped), DispatchOutcome::Skipped);
+    assert_eq!(
+        map_sink_result_to_outcome(&SinkResult::Skipped),
+        DispatchOutcome::Skipped
+    );
 }
 
 #[test]
 fn map_result_noop() {
-    assert_eq!(map_sink_result_to_outcome(&SinkResult::Noop), DispatchOutcome::Noop);
+    assert_eq!(
+        map_sink_result_to_outcome(&SinkResult::Noop),
+        DispatchOutcome::Noop
+    );
 }
 
 #[test]
@@ -158,7 +194,10 @@ fn map_error_buffer_underrun() {
 
 #[test]
 fn map_error_device_lost() {
-    assert_eq!(map_sink_error_to_dispatch_error(SinkError::DeviceLost), DispatchError::DeviceLost);
+    assert_eq!(
+        map_sink_error_to_dispatch_error(SinkError::DeviceLost),
+        DispatchError::DeviceLost
+    );
 }
 
 #[test]
@@ -172,7 +211,9 @@ fn map_error_invalid_request() {
 
 #[test]
 fn map_error_internal() {
-    let err = map_sink_error_to_dispatch_error(SinkError::Internal { description: "y".into() });
+    let err = map_sink_error_to_dispatch_error(SinkError::Internal {
+        description: "y".into(),
+    });
     match err {
         DispatchError::Internal { description } => assert_eq!(description, "y"),
         _ => panic!("expected Internal"),
