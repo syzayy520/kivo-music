@@ -5,6 +5,7 @@
 
 pub mod driver;
 pub mod queue;
+pub mod spawn;
 pub mod state_machine;
 pub mod thread_control;
 pub mod thread_handle;
