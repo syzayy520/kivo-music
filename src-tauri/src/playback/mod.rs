@@ -24,11 +24,12 @@ pub mod engine;
 pub mod errors;
 pub mod events;
 pub mod lifecycle;
-pub mod lifecycle_activity_log;
-pub mod lifecycle_activity_snapshot;
-pub mod lifecycle_commands;
-pub mod lifecycle_event;
-pub mod lifecycle_recorder;
+
+pub use self::lifecycle::lifecycle_activity_log;
+pub use self::lifecycle::lifecycle_activity_snapshot;
+pub use self::lifecycle::lifecycle_commands;
+pub use self::lifecycle::lifecycle_event;
+pub use self::lifecycle::lifecycle_recorder;
 pub mod lyrics_clock;
 pub mod manager;
 pub mod manager_queue;
