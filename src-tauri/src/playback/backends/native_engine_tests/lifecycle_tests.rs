@@ -18,7 +18,8 @@ fn shutdown_after_wav_load_closes_pipeline_children() {
     assert!(pipeline.decoder_session.is_none());
     assert!(pipeline.last_decoded_frame.is_none());
 
-    std::fs::remove_file(path).expect("remove wav file");
+    drop(engine);
+    let _ = std::fs::remove_file(path);
 }
 
 #[test]
@@ -34,7 +35,8 @@ fn shutdown_after_wav_load_syncs_public_state_to_stopped() {
     assert!(state.current_track.is_some());
     assert!(state.error.is_none());
 
-    std::fs::remove_file(path).expect("remove wav file");
+    drop(engine);
+    let _ = std::fs::remove_file(path);
 }
 
 #[test]
@@ -58,5 +60,6 @@ fn seek_after_shutdown_is_rejected_as_stopped() {
         other => panic!("unexpected seek-after-shutdown result: {other:?}"),
     }
 
-    std::fs::remove_file(path).expect("remove wav file");
+    drop(engine);
+    let _ = std::fs::remove_file(path);
 }
