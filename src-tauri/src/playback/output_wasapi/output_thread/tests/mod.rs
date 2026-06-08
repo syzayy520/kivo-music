@@ -13,4 +13,5 @@ pub mod runtime_snapshot_update_tests;
 pub mod runtime_spawn_contract_tests;
 pub mod runtime_state_machine_contract_tests;
 pub mod runtime_state_machine_rules_tests;
+pub mod runtime_thread_loop_tests;
 pub mod state_contract_tests;
