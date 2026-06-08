@@ -71,6 +71,7 @@ mod native_pipeline_seek_transaction;
 mod native_pipeline_state;
 mod native_pipeline_worker;
 pub mod output_flush_contract;
+pub mod wasapi_seek_barrier_contract;
 pub(crate) mod production_output_route;
 
 #[cfg(test)]
