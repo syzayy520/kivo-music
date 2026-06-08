@@ -7,6 +7,7 @@ pub mod channel;
 pub mod driver;
 pub mod event_buffer;
 pub mod queue;
+pub mod sink_mapping;
 pub mod snapshot_update;
 pub mod spawn;
 pub mod state_machine;
