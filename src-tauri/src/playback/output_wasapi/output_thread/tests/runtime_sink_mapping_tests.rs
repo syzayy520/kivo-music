@@ -84,7 +84,9 @@ fn sink_success_returns_none() {
 
 #[test]
 fn sink_silence_filled_returns_none() {
-    let result = SinkResult::SilenceFilled { frames_written: 256 };
+    let result = SinkResult::SilenceFilled {
+        frames_written: 256,
+    };
     assert!(map_sink_result_to_thread_event(&result).is_none());
 }
 

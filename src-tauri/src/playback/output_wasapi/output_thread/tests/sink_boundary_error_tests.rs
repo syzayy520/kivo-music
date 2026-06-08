@@ -6,7 +6,9 @@ use crate::playback::output_wasapi::output_thread::sink_boundary::SinkError;
 
 #[test]
 fn sink_error_buffer_underrun() {
-    let err = SinkError::BufferUnderrun { frames_missing: 100 };
+    let err = SinkError::BufferUnderrun {
+        frames_missing: 100,
+    };
     match err {
         SinkError::BufferUnderrun { frames_missing } => assert_eq!(frames_missing, 100),
         _ => panic!("expected BufferUnderrun"),

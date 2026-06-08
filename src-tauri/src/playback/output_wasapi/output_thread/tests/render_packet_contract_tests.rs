@@ -2,9 +2,7 @@
 //!
 //! Tests for SampleFormat and PacketFormat types.
 
-use crate::playback::output_wasapi::output_thread::sink_boundary::{
-    PacketFormat, SampleFormat,
-};
+use crate::playback::output_wasapi::output_thread::sink_boundary::{PacketFormat, SampleFormat};
 
 // ===== SampleFormat tests =====
 

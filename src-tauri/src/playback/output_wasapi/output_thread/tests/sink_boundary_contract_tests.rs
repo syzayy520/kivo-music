@@ -2,9 +2,7 @@
 //!
 //! Tests for SinkRequest and SinkResult types.
 
-use crate::playback::output_wasapi::output_thread::sink_boundary::{
-    SinkRequest, SinkResult,
-};
+use crate::playback::output_wasapi::output_thread::sink_boundary::{SinkRequest, SinkResult};
 
 // ===== SinkRequest tests =====
 
@@ -105,7 +103,9 @@ fn sink_result_success() {
 
 #[test]
 fn sink_result_silence_filled() {
-    let res = SinkResult::SilenceFilled { frames_written: 256 };
+    let res = SinkResult::SilenceFilled {
+        frames_written: 256,
+    };
     match res {
         SinkResult::SilenceFilled { frames_written } => assert_eq!(frames_written, 256),
         _ => panic!("expected SilenceFilled"),
