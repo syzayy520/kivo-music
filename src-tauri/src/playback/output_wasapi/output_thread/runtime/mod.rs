@@ -6,6 +6,7 @@
 pub mod driver;
 pub mod event_buffer;
 pub mod queue;
+pub mod snapshot_update;
 pub mod spawn;
 pub mod state_machine;
 pub mod thread_control;

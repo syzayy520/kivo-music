@@ -8,6 +8,7 @@ pub mod runtime_driver_contract_tests;
 pub mod runtime_driver_step_behavior_tests;
 pub mod runtime_event_buffer_tests;
 pub mod runtime_queue_contract_tests;
+pub mod runtime_snapshot_update_tests;
 pub mod runtime_spawn_contract_tests;
 pub mod runtime_state_machine_contract_tests;
 pub mod runtime_state_machine_rules_tests;
