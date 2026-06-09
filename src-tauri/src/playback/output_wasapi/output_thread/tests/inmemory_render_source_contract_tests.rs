@@ -20,7 +20,7 @@ fn inmemory_source_new_with_queue() {
     let mut queue = SourceQueue::new();
     queue.push_new(100);
     queue.push_new(200);
-    
+
     let source = InMemoryRenderSource::new(queue);
     assert!(source.is_ready());
     assert_eq!(source.queue_len(), 2);
@@ -37,7 +37,7 @@ fn inmemory_source_with_test_packets() {
 fn inmemory_source_snapshot_default() {
     let source = InMemoryRenderSource::empty();
     let snapshot = source.snapshot();
-    
+
     assert_eq!(snapshot.requests_accepted, 0);
     assert_eq!(snapshot.packets_provided, 0);
     assert_eq!(snapshot.frames_read, 0);
@@ -51,7 +51,7 @@ fn inmemory_source_snapshot_default() {
 fn inmemory_source_cursor_default() {
     let source = InMemoryRenderSource::empty();
     let cursor = source.cursor();
-    
+
     assert_eq!(cursor.position_frames, 0);
     assert_eq!(cursor.total_frames, 0);
     assert_eq!(cursor.sample_rate, 44100);
@@ -63,7 +63,7 @@ fn inmemory_source_has_eos() {
     let mut queue = SourceQueue::new();
     queue.push_new(100);
     queue.push_eos();
-    
+
     let source = InMemoryRenderSource::new(queue);
     assert!(source.has_eos());
 }
@@ -73,7 +73,7 @@ fn inmemory_source_no_eos() {
     let mut queue = SourceQueue::new();
     queue.push_new(100);
     queue.push_new(200);
-    
+
     let source = InMemoryRenderSource::new(queue);
     assert!(!source.has_eos());
 }

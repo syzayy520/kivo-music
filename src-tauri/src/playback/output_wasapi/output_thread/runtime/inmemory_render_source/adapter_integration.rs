@@ -6,10 +6,10 @@
 use super::inmemory_source::InMemoryRenderSource;
 use super::source_queue::SourceQueue;
 use crate::playback::output_wasapi::output_thread::runtime::render_source_adapter::{
-    invoke_render_source, AdapterContext, AdapterError, AdapterOutcome,
+    dispatch_source_to_sink, SourceToSinkOutcome,
 };
 use crate::playback::output_wasapi::output_thread::runtime::render_source_adapter::{
-    dispatch_source_to_sink, SourceToSinkOutcome,
+    invoke_render_source, AdapterContext, AdapterError, AdapterOutcome,
 };
 use crate::playback::output_wasapi::output_thread::sink_boundary::consumer::consumer_contract::SinkConsumer;
 use crate::playback::output_wasapi::output_thread::sink_boundary::render_source::{
@@ -58,9 +58,7 @@ pub fn invoke_test_read(
 }
 
 /// Invokes an InMemoryRenderSource with a Peek request and returns the outcome.
-pub fn invoke_test_peek(
-    source: &mut InMemoryRenderSource,
-) -> Result<AdapterOutcome, AdapterError> {
+pub fn invoke_test_peek(source: &mut InMemoryRenderSource) -> Result<AdapterOutcome, AdapterError> {
     let request = RenderSourceRequest::Peek;
     let context = AdapterContext::default();
     invoke_render_source(source, &request, &context)
