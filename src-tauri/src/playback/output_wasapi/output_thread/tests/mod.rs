@@ -3,6 +3,11 @@
 pub mod command_contract_tests;
 pub mod config_contract_tests;
 pub mod event_contract_tests;
+pub mod inmemory_render_source_adapter_tests;
+pub mod inmemory_render_source_contract_tests;
+pub mod inmemory_render_source_exhaustion_tests;
+pub mod inmemory_render_source_packet_tests;
+pub mod inmemory_render_source_request_tests;
 pub mod render_packet_audio_tests;
 pub mod render_packet_contract_tests;
 pub mod render_source_adapter_dispatch_tests;

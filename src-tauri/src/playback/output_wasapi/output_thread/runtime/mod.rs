@@ -6,6 +6,7 @@
 pub mod channel;
 pub mod driver;
 pub mod event_buffer;
+pub mod inmemory_render_source;
 pub mod pump;
 pub mod queue;
 pub mod render_source_adapter;
