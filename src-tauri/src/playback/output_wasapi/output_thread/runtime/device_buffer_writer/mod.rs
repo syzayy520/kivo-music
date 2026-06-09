@@ -22,7 +22,8 @@ pub use sink_integration::{
     invoke_test_flush, invoke_test_write, write_all_packets,
 };
 pub use wasapi_writer::{
-    WasapiDeviceBufferWriter, WasapiDeviceBufferWriterConfig, WasapiDeviceBufferWriterState,
+    BufferLifecycle, WasapiDeviceBufferWriter, WasapiDeviceBufferWriterConfig,
+    WasapiDeviceBufferWriterState,
 };
 pub use write_error::WriteError;
 pub use write_request::WriteRequest;

@@ -3,7 +3,8 @@
 //! Tests for DeviceBufferWriter trait using a mock implementation.
 
 use crate::playback::output_wasapi::output_thread::runtime::device_buffer_writer::{
-    DeviceBufferWriter, WriteError, WriteRequest, WriteResult, WriterCursor, WriterState,
+    BufferLifecycle, DeviceBufferWriter, WriteError, WriteRequest, WriteResult, WriterCursor,
+    WriterState,
 };
 
 struct MockWriter {
@@ -70,7 +71,17 @@ impl DeviceBufferWriter for MockWriter {
     }
 
     fn snapshot(&self) -> WriterState {
+        let lifecycle = if self.closed {
+            BufferLifecycle::Closed
+        } else if self.buffered_frames == 0 {
+            BufferLifecycle::Empty
+        } else if self.buffered_frames >= self.buffer_capacity {
+            BufferLifecycle::Full
+        } else {
+            BufferLifecycle::Partial
+        };
         WriterState {
+            lifecycle,
             requests_accepted: self.requests.len() as u64,
             writes_completed: self.writes_completed,
             frames_written: self.frames_written,
@@ -89,7 +100,17 @@ impl DeviceBufferWriter for MockWriter {
     }
 
     fn cursor(&self) -> WriterCursor {
+        let lifecycle = if self.closed {
+            BufferLifecycle::Closed
+        } else if self.buffered_frames == 0 {
+            BufferLifecycle::Empty
+        } else if self.buffered_frames >= self.buffer_capacity {
+            BufferLifecycle::Full
+        } else {
+            BufferLifecycle::Partial
+        };
         WriterCursor {
+            lifecycle,
             write_position: self.frames_written,
             buffer_capacity: self.buffer_capacity,
             buffered_frames: self.buffered_frames,

@@ -3,12 +3,16 @@
 //! Pure data snapshot of a device buffer writer's state.
 //! No behavior, no IO, no actual buffer.
 
+use super::wasapi_writer::BufferLifecycle;
+
 /// Snapshot of a device buffer writer's current state.
 ///
 /// Captures the state of a device buffer writer at a point in time.
 /// Pure metadata — no actual audio data or buffer manipulation.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
 pub struct WriterState {
+    /// Current buffer lifecycle phase.
+    pub lifecycle: BufferLifecycle,
     /// Total requests accepted by the writer.
     pub requests_accepted: u64,
     /// Total writes completed successfully.

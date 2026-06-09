@@ -3,6 +3,7 @@
 //! Pure-memory DeviceBufferWriter implementation for testing device buffer boundary.
 //! Uses a frame counter to simulate buffer. No WASAPI, no IO.
 
+use super::wasapi_writer::BufferLifecycle;
 use super::{
     frame_bytes, DeviceBufferWriter, WriteError, WriteRequest, WriteResult, WriterCursor,
     WriterState,
@@ -133,7 +134,17 @@ impl DeviceBufferWriter for FakeDeviceBufferWriter {
     }
 
     fn snapshot(&self) -> WriterState {
+        let lifecycle = if self.closed {
+            BufferLifecycle::Closed
+        } else if self.buffered_frames == 0 {
+            BufferLifecycle::Empty
+        } else if self.buffered_frames >= self.capacity {
+            BufferLifecycle::Full
+        } else {
+            BufferLifecycle::Partial
+        };
         WriterState {
+            lifecycle,
             requests_accepted: self.requests_accepted,
             writes_completed: self.writes_completed,
             frames_written: self.frames_written,
@@ -152,7 +163,17 @@ impl DeviceBufferWriter for FakeDeviceBufferWriter {
     }
 
     fn cursor(&self) -> WriterCursor {
+        let lifecycle = if self.closed {
+            BufferLifecycle::Closed
+        } else if self.buffered_frames == 0 {
+            BufferLifecycle::Empty
+        } else if self.buffered_frames >= self.capacity {
+            BufferLifecycle::Full
+        } else {
+            BufferLifecycle::Partial
+        };
         WriterCursor {
+            lifecycle,
             write_position: self.frames_written,
             buffer_capacity: self.capacity,
             buffered_frames: self.buffered_frames,

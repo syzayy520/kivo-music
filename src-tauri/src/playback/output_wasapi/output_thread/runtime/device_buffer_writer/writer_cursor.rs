@@ -3,12 +3,16 @@
 //! Tracks the write position within a device buffer writer stream.
 //! Pure data — no behavior, no IO, no actual buffer.
 
+use super::wasapi_writer::BufferLifecycle;
+
 /// Write position within a device buffer writer stream.
 ///
 /// Tracks the current write position and buffer state for a device buffer writer.
 /// Pure metadata — no actual audio data or buffer manipulation.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
 pub struct WriterCursor {
+    /// Current buffer lifecycle phase.
+    pub lifecycle: BufferLifecycle,
     /// Current write position in frames from buffer start.
     pub write_position: u64,
     /// Total buffer capacity in frames.

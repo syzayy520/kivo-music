@@ -164,6 +164,7 @@ impl DeviceBufferWriter for WasapiDeviceBufferWriter {
 
     fn snapshot(&self) -> WriterState {
         WriterState {
+            lifecycle: self.state.lifecycle,
             requests_accepted: self.state.write_attempts,
             writes_completed: self.state.write_attempts - self.state.would_block_count,
             frames_written: self.state.frames_written,
@@ -183,6 +184,7 @@ impl DeviceBufferWriter for WasapiDeviceBufferWriter {
 
     fn cursor(&self) -> WriterCursor {
         WriterCursor {
+            lifecycle: self.state.lifecycle,
             write_position: self.state.write_head,
             buffer_capacity: self.config.capacity_frames,
             buffered_frames: self.state.buffer_fill_frames,
