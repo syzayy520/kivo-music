@@ -11,6 +11,7 @@ pub mod pump;
 pub mod queue;
 pub mod render_source_adapter;
 pub mod render_source_mapping;
+pub mod ring_buffer_render_source;
 pub mod sink_dispatch;
 pub mod sink_mapping;
 pub mod snapshot_update;
