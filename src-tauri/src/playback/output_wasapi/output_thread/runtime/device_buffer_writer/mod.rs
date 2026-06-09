@@ -6,6 +6,7 @@
 
 pub mod fake_writer;
 pub mod sink_integration;
+pub mod wasapi_writer;
 pub mod write_error;
 pub mod write_request;
 pub mod write_result;
@@ -18,6 +19,9 @@ pub use fake_writer::FakeDeviceBufferWriter;
 pub use sink_integration::{
     create_empty_writer, create_test_writer, create_writer_with_format, invoke_test_close,
     invoke_test_flush, invoke_test_write, write_all_packets,
+};
+pub use wasapi_writer::{
+    WasapiDeviceBufferWriter, WasapiDeviceBufferWriterConfig, WasapiDeviceBufferWriterState,
 };
 pub use write_error::WriteError;
 pub use write_request::WriteRequest;
