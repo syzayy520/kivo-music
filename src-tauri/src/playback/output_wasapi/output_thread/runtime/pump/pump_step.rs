@@ -3,6 +3,7 @@
 //! Single-step runtime pump that chains thread loop, driver, and sink dispatch
 //! into one pure-memory operation.
 
+use crate::playback::output_wasapi::output_thread::event::ThreadEvent;
 use crate::playback::output_wasapi::output_thread::runtime::driver::driver_result::DriverResult;
 use crate::playback::output_wasapi::output_thread::runtime::pump::pump_context::PumpContext;
 use crate::playback::output_wasapi::output_thread::runtime::pump::pump_outcome::PumpOutcome;
@@ -14,6 +15,7 @@ use crate::playback::output_wasapi::output_thread::sink_boundary::consumer::cons
 /// Execute a single runtime pump tick.
 ///
 /// Chains: LoopStep → DriverResult → SinkRequest → SinkConsumer → PumpOutcome.
+/// Collects events from the loop step.
 /// Pure memory — no I/O, no thread spawn, no device access.
 pub fn execute_pump_tick<C: SinkConsumer>(ctx: &PumpContext, consumer: &mut C) -> PumpOutcome {
     let loop_outcome =
@@ -38,10 +40,13 @@ pub fn execute_pump_tick<C: SinkConsumer>(ctx: &PumpContext, consumer: &mut C) -
         None
     };
 
+    let events: Vec<ThreadEvent> = loop_outcome.event.into_iter().collect();
+
     PumpOutcome::from_loop_result(
         loop_outcome.result,
         loop_outcome.state,
         driver_result,
         dispatch_outcome,
+        events,
     )
 }

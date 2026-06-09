@@ -1,11 +1,9 @@
-//! Runtime pump step tests.
-//!
-//! Tests for execute_pump_tick covering idle, command, shutdown,
-//! terminal state, and sink dispatch paths.
+//! Runtime pump step tests for execute_pump_tick.
 
 use crate::playback::output_wasapi::output_thread::command::{
     DrainCommand, ShutdownCommand, ThreadCommand,
 };
+use crate::playback::output_wasapi::output_thread::event::ThreadEvent;
 use crate::playback::output_wasapi::output_thread::runtime::pump::pump_outcome::PumpOutcome;
 use crate::playback::output_wasapi::output_thread::runtime::pump::pump_step::execute_pump_tick;
 use crate::playback::output_wasapi::output_thread::runtime::pump::PumpContext;
@@ -64,8 +62,6 @@ impl SinkConsumer for FakeConsumer {
     fn reset(&mut self) {}
 }
 
-// ── Idle step tests ─────────────────────────────────────────────────────
-
 #[test]
 fn pump_tick_idle_returns_continue_and_dispatches() {
     let ctx = PumpContext::with_defaults(LoopState::new(), None);
@@ -104,8 +100,6 @@ fn pump_tick_idle_not_ready_consumer_skips() {
     }
 }
 
-// ── Command step tests ──────────────────────────────────────────────────
-
 #[test]
 fn pump_tick_command_returns_continue() {
     let state = LoopState::with_lifecycle(OutputThreadLifecycle::Running);
@@ -117,8 +111,6 @@ fn pump_tick_command_returns_continue() {
         PumpOutcome::Continue { .. }
     ));
 }
-
-// ── Shutdown step tests ─────────────────────────────────────────────────
 
 #[test]
 fn pump_tick_shutdown_transitions_to_stopping_and_dispatches() {
@@ -138,8 +130,6 @@ fn pump_tick_shutdown_transitions_to_stopping_and_dispatches() {
     }
 }
 
-// ── Terminal state tests ────────────────────────────────────────────────
-
 #[test]
 fn pump_tick_terminal_state_returns_stopped() {
     let state = LoopState::with_lifecycle(OutputThreadLifecycle::Stopped);
@@ -150,8 +140,6 @@ fn pump_tick_terminal_state_returns_stopped() {
         PumpOutcome::Stopped { .. }
     ));
 }
-
-// ── Sink dispatch tests ─────────────────────────────────────────────────
 
 #[test]
 fn pump_tick_dispatch_error_returns_continue_with_none() {
@@ -166,8 +154,6 @@ fn pump_tick_dispatch_error_returns_continue_with_none() {
         _ => panic!("expected Continue"),
     }
 }
-
-// ── State update tests ──────────────────────────────────────────────────
 
 #[test]
 fn pump_tick_idle_increments_idle_count() {
@@ -196,4 +182,30 @@ fn pump_tick_command_resets_idle_count() {
         }
         _ => panic!("expected Continue"),
     }
+}
+
+#[test]
+fn pump_tick_command_produces_state_changed_event() {
+    let state = LoopState::with_lifecycle(OutputThreadLifecycle::Running);
+    let ctx =
+        PumpContext::with_defaults(state, Some(ThreadCommand::Drain(DrainCommand::default())));
+    let mut consumer = FakeConsumer::ready_with_success();
+    let outcome = execute_pump_tick(&ctx, &mut consumer);
+    let events = outcome.events();
+    assert_eq!(events.len(), 1);
+    assert!(matches!(
+        events[0],
+        ThreadEvent::StateChanged {
+            from: OutputThreadLifecycle::Running,
+            ..
+        }
+    ));
+}
+
+#[test]
+fn pump_tick_idle_produces_no_events() {
+    let ctx = PumpContext::with_defaults(LoopState::new(), None);
+    let mut consumer = FakeConsumer::ready_with_success();
+    let outcome = execute_pump_tick(&ctx, &mut consumer);
+    assert!(outcome.events().is_empty());
 }
