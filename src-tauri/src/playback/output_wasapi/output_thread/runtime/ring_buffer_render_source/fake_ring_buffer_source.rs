@@ -187,7 +187,7 @@ impl RenderSource for FakeRingBufferSource {
     }
 
     fn cursor(&self) -> SourceCursor {
-        let total_frames: u64 = self.buffer.iter().map(|p| p.frame_count).sum();
+        let total_frames: u64 = self.buffer[self.read_index..].iter().map(|p| p.frame_count).sum();
         SourceCursor {
             position_frames: self.position_frames,
             total_frames,
