@@ -1,4 +1,4 @@
-//! Type-level tests for WASAPI device buffer writer scaffold.
+//! Type-level tests for WASAPI device buffer writer.
 //!
 //! Verifies:
 //! 1. WasapiDeviceBufferWriter can be constructed
@@ -36,6 +36,12 @@ fn wasapi_writer_initial_state_is_well_defined() {
     let writer = WasapiDeviceBufferWriter::with_defaults();
     let state = writer.internal_state();
     assert!(!state.is_closed());
+    assert_eq!(state.buffer_fill_frames(), 0);
+    assert_eq!(state.frames_written(), 0);
+    assert_eq!(state.bytes_written(), 0);
+    assert_eq!(state.write_attempts(), 0);
+    assert_eq!(state.would_block_count(), 0);
+    assert_eq!(state.flush_count(), 0);
     assert_eq!(state.last_result(), &WriteResult::Noop);
 }
 
@@ -59,7 +65,7 @@ fn wasapi_writer_implements_device_buffer_writer_trait() {
     assert!(writer.is_ready());
     assert!(!writer.is_closed());
 
-    // process_request returns Noop (scaffold)
+    // process_request returns Noop
     let result = writer.process_request(&WriteRequest::Noop).unwrap();
     assert_eq!(result, WriteResult::Noop);
 
@@ -72,7 +78,7 @@ fn wasapi_writer_implements_device_buffer_writer_trait() {
 fn wasapi_writer_close_behavior_is_safe() {
     let mut writer = WasapiDeviceBufferWriter::with_defaults();
 
-    // Close returns Ok
+    // Close returns Ok(Noop)
     let result = writer.process_request(&WriteRequest::Close).unwrap();
     assert_eq!(result, WriteResult::Noop);
 
@@ -119,17 +125,7 @@ fn wasapi_writer_reset_restores_state() {
 }
 
 #[test]
-fn wasapi_writer_write_packet_returns_noop_scaffold() {
-    let mut writer = WasapiDeviceBufferWriter::with_defaults();
-
-    let result = writer
-        .process_request(&WriteRequest::write_packet(256, 44100, 2))
-        .unwrap();
-    assert_eq!(result, WriteResult::Noop);
-}
-
-#[test]
-fn wasapi_writer_flush_returns_noop_scaffold() {
+fn wasapi_writer_flush_returns_noop() {
     let mut writer = WasapiDeviceBufferWriter::with_defaults();
 
     let result = writer.process_request(&WriteRequest::Flush).unwrap();
