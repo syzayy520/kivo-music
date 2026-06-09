@@ -6,6 +6,7 @@
 pub mod channel;
 pub mod driver;
 pub mod event_buffer;
+pub mod pump;
 pub mod queue;
 pub mod sink_dispatch;
 pub mod sink_mapping;
