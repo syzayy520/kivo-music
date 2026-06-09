@@ -8,6 +8,7 @@ pub mod driver;
 pub mod event_buffer;
 pub mod pump;
 pub mod queue;
+pub mod render_source_mapping;
 pub mod sink_dispatch;
 pub mod sink_mapping;
 pub mod snapshot_update;
