@@ -2,7 +2,12 @@
 
 pub mod command_contract_tests;
 pub mod config_contract_tests;
+pub mod device_buffer_writer_cursor_state_tests;
+pub mod device_buffer_writer_sink_integration_tests;
+pub mod device_buffer_writer_trait_tests;
+pub mod device_buffer_writer_type_tests;
 pub mod event_contract_tests;
+pub mod fake_device_buffer_writer_tests;
 pub mod fake_ring_buffer_source_tests;
 pub mod inmemory_render_source_adapter_tests;
 pub mod inmemory_render_source_contract_tests;

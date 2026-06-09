@@ -4,6 +4,7 @@
 //! ThreadHandle, ThreadSnapshot, and ThreadControl. No actual thread spawning.
 
 pub mod channel;
+pub mod device_buffer_writer;
 pub mod driver;
 pub mod event_buffer;
 pub mod inmemory_render_source;
