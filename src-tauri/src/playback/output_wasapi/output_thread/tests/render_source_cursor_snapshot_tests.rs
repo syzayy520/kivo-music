@@ -5,8 +5,8 @@
 use crate::playback::output_wasapi::output_thread::sink_boundary::render_source::{
     SourceCursor, SourceSnapshot,
 };
-
-// ===== SourceCursor tests =====
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 
 #[test]
 fn source_cursor_default() {
@@ -18,129 +18,95 @@ fn source_cursor_default() {
 }
 
 #[test]
-fn source_cursor_equality() {
-    let a = SourceCursor {
+fn source_cursor_equality_and_inequality() {
+    let base = SourceCursor {
         position_frames: 100,
         total_frames: 1000,
         sample_rate: 44100,
         channel_count: 2,
     };
-    let b = SourceCursor {
+    let same = SourceCursor {
         position_frames: 100,
         total_frames: 1000,
         sample_rate: 44100,
         channel_count: 2,
     };
-    assert_eq!(a, b);
-}
-
-#[test]
-fn source_cursor_inequality() {
-    let a = SourceCursor {
-        position_frames: 100,
-        total_frames: 1000,
-        sample_rate: 44100,
-        channel_count: 2,
-    };
-    let b = SourceCursor {
+    let diff = SourceCursor {
         position_frames: 200,
         total_frames: 1000,
         sample_rate: 44100,
         channel_count: 2,
     };
-    assert_ne!(a, b);
+    assert_eq!(base, same);
+    assert_ne!(base, diff);
 }
 
 #[test]
-fn source_cursor_is_at_end_unknown_total() {
-    let cursor = SourceCursor {
+fn source_cursor_is_at_end_all_cases() {
+    let unknown = SourceCursor {
         position_frames: 100,
         total_frames: 0,
         sample_rate: 44100,
         channel_count: 2,
     };
-    assert!(!cursor.is_at_end());
-}
-
-#[test]
-fn source_cursor_is_at_end_not_reached() {
-    let cursor = SourceCursor {
+    assert!(!unknown.is_at_end());
+    let not_reached = SourceCursor {
         position_frames: 500,
         total_frames: 1000,
         sample_rate: 44100,
         channel_count: 2,
     };
-    assert!(!cursor.is_at_end());
-}
-
-#[test]
-fn source_cursor_is_at_end_reached() {
-    let cursor = SourceCursor {
+    assert!(!not_reached.is_at_end());
+    let reached = SourceCursor {
         position_frames: 1000,
         total_frames: 1000,
         sample_rate: 44100,
         channel_count: 2,
     };
-    assert!(cursor.is_at_end());
-}
-
-#[test]
-fn source_cursor_is_at_end_past_end() {
-    let cursor = SourceCursor {
+    assert!(reached.is_at_end());
+    let past_end = SourceCursor {
         position_frames: 1500,
         total_frames: 1000,
         sample_rate: 44100,
         channel_count: 2,
     };
-    assert!(cursor.is_at_end());
+    assert!(past_end.is_at_end());
 }
 
 #[test]
-fn source_cursor_frames_remaining_unknown() {
-    let cursor = SourceCursor {
+fn source_cursor_frames_remaining_all_cases() {
+    let unknown = SourceCursor {
         position_frames: 100,
         total_frames: 0,
         sample_rate: 44100,
         channel_count: 2,
     };
-    assert_eq!(cursor.frames_remaining(), None);
-}
-
-#[test]
-fn source_cursor_frames_remaining_known() {
-    let cursor = SourceCursor {
+    assert_eq!(unknown.frames_remaining(), None);
+    let known = SourceCursor {
         position_frames: 400,
         total_frames: 1000,
         sample_rate: 44100,
         channel_count: 2,
     };
-    assert_eq!(cursor.frames_remaining(), Some(600));
-}
-
-#[test]
-fn source_cursor_frames_remaining_at_end() {
-    let cursor = SourceCursor {
+    assert_eq!(known.frames_remaining(), Some(600));
+    let at_end = SourceCursor {
         position_frames: 1000,
         total_frames: 1000,
         sample_rate: 44100,
         channel_count: 2,
     };
-    assert_eq!(cursor.frames_remaining(), Some(0));
-}
-
-#[test]
-fn source_cursor_frames_remaining_saturating() {
-    let cursor = SourceCursor {
+    assert_eq!(at_end.frames_remaining(), Some(0));
+    let saturating = SourceCursor {
         position_frames: 1500,
         total_frames: 1000,
         sample_rate: 44100,
         channel_count: 2,
     };
-    assert_eq!(cursor.frames_remaining(), Some(0));
+    assert_eq!(saturating.frames_remaining(), Some(0));
 }
 
 #[test]
-fn source_cursor_clone() {
+fn source_cursor_clone_and_debug() {
     let original = SourceCursor {
         position_frames: 100,
         total_frames: 1000,
@@ -149,16 +115,9 @@ fn source_cursor_clone() {
     };
     let cloned = original.clone();
     assert_eq!(original, cloned);
-}
-
-#[test]
-fn source_cursor_debug() {
-    let cursor = SourceCursor::default();
-    let debug = format!("{:?}", cursor);
+    let debug = format!("{:?}", SourceCursor::default());
     assert!(debug.contains("SourceCursor"));
 }
-
-// ===== SourceSnapshot tests =====
 
 #[test]
 fn source_snapshot_default() {
@@ -173,7 +132,7 @@ fn source_snapshot_default() {
 }
 
 #[test]
-fn source_snapshot_equality() {
+fn source_snapshot_equality_and_inequality() {
     let a = SourceSnapshot {
         requests_accepted: 10,
         packets_provided: 8,
@@ -193,23 +152,15 @@ fn source_snapshot_equality() {
         is_ready: true,
     };
     assert_eq!(a, b);
-}
-
-#[test]
-fn source_snapshot_inequality() {
-    let a = SourceSnapshot {
-        requests_accepted: 10,
-        ..Default::default()
-    };
-    let b = SourceSnapshot {
+    let c = SourceSnapshot {
         requests_accepted: 20,
         ..Default::default()
     };
-    assert_ne!(a, b);
+    assert_ne!(a, c);
 }
 
 #[test]
-fn source_snapshot_clone() {
+fn source_snapshot_clone_and_debug() {
     let original = SourceSnapshot {
         requests_accepted: 10,
         packets_provided: 8,
@@ -221,19 +172,12 @@ fn source_snapshot_clone() {
     };
     let cloned = original.clone();
     assert_eq!(original, cloned);
-}
-
-#[test]
-fn source_snapshot_debug() {
-    let snap = SourceSnapshot::default();
-    let debug = format!("{:?}", snap);
+    let debug = format!("{:?}", SourceSnapshot::default());
     assert!(debug.contains("SourceSnapshot"));
 }
 
 #[test]
 fn source_snapshot_hash_consistency() {
-    use std::collections::hash_map::DefaultHasher;
-    use std::hash::{Hash, Hasher};
     let a = SourceSnapshot {
         requests_accepted: 10,
         ..Default::default()

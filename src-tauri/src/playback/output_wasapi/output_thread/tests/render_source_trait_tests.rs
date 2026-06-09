@@ -6,8 +6,6 @@ use crate::playback::output_wasapi::output_thread::sink_boundary::render_source:
     RenderSource, RenderSourceError, RenderSourceRequest, RenderSourceResult, SourceCursor,
     SourceSnapshot,
 };
-
-/// A mock source for testing the trait.
 struct MockSource {
     ready: bool,
     exhausted: bool,
@@ -18,7 +16,6 @@ struct MockSource {
     position: u64,
     total_frames: u64,
 }
-
 impl MockSource {
     fn new() -> Self {
         Self {
@@ -33,7 +30,6 @@ impl MockSource {
         }
     }
 }
-
 impl RenderSource for MockSource {
     fn process_request(
         &mut self,
@@ -62,12 +58,9 @@ impl RenderSource for MockSource {
                     bytes_read: bytes,
                 })
             }
-            RenderSourceRequest::Peek => Ok(RenderSourceResult::Noop),
-            RenderSourceRequest::Flush => Ok(RenderSourceResult::Noop),
-            RenderSourceRequest::Noop => Ok(RenderSourceResult::Noop),
+            _ => Ok(RenderSourceResult::Noop),
         }
     }
-
     fn snapshot(&self) -> SourceSnapshot {
         SourceSnapshot {
             requests_accepted: self.requests.len() as u64,
@@ -79,7 +72,6 @@ impl RenderSource for MockSource {
             is_ready: self.ready,
         }
     }
-
     fn cursor(&self) -> SourceCursor {
         SourceCursor {
             position_frames: self.position,
@@ -88,15 +80,12 @@ impl RenderSource for MockSource {
             channel_count: 2,
         }
     }
-
     fn is_ready(&self) -> bool {
         self.ready
     }
-
     fn is_exhausted(&self) -> bool {
         self.exhausted
     }
-
     fn reset(&mut self) {
         self.requests.clear();
         self.packets_provided = 0;
@@ -108,17 +97,16 @@ impl RenderSource for MockSource {
     }
 }
 
-// ===== MockSource trait tests =====
-
 #[test]
 fn mock_source_process_read_packet() {
     let mut source = MockSource::new();
-    let request = RenderSourceRequest::ReadPacket {
-        frame_count: 1024,
-        sample_rate: 44100,
-        channel_count: 2,
-    };
-    let result = source.process_request(&request).unwrap();
+    let result = source
+        .process_request(&RenderSourceRequest::ReadPacket {
+            frame_count: 1024,
+            sample_rate: 44100,
+            channel_count: 2,
+        })
+        .unwrap();
     match result {
         RenderSourceResult::Packet {
             frames_provided,
@@ -132,54 +120,41 @@ fn mock_source_process_read_packet() {
 }
 
 #[test]
-fn mock_source_process_peek() {
+fn mock_source_process_peek_flush_noop() {
     let mut source = MockSource::new();
-    let request = RenderSourceRequest::Peek;
-    let result = source.process_request(&request).unwrap();
-    assert_eq!(result, RenderSourceResult::Noop);
-}
-
-#[test]
-fn mock_source_process_flush() {
-    let mut source = MockSource::new();
-    let request = RenderSourceRequest::Flush;
-    let result = source.process_request(&request).unwrap();
-    assert_eq!(result, RenderSourceResult::Noop);
-}
-
-#[test]
-fn mock_source_process_noop() {
-    let mut source = MockSource::new();
-    let request = RenderSourceRequest::Noop;
-    let result = source.process_request(&request).unwrap();
-    assert_eq!(result, RenderSourceResult::Noop);
+    assert_eq!(
+        source.process_request(&RenderSourceRequest::Peek).unwrap(),
+        RenderSourceResult::Noop
+    );
+    assert_eq!(
+        source.process_request(&RenderSourceRequest::Flush).unwrap(),
+        RenderSourceResult::Noop
+    );
+    assert_eq!(
+        source.process_request(&RenderSourceRequest::Noop).unwrap(),
+        RenderSourceResult::Noop
+    );
 }
 
 #[test]
 fn mock_source_exhausted_returns_error() {
     let mut source = MockSource::new();
     source.exhausted = true;
-    let request = RenderSourceRequest::ReadPacket {
-        frame_count: 1024,
-        sample_rate: 44100,
-        channel_count: 2,
-    };
-    let err = source.process_request(&request).unwrap_err();
+    let err = source
+        .process_request(&RenderSourceRequest::ReadPacket {
+            frame_count: 1024,
+            sample_rate: 44100,
+            channel_count: 2,
+        })
+        .unwrap_err();
     assert_eq!(err, RenderSourceError::SourceExhausted);
 }
 
 #[test]
-fn mock_source_snapshot_tracks_requests() {
+fn mock_source_snapshot_tracks_requests_and_frames() {
     let mut source = MockSource::new();
     source.process_request(&RenderSourceRequest::Noop).unwrap();
     source.process_request(&RenderSourceRequest::Flush).unwrap();
-    let snap = source.snapshot();
-    assert_eq!(snap.requests_accepted, 2);
-}
-
-#[test]
-fn mock_source_snapshot_tracks_frames() {
-    let mut source = MockSource::new();
     source
         .process_request(&RenderSourceRequest::ReadPacket {
             frame_count: 512,
@@ -188,6 +163,7 @@ fn mock_source_snapshot_tracks_frames() {
         })
         .unwrap();
     let snap = source.snapshot();
+    assert_eq!(snap.requests_accepted, 3);
     assert_eq!(snap.frames_read, 512);
     assert_eq!(snap.packets_provided, 1);
 }
@@ -202,19 +178,13 @@ fn mock_source_cursor_advances() {
             channel_count: 2,
         })
         .unwrap();
-    let cursor = source.cursor();
-    assert_eq!(cursor.position_frames, 256);
+    assert_eq!(source.cursor().position_frames, 256);
 }
 
 #[test]
-fn mock_source_is_ready() {
+fn mock_source_ready_and_not_exhausted_initially() {
     let source = MockSource::new();
     assert!(source.is_ready());
-}
-
-#[test]
-fn mock_source_is_not_exhausted_initially() {
-    let source = MockSource::new();
     assert!(!source.is_exhausted());
 }
 
@@ -251,6 +221,8 @@ fn mock_source_reset() {
 
 #[test]
 fn mock_source_display_error() {
-    let err = RenderSourceError::SourceExhausted;
-    assert_eq!(format!("{}", err), "source exhausted");
+    assert_eq!(
+        format!("{}", RenderSourceError::SourceExhausted),
+        "source exhausted"
+    );
 }
