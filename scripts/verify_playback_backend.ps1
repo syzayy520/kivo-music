@@ -135,7 +135,7 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
 # === 1. STATE GATE ===
-Write-Host "[1/5] State Gate" -ForegroundColor Yellow
+Write-Host "[1/6] State Gate" -ForegroundColor Yellow
 
 # 1.1 git status
 $status = git status --short --branch --untracked-files=all 2>&1
@@ -196,7 +196,7 @@ Write-Host ""
 
 # === 2. RUST GATE ===
 if (-not $SkipCargo) {
-    Write-Host "[2/5] Rust Gate" -ForegroundColor Yellow
+    Write-Host "[2/6] Rust Gate" -ForegroundColor Yellow
 
     # 2.1 cargo fmt
     Invoke-GateCommand -Gate "Rust Gate" -Command "cargo fmt --manifest-path src-tauri/Cargo.toml -- --check" -Proves "Code formatting clean" -FailClassification "STOP_VALIDATION_FAILED"
@@ -234,14 +234,14 @@ if (-not $SkipCargo) {
     }
 }
 else {
-    Write-Host "[2/5] Rust Gate (SKIPPED)" -ForegroundColor DarkGray
+    Write-Host "[2/6] Rust Gate (SKIPPED)" -ForegroundColor DarkGray
     Add-Evidence -Gate "Rust Gate" -Command "all cargo (skipped)" -ExitCode "SKIP" -Required "advisory" -Summary "SkipCargo=true: all cargo commands skipped" -Proves "User requested skip"
 }
 
 Write-Host ""
 
 # === 3. DIFF GATE ===
-Write-Host "[3/5] Diff Gate" -ForegroundColor Yellow
+Write-Host "[3/6] Diff Gate" -ForegroundColor Yellow
 
 Invoke-GateCommand -Gate "Diff Gate" -Command "git diff --name-status --no-renames" -Required "required" -Proves "Tracked file changes" -FailClassification "STOP_VALIDATION_FAILED"
 Invoke-GateCommand -Gate "Diff Gate" -Command "git diff --stat --no-renames" -Required "advisory" -Proves "Tracked change stats" -FailClassification "STOP_VALIDATION_FAILED"
@@ -252,8 +252,156 @@ Invoke-GateCommand -Gate "Diff Gate" -Command "git diff --cached --check" -Requi
 
 Write-Host ""
 
-# === 4. TEMPORARY ARTIFACT GATE ===
-Write-Host "[4/5] Temporary Artifact Gate" -ForegroundColor Yellow
+# === 4. FOLDER FAN-OUT GATE ===
+Write-Host "[4/6] Folder Fan-out Gate" -ForegroundColor Yellow
+
+$fanoutBlocked = $false
+$fanoutWarnings = @()
+$fanoutLegacyViolations = @()
+
+# --- Detect touched/new folders from this commit ---
+$touchedDirs = @{}
+try {
+    $touchedFiles = git diff --name-only HEAD^ HEAD 2>&1 | Where-Object { $_.Trim() -ne "" }
+    foreach ($f in $touchedFiles) {
+        $parentDir = Split-Path $f -Parent
+        if ($parentDir -and (Test-Path $parentDir)) {
+            $touchedDirs[$parentDir] = $true
+        }
+    }
+} catch {
+    # If HEAD^ doesn't exist (initial commit), treat all as legacy
+    Add-Evidence -Gate "Fan-out Gate" -Command "git diff HEAD^ HEAD" -ExitCode "SKIP" -Required "advisory" -Summary "Cannot diff HEAD^ (initial commit?), treating all as legacy" -Proves "Touched folder detection"
+}
+
+$touchedCount = $touchedDirs.Count
+Write-Host "  Touched folders detected: $touchedCount" -ForegroundColor DarkGray
+Add-Evidence -Gate "Fan-out Gate" -Command "git diff HEAD^ HEAD" -ExitCode "0" -Required "advisory" -Summary "Touched folders: $touchedCount" -Proves "Touched folder detection"
+
+# --- Directories to scan ---
+$checkDirs = @(
+    "src-tauri/src/playback/output_wasapi/output_thread/runtime",
+    "src-tauri/src/playback/output_wasapi/output_thread/runtime/device_buffer_writer",
+    "src-tauri/src/playback/output_wasapi/output_thread/sink_boundary",
+    "src-tauri/src/playback/output_wasapi/output_thread/tests"
+)
+
+function Test-FanoutDir {
+    param(
+        [string]$Dir,
+        [bool]$IsTouched
+    )
+
+    if (-not (Test-Path $Dir)) { return }
+
+    $allFiles = Get-ChildItem -Path $Dir -File -Filter "*.rs" -ErrorAction SilentlyContinue
+    if (-not $allFiles) { return }
+
+    $businessFiles = $allFiles | Where-Object { $_.Name -ne "mod.rs" }
+    $hasModRs = ($allFiles | Where-Object { $_.Name -eq "mod.rs" }).Count -gt 0
+    $isTestsDir = $Dir -match '[/\\]tests$'
+
+    $fileList = ($allFiles | ForEach-Object { $_.Name }) -join ", "
+    $bizCount = $businessFiles.Count
+    $totalCount = $allFiles.Count
+
+    $enforceLabel = if ($IsTouched) { "TOUCHED (enforced)" } else { "legacy (report-only)" }
+
+    if ($isTestsDir) {
+        # Test directory: target <= 10
+        if ($bizCount -gt 10) {
+            if ($IsTouched) {
+                Add-Evidence -Gate "Fan-out Gate" -Command "folder scan: $Dir" -ExitCode "1" -Required "required" -Summary "BLOCKED_FOLDER_FANOUT_GATE: touched tests dir has $bizCount test files (target=10). Files: $fileList" -Proves "Test folder fan-out (TOUCHED, HARD BLOCK)"
+                Write-Host "  BLOCKED: $Dir has $bizCount test files (target=10) — TOUCHED folder" -ForegroundColor Red
+                $script:fanoutBlocked = $true
+            } else {
+                Add-Evidence -Gate "Fan-out Gate" -Command "folder scan: $Dir" -ExitCode "0" -Required "advisory" -Summary "LEGACY_VIOLATION: tests dir has $bizCount test files (target=10). Files: $fileList" -Proves "Test folder fan-out (legacy, report-only)"
+                Write-Host "  LEGACY VIOLATION: $Dir has $bizCount test files (target=10) — report-only" -ForegroundColor Yellow
+                $script:fanoutLegacyViolations += "$Dir ($bizCount files, target=10)"
+            }
+        } else {
+            Add-Evidence -Gate "Fan-out Gate" -Command "folder scan: $Dir" -ExitCode "0" -Required "required" -Summary "PASS: tests dir has $bizCount files (target=10). $enforceLabel. Files: $fileList" -Proves "Test folder fan-out"
+            Write-Host "  PASS: $Dir has $bizCount test files ($enforceLabel)" -ForegroundColor Green
+        }
+    } else {
+        # Production directory: target <= 7, hard limit <= 9
+        if ($bizCount -gt 9) {
+            if ($IsTouched) {
+                Add-Evidence -Gate "Fan-out Gate" -Command "folder scan: $Dir" -ExitCode "1" -Required "required" -Summary "BLOCKED_FOLDER_FANOUT_GATE: touched dir has $bizCount business files (hard limit=9). Files: $fileList" -Proves "Production folder fan-out (TOUCHED, HARD BLOCK)"
+                Write-Host "  BLOCKED: $Dir has $bizCount business files (hard limit=9) — TOUCHED folder" -ForegroundColor Red
+                $script:fanoutBlocked = $true
+            } else {
+                Add-Evidence -Gate "Fan-out Gate" -Command "folder scan: $Dir" -ExitCode "0" -Required "advisory" -Summary "LEGACY_VIOLATION: $Dir has $bizCount business files (hard limit=9). Files: $fileList" -Proves "Production folder fan-out (legacy, report-only)"
+                Write-Host "  LEGACY VIOLATION: $Dir has $bizCount business files (hard limit=9) — report-only" -ForegroundColor Yellow
+                $script:fanoutLegacyViolations += "$Dir ($bizCount files, hard limit=9)"
+            }
+        } elseif ($bizCount -gt 7) {
+            if ($IsTouched) {
+                Add-Evidence -Gate "Fan-out Gate" -Command "folder scan: $Dir" -ExitCode "0" -Required "advisory" -Summary "WARNING: touched dir has $bizCount business files (target=7). Files: $fileList" -Proves "Production folder fan-out (TOUCHED, warning)"
+                Write-Host "  WARNING: $Dir has $bizCount business files (target=7) — TOUCHED folder" -ForegroundColor Yellow
+            } else {
+                Add-Evidence -Gate "Fan-out Gate" -Command "folder scan: $Dir" -ExitCode "0" -Required "advisory" -Summary "WARNING: $Dir has $bizCount business files (target=7). Files: $fileList" -Proves "Production folder fan-out"
+                Write-Host "  WARNING: $Dir has $bizCount business files (target=7)" -ForegroundColor Yellow
+            }
+            $script:fanoutWarnings += "$Dir ($bizCount files)"
+        } else {
+            Add-Evidence -Gate "Fan-out Gate" -Command "folder scan: $Dir" -ExitCode "0" -Required "required" -Summary "PASS: $Dir has $bizCount business files (target=7). $enforceLabel. Files: $fileList" -Proves "Production folder fan-out"
+            Write-Host "  PASS: $Dir has $bizCount business files ($enforceLabel)" -ForegroundColor Green
+        }
+    }
+
+    # Forbidden bucket file check (always HARD BLOCK regardless of touched/legacy)
+    $forbiddenNames = @("helper.rs", "utils.rs", "glue.rs", "facade.rs", "bridge.rs", "common.rs", "misc.rs")
+    foreach ($f in $businessFiles) {
+        if ($f.Name -in $forbiddenNames) {
+            Add-Evidence -Gate "Fan-out Gate" -Command "forbidden name: $($f.FullName)" -ExitCode "1" -Required "required" -Summary "STOP_GENEALOGY_VIOLATION: forbidden bucket file $($f.Name) in $Dir" -Proves "No forbidden bucket files"
+            Write-Host "  STOP_GENEALOGY_VIOLATION: forbidden file $($f.Name) in $Dir" -ForegroundColor Red
+            $script:fanoutBlocked = $true
+        }
+    }
+
+    # mod.rs size check (warn if > 50 lines)
+    if ($hasModRs) {
+        $modPath = Join-Path $Dir "mod.rs"
+        $modLines = (cmd /c "find /c /v `"`" `"$modPath`"" 2>&1 | Select-String '(\d+)$' | ForEach-Object { $_.Matches[0].Groups[1].Value })
+        if ($modLines -gt 50) {
+            Add-Evidence -Gate "Fan-out Gate" -Command "mod.rs size: $modPath" -ExitCode "0" -Required "advisory" -Summary "WARNING: $modPath has $modLines lines (expected < 50). May contain logic." -Proves "mod.rs declaration only"
+            Write-Host "  WARNING: $modPath has $modLines lines (may contain logic)" -ForegroundColor Yellow
+            $script:fanoutWarnings += "$modPath ($modLines lines)"
+        }
+    }
+}
+
+foreach ($dir in $checkDirs) {
+    $isTouched = $touchedDirs.ContainsKey($dir)
+    Test-FanoutDir -Dir $dir -IsTouched $isTouched
+}
+
+# --- Overall result ---
+if ($fanoutBlocked) {
+    Add-Evidence -Gate "Fan-out Gate" -Command "overall" -ExitCode "1" -Required "required" -Summary "BLOCKED_FOLDER_FANOUT_GATE: touched folder(s) violate fan-out limits" -Proves "Folder fan-out compliance"
+    Write-Host "  RESULT: BLOCKED_FOLDER_FANOUT_GATE" -ForegroundColor Red
+    $script:failed = $true
+    $script:failedGate = "Fan-out Gate"
+    $script:failedCommand = "touched folder fan-out violation"
+} elseif ($fanoutLegacyViolations.Count -gt 0) {
+    $violationList = $fanoutLegacyViolations -join "; "
+    Add-Evidence -Gate "Fan-out Gate" -Command "overall" -ExitCode "0" -Required "advisory" -Summary "LEGACY_VIOLATIONS_DETECTED (report-only): $violationList" -Proves "Folder fan-out compliance"
+    Write-Host "  RESULT: LEGACY VIOLATIONS DETECTED (report-only, $($fanoutLegacyViolations.Count) legacy violation(s))" -ForegroundColor Yellow
+    Write-Host "  NOTE: Legacy violations require dedicated restructuring tickets. Not blocked." -ForegroundColor DarkYellow
+} elseif ($fanoutWarnings.Count -gt 0) {
+    $warnList = $fanoutWarnings -join "; "
+    Add-Evidence -Gate "Fan-out Gate" -Command "overall" -ExitCode "0" -Required "advisory" -Summary "PASS with warnings: $warnList" -Proves "Folder fan-out compliance"
+    Write-Host "  RESULT: PASS (with $($fanoutWarnings.Count) warning(s))" -ForegroundColor Yellow
+} else {
+    Add-Evidence -Gate "Fan-out Gate" -Command "overall" -ExitCode "0" -Required "required" -Summary "PASS: all folders within fan-out limits" -Proves "Folder fan-out compliance"
+    Write-Host "  RESULT: PASS" -ForegroundColor Green
+}
+
+Write-Host ""
+
+# === 5. TEMPORARY ARTIFACT GATE ===
+Write-Host "[5/6] Temporary Artifact Gate" -ForegroundColor Yellow
 
 $tempPatterns = @("*.tmp", "*.log", "*.bak", "*.orig", "*.rej", "*.wav", "*.flac", "*.mp3")
 $tempFound = @()
@@ -281,7 +429,7 @@ else {
 Write-Host ""
 
 # === 5. FINAL SUMMARY ===
-Write-Host "[5/5] Final Summary" -ForegroundColor Yellow
+Write-Host "[6/6] Final Summary" -ForegroundColor Yellow
 Write-Host ""
 
 Write-Host "=== EVIDENCE LEDGER ===" -ForegroundColor Cyan

@@ -121,6 +121,53 @@ client/mod.rs
 
 The `playback/` root directory must not contain flat implementation files (only `mod.rs` and subdirectories). All implementation must live in family subdirectories.
 
+### Folder Fan-out Gate (硬闸门)
+
+Every directory must respect fan-out limits. This is not a suggestion — it is an iron gate.
+
+#### Production Code Directories
+
+| Metric | Target | Hard Limit |
+|--------|--------|------------|
+| Business files (excluding `mod.rs`) | <= 7 | <= 9 |
+| Total files (including `mod.rs`) | <= 10 | — |
+
+- **If hard limit exceeded**: MUST split into subfamily directories. STOP implementation.
+- **If target exceeded but under hard limit**: SHOULD split. Report as WARNING.
+- **If responsibilities are clearly separable**: MUST split proactively, even if under target.
+
+#### Test Directories
+
+| Metric | Target |
+|--------|--------|
+| Test files per `tests/` layer | <= 10 |
+
+- **If target exceeded**: MUST split into subfamily test directories (e.g., `tests/device_buffer_writer/**`, `tests/ring_buffer_render_source/**`).
+- **New tests should prefer subfamily directories** over flat `tests/` root.
+
+#### Subfamily Split Check
+
+A directory MUST be split into subfamilies if:
+
+1. File count exceeds hard limit (> 9 business files)
+2. File count exceeds target (> 7 business files) AND responsibilities are clearly separable
+3. Responsibilities are clearly separable EVEN IF under target
+
+**Forbidden excuse**: "These files are all single-responsibility" does NOT justify keeping 10+ files in one directory.
+
+#### Report Requirement
+
+Every task report MUST include a `## Genealogy / Folder Fan-out Gate` section with:
+
+1. **Touched folders**: path, current sibling file count, sibling file responsibility list
+2. **Folder fan-out result**: PASS / WARNING / BLOCKED for each touched folder
+3. **Subfamily split check**: exists-but-not-split violations
+4. **Single responsibility check**: multi-concept file violations
+5. **mod.rs check**: declaration/re-export only, no logic
+6. **Forbidden bucket file check**: helper.rs / utils.rs / glue.rs / facade.rs / bridge.rs / common.rs / misc.rs
+
+**Violation classification**: `BLOCKED_FOLDER_FANOUT_GATE` or `STOPPED_GENEALOGY_VIOLATION`
+
 ### cfg(test) Seam Policy
 
 - Production code must NOT contain `#[cfg(test)]` blocks

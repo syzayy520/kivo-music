@@ -70,6 +70,15 @@ A STOP is an immediate halt to ticket execution. When a STOP triggers, CodeBuddy
 - **Report requirement**: Show file path, expected location, and violated rule
 - **Suggested follow-up**: `BLOCKED_HUMAN_DECISION` — requires genealogy-compliant restructure
 
+### 7b. BLOCKED_FOLDER_FANOUT_GATE
+
+- **Trigger**: A directory exceeds the Folder Fan-out Gate limits (production: > 9 business files; tests: > 10 test files) OR a directory has clearly separable subfamilies that were not split
+- **Required action**: Report the specific directory, its file count, and the violation type
+- **Forbidden action**: Do NOT continue implementation. Do NOT commit business code. Do NOT push. Do NOT use fmt/check/clippy/test passage to mask structural violations.
+- **Report requirement**: Show touched folder paths, sibling file counts, fan-out result, and subfamily split assessment
+- **Priority**: This rule has higher priority than "feature completion". Structural non-compliance means the feature cannot be accepted even if tests pass.
+- **Suggested follow-up**: `BLOCKED_HUMAN_DECISION` — requires genealogy-compliant directory restructure
+
 ### 8. STOP_VALIDATION_FAILED
 
 - **Trigger**: A required validation gate fails (cargo fmt, check, clippy, test)

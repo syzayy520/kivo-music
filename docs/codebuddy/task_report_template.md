@@ -11,12 +11,13 @@ Every CodeBuddy ticket execution must produce a final report using this template
 2. Files Changed
 3. Content Summary Per File
 4. Self Audit
-5. Side Effect / Temporary Artifact Gate
-6. Commit Result
-7. Final Clean Gate
-8. Primary Final Classification
-9. Recommended Follow-up
-10. Push Status
+5. Genealogy / Folder Fan-out Gate
+6. Side Effect / Temporary Artifact Gate
+7. Commit Result
+8. Final Clean Gate
+9. Primary Final Classification
+10. Recommended Follow-up
+11. Push Status
 ```
 
 ## Section Requirements
@@ -60,7 +61,49 @@ For each changed file, provide:
 | Evidence captured (4 items) | PASS/FAIL |
 | Genealogy (4 items) | PASS/FAIL |
 
-### 5. Side Effect / Temporary Artifact Gate
+### 5. Genealogy / Folder Fan-out Gate
+
+**Required for every task. No exceptions.**
+
+#### 5.1 Touched Folders
+
+| Folder Path | Sibling File Count | Sibling Files |
+|-------------|-------------------|---------------|
+| (path) | (count) | (list) |
+
+#### 5.2 Folder Fan-out Result
+
+| Folder | Business Files | Hard Limit (<=9) | Target (<=7) | Total w/ mod.rs | Result |
+|--------|---------------|------------------|--------------|-----------------|--------|
+| (path) | (count) | PASS/BLOCKED | PASS/WARN | (count) | PASS/WARN/BLOCKED |
+
+#### 5.3 Subfamily Split Check
+
+| Folder | Can Split? | Should Split? | Violation? |
+|--------|-----------|---------------|------------|
+| (path) | YES/NO | YES/NO | YES/NO |
+
+#### 5.4 Single Responsibility Check
+
+| File | Responsibility Count | Violation? |
+|------|---------------------|------------|
+| (path) | (count) | YES/NO |
+
+#### 5.5 mod.rs Check
+
+| File | Contains Logic? | Violation? |
+|------|----------------|------------|
+| (path) | YES/NO | YES/NO |
+
+#### 5.6 Forbidden Bucket File Check
+
+| File | Forbidden Name? | Violation? |
+|------|----------------|------------|
+| (path) | YES/NO | YES/NO |
+
+**If any violation**: Final Classification must be `BLOCKED_FOLDER_FANOUT_GATE` or `STOPPED_GENEALOGY_VIOLATION`. Do NOT continue implementation. Do NOT use test passage to mask structural violations.
+
+### 6. Side Effect / Temporary Artifact Gate
 
 | Check | Result |
 |-------|--------|
@@ -70,7 +113,7 @@ For each changed file, provide:
 
 If unexpected files found: STOP_SIDE_EFFECT, report paths.
 
-### 6. Commit Result
+### 7. Commit Result
 
 | Item | Value |
 |------|-------|
@@ -79,7 +122,7 @@ If unexpected files found: STOP_SIDE_EFFECT, report paths.
 | Commit message | (message or N/A) |
 | Files in commit | (list or N/A) |
 
-### 7. Final Clean Gate
+### 8. Final Clean Gate
 
 | Check | Expected | Actual | Status |
 |-------|----------|--------|--------|
@@ -88,7 +131,7 @@ If unexpected files found: STOP_SIDE_EFFECT, report paths.
 | Remote HEAD | (expected) | (from git ls-remote) | PASS/FAIL |
 | HEAD after commit | (new hash) | (from git rev-parse) | PASS/FAIL |
 
-### 8. Primary Final Classification
+### 9. Primary Final Classification
 
 Format: `<ticket-id> <classification>`
 
@@ -99,6 +142,8 @@ Format: `<ticket-id> <classification>`
 - `BLOCKED_BASE_GATE` — stopped at base gate
 - `BLOCKED_SCOPE_EXPANSION` — stopped due to scope expansion
 - `BLOCKED_SIDE_EFFECT` — stopped due to unexpected side effects
+- `BLOCKED_FOLDER_FANOUT_GATE` — stopped due to folder fan-out violation
+- `STOPPED_GENEALOGY_VIOLATION` — stopped due to genealogy violation
 - `VALIDATION_FAILED_NO_COMMIT` — validation failed, no commit made
 
 **Rules**:
@@ -106,7 +151,7 @@ Format: `<ticket-id> <classification>`
 - Must not conflate with follow-up recommendation
 - Must not describe expected future state
 
-### 9. Recommended Follow-up
+### 10. Recommended Follow-up
 
 Format: `<classification>`
 
@@ -123,7 +168,7 @@ Format: `<classification>`
 - CodeBuddy must NOT execute follow-up without user instruction
 - Must list specific ticket IDs if known
 
-### 10. Push Status
+### 11. Push Status
 
 ```
 Push Status = no push

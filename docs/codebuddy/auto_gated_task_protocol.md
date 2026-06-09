@@ -184,9 +184,12 @@ See `validation_matrix.md` for gate selection by ticket type.
 - Side effects documented
 - Evidence captured
 - Line counts verified
+- **Folder Fan-out Gate** (see `kivo_backend_genealogy_checklist.md` — Folder Fan-out Gate section)
 
 **STOP conditions**:
 - STOP_AUDIT_FAILURE
+- BLOCKED_FOLDER_FANOUT_GATE
+- STOP_GENEALOGY_VIOLATION
 
 ### Phase 7: Commit / No Commit Decision
 
