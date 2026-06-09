@@ -10,6 +10,7 @@ pub mod runtime_contract_tests;
 pub mod runtime_driver_contract_tests;
 pub mod runtime_driver_step_behavior_tests;
 pub mod runtime_event_buffer_tests;
+pub mod runtime_pump_step_tests;
 pub mod runtime_pump_type_tests;
 pub mod runtime_queue_contract_tests;
 pub mod runtime_sink_mapping_tests;

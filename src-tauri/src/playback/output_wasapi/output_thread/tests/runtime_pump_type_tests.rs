@@ -5,9 +5,7 @@
 use crate::playback::output_wasapi::output_thread::runtime::driver::driver_result::DriverResult;
 use crate::playback::output_wasapi::output_thread::runtime::pump::pump_context::PumpConfig;
 use crate::playback::output_wasapi::output_thread::runtime::pump::pump_outcome::PumpOutcome as PO;
-use crate::playback::output_wasapi::output_thread::runtime::pump::{
-    PumpContext, PumpError, PumpOutcome,
-};
+use crate::playback::output_wasapi::output_thread::runtime::pump::{PumpContext, PumpError};
 use crate::playback::output_wasapi::output_thread::runtime::sink_dispatch::dispatch_outcome::DispatchOutcome;
 use crate::playback::output_wasapi::output_thread::runtime::thread_loop::loop_result::LoopResult;
 use crate::playback::output_wasapi::output_thread::runtime::thread_loop::loop_state::LoopState;
