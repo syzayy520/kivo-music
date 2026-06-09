@@ -8,5 +8,5 @@ pub mod state;
 pub mod writer;
 
 pub use config::WasapiDeviceBufferWriterConfig;
-pub use state::WasapiDeviceBufferWriterState;
+pub use state::{BufferLifecycle, WasapiDeviceBufferWriterState};
 pub use writer::WasapiDeviceBufferWriter;

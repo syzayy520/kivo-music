@@ -5,12 +5,48 @@
 
 use super::super::{WriteResult, WriterCursor};
 
+/// Buffer lifecycle state.
+///
+/// Tracks the current phase of the buffer lifecycle.
+/// No real WASAPI resources — pure state machine.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
+pub enum BufferLifecycle {
+    /// Buffer is empty (no frames buffered).
+    #[default]
+    Empty,
+    /// Buffer has some frames but is not full.
+    Partial,
+    /// Buffer is at capacity.
+    Full,
+    /// Buffer writer has been closed.
+    Closed,
+}
+
+impl BufferLifecycle {
+    /// Returns true if the buffer can accept more frames.
+    pub fn can_accept_frames(&self) -> bool {
+        matches!(self, Self::Empty | Self::Partial)
+    }
+
+    /// Returns true if the buffer is closed.
+    pub fn is_closed(&self) -> bool {
+        matches!(self, Self::Closed)
+    }
+
+    /// Returns true if the buffer is at capacity.
+    pub fn is_full(&self) -> bool {
+        matches!(self, Self::Full)
+    }
+}
+
 /// Internal state of a WASAPI device buffer writer.
 ///
 /// Tracks runtime placeholder state for simulated buffer behavior.
 /// No real WASAPI resources or runtime state are held.
 #[derive(Debug, Clone)]
 pub struct WasapiDeviceBufferWriterState {
+    /// Current buffer lifecycle phase.
+    pub lifecycle: BufferLifecycle,
     /// Whether the writer has been closed.
     pub is_closed: bool,
     /// Simulated buffer fill in frames.
@@ -29,6 +65,10 @@ pub struct WasapiDeviceBufferWriterState {
     pub write_head: u64,
     /// Number of times the circular buffer has wrapped.
     pub wrap_count: u64,
+    /// Current consecutive would-block streak.
+    pub consecutive_would_blocks: u64,
+    /// Maximum consecutive would-block streak observed.
+    pub max_consecutive_would_blocks: u64,
     /// Last cursor snapshot.
     pub last_cursor: WriterCursor,
     /// Last result produced.
@@ -39,6 +79,7 @@ impl WasapiDeviceBufferWriterState {
     /// Creates a new initial state.
     pub fn new() -> Self {
         Self {
+            lifecycle: BufferLifecycle::Empty,
             is_closed: false,
             buffer_fill_frames: 0,
             frames_written: 0,
@@ -48,14 +89,34 @@ impl WasapiDeviceBufferWriterState {
             flush_count: 0,
             write_head: 0,
             wrap_count: 0,
+            consecutive_would_blocks: 0,
+            max_consecutive_would_blocks: 0,
             last_cursor: WriterCursor::default(),
             last_result: WriteResult::Noop,
         }
     }
 
+    /// Returns the current buffer lifecycle phase.
+    pub fn lifecycle(&self) -> BufferLifecycle {
+        self.lifecycle
+    }
+
     /// Returns true if the writer is closed.
     pub fn is_closed(&self) -> bool {
         self.is_closed
+    }
+
+    /// Updates the lifecycle state based on current buffer fill and capacity.
+    pub fn update_lifecycle(&mut self, capacity_frames: u64) {
+        if self.is_closed {
+            self.lifecycle = BufferLifecycle::Closed;
+        } else if self.buffer_fill_frames == 0 {
+            self.lifecycle = BufferLifecycle::Empty;
+        } else if self.buffer_fill_frames >= capacity_frames {
+            self.lifecycle = BufferLifecycle::Full;
+        } else {
+            self.lifecycle = BufferLifecycle::Partial;
+        }
     }
 
     /// Returns the current simulated buffer fill in frames.
@@ -96,6 +157,16 @@ impl WasapiDeviceBufferWriterState {
     /// Returns the number of times the circular buffer has wrapped.
     pub fn wrap_count(&self) -> u64 {
         self.wrap_count
+    }
+
+    /// Returns the current consecutive would-block count.
+    pub fn consecutive_would_blocks(&self) -> u64 {
+        self.consecutive_would_blocks
+    }
+
+    /// Returns the maximum consecutive would-block count observed.
+    pub fn max_consecutive_would_blocks(&self) -> u64 {
+        self.max_consecutive_would_blocks
     }
 
     /// Returns the last cursor snapshot.

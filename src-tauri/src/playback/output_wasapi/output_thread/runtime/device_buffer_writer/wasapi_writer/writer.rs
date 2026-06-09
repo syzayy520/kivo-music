@@ -45,13 +45,39 @@ impl WasapiDeviceBufferWriter {
         &self.state
     }
 
+    /// Validates WritePacket request parameters.
+    fn validate_write_packet(
+        &self,
+        frame_count: u64,
+        sample_rate: u32,
+        channel_count: u16,
+    ) -> Result<(), WriteError> {
+        if frame_count == 0 {
+            return Err(WriteError::InvalidRequest {
+                reason: "frame_count must be > 0".to_string(),
+            });
+        }
+        if channel_count == 0 {
+            return Err(WriteError::InvalidRequest {
+                reason: "channel_count must be > 0".to_string(),
+            });
+        }
+        if sample_rate == 0 {
+            return Err(WriteError::InvalidRequest {
+                reason: "sample_rate must be > 0".to_string(),
+            });
+        }
+        Ok(())
+    }
+
     /// Processes a WritePacket request with simulated buffer behavior.
     fn process_write_packet(
         &mut self,
         frame_count: u64,
-        _sample_rate: u32,
+        sample_rate: u32,
         channel_count: u16,
     ) -> Result<WriteResult, WriteError> {
+        self.validate_write_packet(frame_count, sample_rate, channel_count)?;
         self.state.write_attempts += 1;
 
         // Check simulated buffer capacity
@@ -61,6 +87,10 @@ impl WasapiDeviceBufferWriter {
             .saturating_sub(self.state.buffer_fill_frames);
         if frame_count > free_frames {
             self.state.would_block_count += 1;
+            self.state.consecutive_would_blocks += 1;
+            if self.state.consecutive_would_blocks > self.state.max_consecutive_would_blocks {
+                self.state.max_consecutive_would_blocks = self.state.consecutive_would_blocks;
+            }
             let result = WriteResult::WouldBlock;
             self.state.last_result = result.clone();
             return Ok(result);
@@ -71,9 +101,13 @@ impl WasapiDeviceBufferWriter {
                 description: "device buffer packet byte count overflow".to_string(),
             })?;
 
+        // Reset consecutive would-block counter on successful write
+        self.state.consecutive_would_blocks = 0;
+
         self.state.buffer_fill_frames += frame_count;
         self.state.frames_written += frame_count;
         self.state.bytes_written += bytes_written;
+        self.state.update_lifecycle(self.config.capacity_frames);
 
         // Update circular buffer position
         let new_write_head = self.state.write_head + frame_count;
@@ -108,12 +142,14 @@ impl DeviceBufferWriter for WasapiDeviceBufferWriter {
             WriteRequest::Flush => {
                 self.state.buffer_fill_frames = 0;
                 self.state.flush_count += 1;
+                self.state.update_lifecycle(self.config.capacity_frames);
                 let result = WriteResult::Noop;
                 self.state.last_result = result.clone();
                 Ok(result)
             }
             WriteRequest::Close => {
                 self.state.is_closed = true;
+                self.state.update_lifecycle(self.config.capacity_frames);
                 let result = WriteResult::Noop;
                 self.state.last_result = result.clone();
                 Ok(result)
@@ -140,6 +176,8 @@ impl DeviceBufferWriter for WasapiDeviceBufferWriter {
             buffer_wrap_count: self.state.wrap_count,
             would_block_count: self.state.would_block_count,
             flush_count: self.state.flush_count,
+            consecutive_would_blocks: self.state.consecutive_would_blocks,
+            max_consecutive_would_blocks: self.state.max_consecutive_would_blocks,
         }
     }
 

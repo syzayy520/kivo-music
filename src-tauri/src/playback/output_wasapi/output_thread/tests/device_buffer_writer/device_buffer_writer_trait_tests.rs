@@ -83,6 +83,8 @@ impl DeviceBufferWriter for MockWriter {
             buffer_wrap_count: 0,
             would_block_count: 0,
             flush_count: 0,
+            consecutive_would_blocks: 0,
+            max_consecutive_would_blocks: 0,
         }
     }
 

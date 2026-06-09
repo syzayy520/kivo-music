@@ -146,6 +146,8 @@ impl DeviceBufferWriter for FakeDeviceBufferWriter {
             buffer_wrap_count: self.wrap_count,
             would_block_count: self.would_block_count,
             flush_count: self.flush_count,
+            consecutive_would_blocks: 0,
+            max_consecutive_would_blocks: 0,
         }
     }
 

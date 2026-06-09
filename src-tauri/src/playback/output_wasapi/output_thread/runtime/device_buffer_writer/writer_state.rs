@@ -33,6 +33,10 @@ pub struct WriterState {
     pub would_block_count: u64,
     /// Total flush operations performed.
     pub flush_count: u64,
+    /// Current consecutive would-block streak.
+    pub consecutive_would_blocks: u64,
+    /// Maximum consecutive would-block streak observed.
+    pub max_consecutive_would_blocks: u64,
 }
 
 impl WriterState {
@@ -72,5 +76,20 @@ impl WriterState {
     /// Returns true if any errors have occurred.
     pub fn has_errors(&self) -> bool {
         self.errors > 0
+    }
+
+    /// Returns true if the writer is currently in a would-block streak.
+    pub fn is_stalled(&self) -> bool {
+        self.consecutive_would_blocks > 0
+    }
+
+    /// Returns the current consecutive would-block count.
+    pub fn consecutive_would_blocks(&self) -> u64 {
+        self.consecutive_would_blocks
+    }
+
+    /// Returns the maximum consecutive would-block count observed.
+    pub fn max_consecutive_would_blocks(&self) -> u64 {
+        self.max_consecutive_would_blocks
     }
 }

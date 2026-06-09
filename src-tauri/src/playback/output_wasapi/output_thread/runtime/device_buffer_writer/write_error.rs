@@ -38,6 +38,11 @@ pub enum WriteError {
         /// Error description.
         description: String,
     },
+    /// Invalid request parameters.
+    InvalidRequest {
+        /// Reason for rejection.
+        reason: String,
+    },
 }
 
 impl std::fmt::Display for WriteError {
@@ -67,6 +72,9 @@ impl std::fmt::Display for WriteError {
             }
             Self::Internal { description } => {
                 write!(f, "device buffer internal error: {}", description)
+            }
+            Self::InvalidRequest { reason } => {
+                write!(f, "device buffer invalid request: {}", reason)
             }
         }
     }
@@ -101,5 +109,10 @@ impl WriteError {
     /// Returns true if this is a write failed error.
     pub fn is_write_failed(&self) -> bool {
         matches!(self, Self::WriteFailed { .. })
+    }
+
+    /// Returns true if this is an invalid request error.
+    pub fn is_invalid_request(&self) -> bool {
+        matches!(self, Self::InvalidRequest { .. })
     }
 }
