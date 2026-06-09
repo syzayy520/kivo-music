@@ -6,6 +6,7 @@ pub mod event_contract_tests;
 pub mod render_packet_audio_tests;
 pub mod render_packet_contract_tests;
 pub mod render_source_contract_tests;
+pub mod render_source_cursor_snapshot_tests;
 pub mod runtime_channel_contract_tests;
 pub mod runtime_contract_tests;
 pub mod runtime_driver_contract_tests;
