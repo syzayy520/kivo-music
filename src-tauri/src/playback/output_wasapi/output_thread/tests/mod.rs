@@ -21,6 +21,7 @@ pub mod render_source_cursor_snapshot_tests;
 pub mod render_source_mapping_tests;
 pub mod render_source_trait_tests;
 pub mod ring_buffer_read_result_error_tests;
+pub mod ring_buffer_render_source_adapter_tests;
 pub mod ring_buffer_render_source_type_tests;
 pub mod runtime_channel_contract_tests;
 pub mod runtime_contract_tests;
