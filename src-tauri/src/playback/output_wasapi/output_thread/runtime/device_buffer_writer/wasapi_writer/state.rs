@@ -69,6 +69,10 @@ pub struct WasapiDeviceBufferWriterState {
     pub consecutive_would_blocks: u64,
     /// Maximum consecutive would-block streak observed.
     pub max_consecutive_would_blocks: u64,
+    /// Current consecutive successful write streak.
+    pub write_streak: u64,
+    /// Maximum consecutive successful write streak observed.
+    pub max_write_streak: u64,
     /// Last cursor snapshot.
     pub last_cursor: WriterCursor,
     /// Last result produced.
@@ -91,6 +95,8 @@ impl WasapiDeviceBufferWriterState {
             wrap_count: 0,
             consecutive_would_blocks: 0,
             max_consecutive_would_blocks: 0,
+            write_streak: 0,
+            max_write_streak: 0,
             last_cursor: WriterCursor::default(),
             last_result: WriteResult::Noop,
         }
@@ -167,6 +173,16 @@ impl WasapiDeviceBufferWriterState {
     /// Returns the maximum consecutive would-block count observed.
     pub fn max_consecutive_would_blocks(&self) -> u64 {
         self.max_consecutive_would_blocks
+    }
+
+    /// Returns the current consecutive successful write streak.
+    pub fn write_streak(&self) -> u64 {
+        self.write_streak
+    }
+
+    /// Returns the maximum consecutive successful write streak observed.
+    pub fn max_write_streak(&self) -> u64 {
+        self.max_write_streak
     }
 
     /// Returns the last cursor snapshot.

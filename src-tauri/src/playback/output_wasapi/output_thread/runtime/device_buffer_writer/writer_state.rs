@@ -41,6 +41,10 @@ pub struct WriterState {
     pub consecutive_would_blocks: u64,
     /// Maximum consecutive would-block streak observed.
     pub max_consecutive_would_blocks: u64,
+    /// Current consecutive successful write streak.
+    pub write_streak: u64,
+    /// Maximum consecutive successful write streak observed.
+    pub max_write_streak: u64,
 }
 
 impl WriterState {
@@ -95,5 +99,46 @@ impl WriterState {
     /// Returns the maximum consecutive would-block count observed.
     pub fn max_consecutive_would_blocks(&self) -> u64 {
         self.max_consecutive_would_blocks
+    }
+
+    /// Returns the current consecutive successful write streak.
+    pub fn write_streak(&self) -> u64 {
+        self.write_streak
+    }
+
+    /// Returns the maximum consecutive successful write streak observed.
+    pub fn max_write_streak(&self) -> u64 {
+        self.max_write_streak
+    }
+
+    /// Returns true if the writer is in a healthy state.
+    ///
+    /// A writer is healthy when:
+    /// - No errors have occurred
+    /// - Not currently stalled (no consecutive WouldBlock)
+    /// - Not closed
+    pub fn is_healthy(&self) -> bool {
+        !self.has_errors() && !self.is_stalled() && !self.is_closed
+    }
+
+    /// Returns a list of health warning strings.
+    ///
+    /// Each warning describes a condition that may indicate a problem.
+    /// Returns an empty list if the writer is healthy.
+    pub fn health_warnings(&self) -> Vec<&'static str> {
+        let mut warnings = Vec::new();
+        if self.is_closed {
+            warnings.push("writer is closed");
+        }
+        if self.has_errors() {
+            warnings.push("errors have occurred");
+        }
+        if self.is_stalled() {
+            warnings.push("currently stalled (WouldBlock)");
+        }
+        if self.is_buffer_full() {
+            warnings.push("buffer is full");
+        }
+        warnings
     }
 }

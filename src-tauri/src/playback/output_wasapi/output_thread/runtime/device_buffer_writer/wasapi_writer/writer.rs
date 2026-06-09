@@ -91,6 +91,8 @@ impl WasapiDeviceBufferWriter {
             if self.state.consecutive_would_blocks > self.state.max_consecutive_would_blocks {
                 self.state.max_consecutive_would_blocks = self.state.consecutive_would_blocks;
             }
+            // Reset write streak on WouldBlock
+            self.state.write_streak = 0;
             let result = WriteResult::WouldBlock;
             self.state.last_result = result.clone();
             return Ok(result);
@@ -103,6 +105,12 @@ impl WasapiDeviceBufferWriter {
 
         // Reset consecutive would-block counter on successful write
         self.state.consecutive_would_blocks = 0;
+
+        // Track write streak
+        self.state.write_streak += 1;
+        if self.state.write_streak > self.state.max_write_streak {
+            self.state.max_write_streak = self.state.write_streak;
+        }
 
         self.state.buffer_fill_frames += frame_count;
         self.state.frames_written += frame_count;
@@ -142,6 +150,8 @@ impl DeviceBufferWriter for WasapiDeviceBufferWriter {
             WriteRequest::Flush => {
                 self.state.buffer_fill_frames = 0;
                 self.state.flush_count += 1;
+                // Reset stall state on flush (buffer is now empty)
+                self.state.consecutive_would_blocks = 0;
                 self.state.update_lifecycle(self.config.capacity_frames);
                 let result = WriteResult::Noop;
                 self.state.last_result = result.clone();
@@ -179,6 +189,8 @@ impl DeviceBufferWriter for WasapiDeviceBufferWriter {
             flush_count: self.state.flush_count,
             consecutive_would_blocks: self.state.consecutive_would_blocks,
             max_consecutive_would_blocks: self.state.max_consecutive_would_blocks,
+            write_streak: self.state.write_streak,
+            max_write_streak: self.state.max_write_streak,
         }
     }
 

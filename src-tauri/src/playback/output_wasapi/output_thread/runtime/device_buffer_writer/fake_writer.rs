@@ -159,6 +159,8 @@ impl DeviceBufferWriter for FakeDeviceBufferWriter {
             flush_count: self.flush_count,
             consecutive_would_blocks: 0,
             max_consecutive_would_blocks: 0,
+            write_streak: 0,
+            max_write_streak: 0,
         }
     }
 

@@ -63,4 +63,52 @@ impl WriterCursor {
     pub fn session_frames_written(&self) -> u64 {
         self.total_frames_written
     }
+
+    /// Returns the write position in seconds.
+    ///
+    /// Computed as write_position / sample_rate.
+    /// Returns 0.0 if sample_rate is 0.
+    pub fn write_position_seconds(&self) -> f64 {
+        if self.sample_rate == 0 {
+            0.0
+        } else {
+            self.write_position as f64 / self.sample_rate as f64
+        }
+    }
+
+    /// Returns the buffered duration in seconds.
+    ///
+    /// Computed as buffered_frames / sample_rate.
+    /// Returns 0.0 if sample_rate is 0.
+    pub fn buffered_seconds(&self) -> f64 {
+        if self.sample_rate == 0 {
+            0.0
+        } else {
+            self.buffered_frames as f64 / self.sample_rate as f64
+        }
+    }
+
+    /// Returns the total buffer capacity in seconds.
+    ///
+    /// Computed as buffer_capacity / sample_rate.
+    /// Returns 0.0 if sample_rate is 0.
+    pub fn capacity_seconds(&self) -> f64 {
+        if self.sample_rate == 0 {
+            0.0
+        } else {
+            self.buffer_capacity as f64 / self.sample_rate as f64
+        }
+    }
+
+    /// Returns the total frames written in seconds.
+    ///
+    /// Computed as total_frames_written / sample_rate.
+    /// Returns 0.0 if sample_rate is 0.
+    pub fn total_written_seconds(&self) -> f64 {
+        if self.sample_rate == 0 {
+            0.0
+        } else {
+            self.total_frames_written as f64 / self.sample_rate as f64
+        }
+    }
 }
