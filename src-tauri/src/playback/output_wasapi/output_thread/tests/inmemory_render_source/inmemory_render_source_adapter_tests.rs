@@ -1,21 +1,21 @@
-//! Ring buffer render source adapter integration tests.
+//! In-memory render source adapter integration tests.
 //!
-//! Tests for FakeRingBufferSource integration with adapter functions.
+//! Tests for InMemoryRenderSource integration with adapter functions.
 
-use crate::playback::output_wasapi::output_thread::runtime::render_source_adapter::AdapterOutcome;
-use crate::playback::output_wasapi::output_thread::runtime::ring_buffer_render_source::{
+use crate::playback::output_wasapi::output_thread::runtime::inmemory_render_source::{
     create_empty_source, create_source_with_eos, create_test_source, execute_test_dispatch,
     invoke_test_flush, invoke_test_peek, invoke_test_read, read_all_packets,
 };
+use crate::playback::output_wasapi::output_thread::runtime::render_source_adapter::AdapterOutcome;
 use crate::playback::output_wasapi::output_thread::sink_boundary::render_source::RenderSource;
 use crate::playback::output_wasapi::output_thread::sink_boundary::SinkResult;
-use crate::playback::output_wasapi::output_thread::tests::render_source_adapter_helpers::MockSinkConsumer;
+use crate::playback::output_wasapi::output_thread::tests::render_source_adapter::render_source_adapter_helpers::MockSinkConsumer;
 
 #[test]
 fn create_test_source_helper() {
     let source = create_test_source(3, 1024);
     assert!(source.is_ready());
-    assert_eq!(source.buffer_len(), 3);
+    assert_eq!(source.queue_len(), 3);
 }
 
 #[test]
@@ -23,14 +23,14 @@ fn create_empty_source_helper() {
     let source = create_empty_source();
     assert!(source.is_ready());
     assert!(!source.is_exhausted());
-    assert_eq!(source.buffer_len(), 0);
+    assert_eq!(source.queue_len(), 0);
 }
 
 #[test]
 fn create_source_with_eos_helper() {
     let source = create_source_with_eos(2, 512);
     assert!(source.has_eos());
-    assert_eq!(source.buffer_len(), 3); // 2 normal + 1 eos
+    assert_eq!(source.queue_len(), 3); // 2 normal + 1 eos
 }
 
 #[test]
@@ -74,11 +74,11 @@ fn adapter_invoke_test_peek_empty() {
 #[test]
 fn adapter_invoke_test_flush() {
     let mut source = create_test_source(3, 100);
-    assert_eq!(source.buffer_len(), 3);
+    assert_eq!(source.queue_len(), 3);
 
     let outcome = invoke_test_flush(&mut source).unwrap();
     assert_eq!(outcome, AdapterOutcome::Noop);
-    assert_eq!(source.buffer_len(), 0);
+    assert_eq!(source.queue_len(), 0);
 }
 
 #[test]
@@ -179,7 +179,7 @@ fn adapter_source_snapshot_after_adapter_use() {
 
     invoke_test_read(&mut source, 100, 44100, 2).unwrap();
     invoke_test_read(&mut source, 100, 44100, 2).unwrap();
-    // Third read triggers exhaustion (buffer is empty).
+    // Third read triggers exhaustion (queue is empty).
     invoke_test_read(&mut source, 100, 44100, 2).unwrap();
 
     let snapshot = source.snapshot();
@@ -198,6 +198,6 @@ fn adapter_source_cursor_after_adapter_use() {
 
     let cursor = source.cursor();
     assert_eq!(cursor.position_frames, 100);
-    // total_frames from buffer sums remaining items only.
+    // total_frames from queue sums remaining items only.
     assert_eq!(cursor.total_frames, 100);
 }

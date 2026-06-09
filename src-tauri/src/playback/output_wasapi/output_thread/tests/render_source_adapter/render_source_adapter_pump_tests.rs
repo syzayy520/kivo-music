@@ -13,7 +13,7 @@ use crate::playback::output_wasapi::output_thread::sink_boundary::render_source:
     RenderSourceError, RenderSourceResult,
 };
 use crate::playback::output_wasapi::output_thread::sink_boundary::SinkResult;
-use crate::playback::output_wasapi::output_thread::tests::render_source_adapter_helpers::{
+use crate::playback::output_wasapi::output_thread::tests::render_source_adapter::render_source_adapter_helpers::{
     MockRenderSource, MockSinkConsumer,
 };
 

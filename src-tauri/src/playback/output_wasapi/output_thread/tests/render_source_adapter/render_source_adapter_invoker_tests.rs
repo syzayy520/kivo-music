@@ -8,7 +8,7 @@ use crate::playback::output_wasapi::output_thread::runtime::render_source_adapte
 use crate::playback::output_wasapi::output_thread::sink_boundary::render_source::{
     RenderSourceError, RenderSourceRequest, RenderSourceResult,
 };
-use crate::playback::output_wasapi::output_thread::tests::render_source_adapter_helpers::MockRenderSource;
+use crate::playback::output_wasapi::output_thread::tests::render_source_adapter::render_source_adapter_helpers::MockRenderSource;
 
 #[test]
 fn invoke_render_source_skipped_when_not_ready() {
