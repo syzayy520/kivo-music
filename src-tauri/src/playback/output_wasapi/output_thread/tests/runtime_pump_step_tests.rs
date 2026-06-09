@@ -208,4 +208,7 @@ fn pump_tick_idle_produces_no_events() {
     let mut consumer = FakeConsumer::ready_with_success();
     let outcome = execute_pump_tick(&ctx, &mut consumer);
     assert!(outcome.events().is_empty());
+    let snapshot = outcome.consumer_snapshot();
+    assert!(snapshot.is_some());
+    assert!(!snapshot.unwrap().is_ready);
 }

@@ -41,6 +41,7 @@ pub fn execute_pump_tick<C: SinkConsumer>(ctx: &PumpContext, consumer: &mut C) -
     };
 
     let events: Vec<ThreadEvent> = loop_outcome.event.into_iter().collect();
+    let consumer_snapshot = Some(consumer.snapshot());
 
     PumpOutcome::from_loop_result(
         loop_outcome.result,
@@ -48,5 +49,6 @@ pub fn execute_pump_tick<C: SinkConsumer>(ctx: &PumpContext, consumer: &mut C) -
         driver_result,
         dispatch_outcome,
         events,
+        consumer_snapshot,
     )
 }
