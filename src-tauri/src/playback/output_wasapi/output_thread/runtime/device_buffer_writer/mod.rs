@@ -29,5 +29,5 @@ pub use write_error::WriteError;
 pub use write_request::WriteRequest;
 pub use write_result::WriteResult;
 pub use writer_cursor::WriterCursor;
-pub use writer_state::WriterState;
+pub use writer_state::{BufferPressure, WriterState};
 pub use writer_trait::DeviceBufferWriter;
