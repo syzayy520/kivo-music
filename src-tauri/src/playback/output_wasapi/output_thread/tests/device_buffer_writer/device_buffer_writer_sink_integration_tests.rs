@@ -70,7 +70,7 @@ fn write_all_packets_helper() {
     let mut writer = create_test_writer(1000);
     let (total_frames, total_bytes) = write_all_packets(&mut writer, 100, 44100, 2);
     assert_eq!(total_frames, 1000);
-    assert_eq!(total_bytes, 1000 * 44100 * 2 * 4);
+    assert_eq!(total_bytes, 1000 * 2 * 4);
 }
 
 #[test]

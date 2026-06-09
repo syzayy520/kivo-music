@@ -5,7 +5,8 @@
 //! Simulates buffer fill / WouldBlock / Flush / Close without real device.
 
 use super::super::{
-    DeviceBufferWriter, WriteError, WriteRequest, WriteResult, WriterCursor, WriterState,
+    frame_bytes, DeviceBufferWriter, WriteError, WriteRequest, WriteResult, WriterCursor,
+    WriterState,
 };
 use super::{WasapiDeviceBufferWriterConfig, WasapiDeviceBufferWriterState};
 
@@ -48,7 +49,7 @@ impl WasapiDeviceBufferWriter {
     fn process_write_packet(
         &mut self,
         frame_count: u64,
-        sample_rate: u32,
+        _sample_rate: u32,
         channel_count: u16,
     ) -> Result<WriteResult, WriteError> {
         self.state.write_attempts += 1;
@@ -65,9 +66,10 @@ impl WasapiDeviceBufferWriter {
             return Ok(result);
         }
 
-        // Simulate successful write
-        let bytes_per_frame = sample_rate as u64 * channel_count as u64 * 4;
-        let bytes_written = frame_count * bytes_per_frame;
+        let bytes_written = frame_bytes::f32_packet_byte_count(frame_count, channel_count)
+            .ok_or_else(|| WriteError::Internal {
+                description: "device buffer packet byte count overflow".to_string(),
+            })?;
 
         self.state.buffer_fill_frames += frame_count;
         self.state.frames_written += frame_count;

@@ -5,6 +5,7 @@
 //! Device-agnostic boundary for future real WASAPI device buffer writer.
 
 pub mod fake_writer;
+pub mod frame_bytes;
 pub mod sink_integration;
 pub mod wasapi_writer;
 pub mod write_error;

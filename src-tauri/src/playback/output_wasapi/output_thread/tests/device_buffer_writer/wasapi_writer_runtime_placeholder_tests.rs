@@ -29,7 +29,7 @@ fn write_packet_returns_written_with_correct_frames() {
             bytes_written,
         } => {
             assert_eq!(frames_written, 256);
-            assert_eq!(bytes_written, 256 * 44100 * 2 * 4);
+            assert_eq!(bytes_written, 256 * 2 * 4);
         }
         other => panic!("expected Written, got {:?}", other),
     }
@@ -72,8 +72,24 @@ fn write_packet_updates_bytes_written() {
         .process_request(&WriteRequest::write_packet(256, 44100, 2))
         .unwrap();
 
-    let expected_bytes = 256 * 44100 * 2 * 4;
+    let expected_bytes = 256 * 2 * 4;
     assert_eq!(writer.internal_state().bytes_written(), expected_bytes);
+}
+
+#[test]
+fn write_packet_byte_count_does_not_include_sample_rate() {
+    let mut writer = WasapiDeviceBufferWriter::with_defaults();
+
+    let first = writer
+        .process_request(&WriteRequest::write_packet(128, 44100, 2))
+        .unwrap();
+    writer.process_request(&WriteRequest::Flush).unwrap();
+    let second = writer
+        .process_request(&WriteRequest::write_packet(128, 96000, 2))
+        .unwrap();
+
+    assert_eq!(first.bytes_written(), 1024);
+    assert_eq!(second.bytes_written(), 1024);
 }
 
 #[test]

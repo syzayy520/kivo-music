@@ -3,7 +3,10 @@
 //! Pure-memory DeviceBufferWriter implementation for testing device buffer boundary.
 //! Uses a frame counter to simulate buffer. No WASAPI, no IO.
 
-use super::{DeviceBufferWriter, WriteError, WriteRequest, WriteResult, WriterCursor, WriterState};
+use super::{
+    frame_bytes, DeviceBufferWriter, WriteError, WriteRequest, WriteResult, WriterCursor,
+    WriterState,
+};
 
 /// Fake device buffer writer for testing. Simulates buffer behavior with capacity limits.
 #[derive(Debug)]
@@ -74,7 +77,7 @@ impl FakeDeviceBufferWriter {
     fn process_write_packet(
         &mut self,
         frame_count: u64,
-        sample_rate: u32,
+        _sample_rate: u32,
         channel_count: u16,
     ) -> Result<WriteResult, WriteError> {
         if self.closed {
@@ -89,7 +92,12 @@ impl FakeDeviceBufferWriter {
             self.would_block_count += 1;
             return Err(WriteError::WouldBlock);
         }
-        let bytes = frame_count * sample_rate as u64 * channel_count as u64 * 4;
+        let bytes =
+            frame_bytes::f32_packet_byte_count(frame_count, channel_count).ok_or_else(|| {
+                WriteError::Internal {
+                    description: "device buffer packet byte count overflow".to_string(),
+                }
+            })?;
         self.writes_completed += 1;
         self.frames_written += frame_count;
         self.bytes_written += bytes;
