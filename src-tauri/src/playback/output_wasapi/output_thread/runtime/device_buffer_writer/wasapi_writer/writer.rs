@@ -75,6 +75,15 @@ impl WasapiDeviceBufferWriter {
         self.state.frames_written += frame_count;
         self.state.bytes_written += bytes_written;
 
+        // Update circular buffer position
+        let new_write_head = self.state.write_head + frame_count;
+        if new_write_head >= self.config.capacity_frames {
+            self.state.wrap_count += new_write_head / self.config.capacity_frames;
+            self.state.write_head = new_write_head % self.config.capacity_frames;
+        } else {
+            self.state.write_head = new_write_head;
+        }
+
         let result = WriteResult::Written {
             frames_written: frame_count,
             bytes_written,
@@ -128,7 +137,7 @@ impl DeviceBufferWriter for WasapiDeviceBufferWriter {
             is_ready: !self.state.is_closed,
             buffer_fill_frames: self.state.buffer_fill_frames,
             buffer_capacity_frames: self.config.capacity_frames,
-            buffer_wrap_count: 0,
+            buffer_wrap_count: self.state.wrap_count,
             would_block_count: self.state.would_block_count,
             flush_count: self.state.flush_count,
         }
@@ -136,13 +145,13 @@ impl DeviceBufferWriter for WasapiDeviceBufferWriter {
 
     fn cursor(&self) -> WriterCursor {
         WriterCursor {
-            write_position: self.state.frames_written,
+            write_position: self.state.write_head,
             buffer_capacity: self.config.capacity_frames,
             buffered_frames: self.state.buffer_fill_frames,
             sample_rate: self.config.sample_rate,
             channel_count: self.config.channels,
             total_frames_written: self.state.frames_written,
-            wrap_count: 0,
+            wrap_count: self.state.wrap_count,
         }
     }
 

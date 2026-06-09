@@ -25,6 +25,10 @@ pub struct WasapiDeviceBufferWriterState {
     pub would_block_count: u64,
     /// Total flush operations since last reset.
     pub flush_count: u64,
+    /// Current write head position in circular buffer (0..capacity-1).
+    pub write_head: u64,
+    /// Number of times the circular buffer has wrapped.
+    pub wrap_count: u64,
     /// Last cursor snapshot.
     pub last_cursor: WriterCursor,
     /// Last result produced.
@@ -42,6 +46,8 @@ impl WasapiDeviceBufferWriterState {
             write_attempts: 0,
             would_block_count: 0,
             flush_count: 0,
+            write_head: 0,
+            wrap_count: 0,
             last_cursor: WriterCursor::default(),
             last_result: WriteResult::Noop,
         }
@@ -80,6 +86,16 @@ impl WasapiDeviceBufferWriterState {
     /// Returns the total flush operations since last reset.
     pub fn flush_count(&self) -> u64 {
         self.flush_count
+    }
+
+    /// Returns the current write head position in the circular buffer.
+    pub fn write_head(&self) -> u64 {
+        self.write_head
+    }
+
+    /// Returns the number of times the circular buffer has wrapped.
+    pub fn wrap_count(&self) -> u64 {
+        self.wrap_count
     }
 
     /// Returns the last cursor snapshot.
