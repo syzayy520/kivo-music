@@ -3,6 +3,7 @@
 //! Pure-memory DeviceBufferWriter implementation for testing device buffer boundary.
 //! Uses a frame counter to simulate buffer. No WASAPI, no IO.
 
+use super::wasapi_writer::runtime_mode::{Readiness, RuntimeMode};
 use super::wasapi_writer::BufferLifecycle;
 use super::{
     frame_bytes, DeviceBufferWriter, WriteError, WriteRequest, WriteResult, WriterCursor,
@@ -161,6 +162,8 @@ impl DeviceBufferWriter for FakeDeviceBufferWriter {
             max_consecutive_would_blocks: 0,
             write_streak: 0,
             max_write_streak: 0,
+            runtime_mode: RuntimeMode::Placeholder,
+            readiness: Readiness::Ready,
         }
     }
 

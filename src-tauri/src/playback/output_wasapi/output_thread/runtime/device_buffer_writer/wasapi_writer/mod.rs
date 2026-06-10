@@ -4,9 +4,11 @@
 //! No real WASAPI calls, no COM objects, no audio data.
 
 pub mod config;
+pub mod runtime_mode;
 pub mod state;
 pub mod writer;
 
 pub use config::WasapiDeviceBufferWriterConfig;
+pub use runtime_mode::{Readiness, RuntimeKind, RuntimeMode};
 pub use state::{BufferLifecycle, WasapiDeviceBufferWriterState};
 pub use writer::WasapiDeviceBufferWriter;

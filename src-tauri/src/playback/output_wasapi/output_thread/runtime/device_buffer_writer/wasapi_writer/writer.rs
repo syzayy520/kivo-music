@@ -45,6 +45,11 @@ impl WasapiDeviceBufferWriter {
         &self.state
     }
 
+    /// Returns a mutable reference to the internal state.
+    pub fn internal_state_mut(&mut self) -> &mut WasapiDeviceBufferWriterState {
+        &mut self.state
+    }
+
     /// Validates WritePacket request parameters.
     fn validate_write_packet(
         &self,
@@ -191,6 +196,8 @@ impl DeviceBufferWriter for WasapiDeviceBufferWriter {
             max_consecutive_would_blocks: self.state.max_consecutive_would_blocks,
             write_streak: self.state.write_streak,
             max_write_streak: self.state.max_write_streak,
+            runtime_mode: self.state.runtime_mode,
+            readiness: self.state.readiness,
         }
     }
 

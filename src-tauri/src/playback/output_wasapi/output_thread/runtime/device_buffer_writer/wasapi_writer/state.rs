@@ -4,6 +4,7 @@
 //! No real WASAPI runtime state, no COM lifecycle, no device state.
 
 use super::super::{WriteResult, WriterCursor};
+use super::runtime_mode::{Readiness, RuntimeMode};
 
 /// Buffer lifecycle state.
 ///
@@ -77,6 +78,10 @@ pub struct WasapiDeviceBufferWriterState {
     pub last_cursor: WriterCursor,
     /// Last result produced.
     pub last_result: WriteResult,
+    /// Current runtime mode.
+    pub runtime_mode: RuntimeMode,
+    /// Current readiness state.
+    pub readiness: Readiness,
 }
 
 impl WasapiDeviceBufferWriterState {
@@ -99,6 +104,8 @@ impl WasapiDeviceBufferWriterState {
             max_write_streak: 0,
             last_cursor: WriterCursor::default(),
             last_result: WriteResult::Noop,
+            runtime_mode: RuntimeMode::default(),
+            readiness: Readiness::default(),
         }
     }
 
@@ -247,6 +254,41 @@ impl WasapiDeviceBufferWriterState {
     /// Returns true if all runtime invariants hold.
     pub fn invariants_hold(&self, capacity_frames: u64) -> bool {
         self.check_invariants(capacity_frames).is_ok()
+    }
+
+    /// Returns the current runtime mode.
+    pub fn runtime_mode(&self) -> RuntimeMode {
+        self.runtime_mode
+    }
+
+    /// Returns the current readiness state.
+    pub fn readiness(&self) -> Readiness {
+        self.readiness
+    }
+
+    /// Returns true if the writer is in placeholder mode.
+    pub fn is_placeholder(&self) -> bool {
+        self.runtime_mode.is_placeholder()
+    }
+
+    /// Returns true if the writer is in real runtime mode.
+    pub fn is_real_runtime(&self) -> bool {
+        self.runtime_mode.is_real()
+    }
+
+    /// Returns true if the writer is ready to accept requests.
+    pub fn is_runtime_ready(&self) -> bool {
+        self.readiness.is_ready()
+    }
+
+    /// Updates the runtime mode.
+    pub fn set_runtime_mode(&mut self, mode: RuntimeMode) {
+        self.runtime_mode = mode;
+    }
+
+    /// Updates the readiness state.
+    pub fn set_readiness(&mut self, readiness: Readiness) {
+        self.readiness = readiness;
     }
 }
 

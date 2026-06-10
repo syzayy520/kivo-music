@@ -98,6 +98,8 @@ impl DeviceBufferWriter for MockWriter {
             max_consecutive_would_blocks: 0,
             write_streak: 0,
             max_write_streak: 0,
+            runtime_mode: Default::default(),
+            readiness: Default::default(),
         }
     }
 

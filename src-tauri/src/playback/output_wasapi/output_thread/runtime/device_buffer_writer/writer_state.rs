@@ -3,6 +3,7 @@
 //! Pure data snapshot of a device buffer writer's state.
 //! No behavior, no IO, no actual buffer.
 
+use super::wasapi_writer::runtime_mode::{Readiness, RuntimeMode};
 use super::wasapi_writer::BufferLifecycle;
 
 /// Buffer pressure level based on fill percentage.
@@ -74,6 +75,10 @@ pub struct WriterState {
     pub write_streak: u64,
     /// Maximum consecutive successful write streak observed.
     pub max_write_streak: u64,
+    /// Current runtime mode.
+    pub runtime_mode: RuntimeMode,
+    /// Current readiness state.
+    pub readiness: Readiness,
 }
 
 impl WriterState {
@@ -259,6 +264,12 @@ impl WriterState {
         if self.max_write_streak != other.max_write_streak {
             changes.push("max_write_streak");
         }
+        if self.runtime_mode != other.runtime_mode {
+            changes.push("runtime_mode");
+        }
+        if self.readiness != other.readiness {
+            changes.push("readiness");
+        }
         changes
     }
 
@@ -274,7 +285,7 @@ impl WriterState {
     /// Format: `[lifecycle] fill=X% streak=Y/Z wb=A/B healthy=H`
     pub fn summary_line(&self) -> String {
         format!(
-            "[{:?}] fill={}% streak={}/{} wb={}/{} flush={} healthy={} pressure={:?}",
+            "[{:?}] fill={}% streak={}/{} wb={}/{} flush={} healthy={} pressure={:?} mode={:?} ready={:?}",
             self.lifecycle,
             self.buffer_fill_percentage(),
             self.write_streak,
@@ -284,6 +295,8 @@ impl WriterState {
             self.flush_count,
             self.is_healthy(),
             self.pressure_level(),
+            self.runtime_mode,
+            self.readiness,
         )
     }
 }
