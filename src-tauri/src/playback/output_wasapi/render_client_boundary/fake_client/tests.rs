@@ -2,8 +2,8 @@
 
 use super::FakeRenderClientBoundary;
 use crate::playback::output_wasapi::render_client_boundary::{
-    RenderClientBoundary,
     types::{BufferAcquireRequest, BufferReleaseRequest, RenderClientFailure},
+    RenderClientBoundary,
 };
 
 #[test]
