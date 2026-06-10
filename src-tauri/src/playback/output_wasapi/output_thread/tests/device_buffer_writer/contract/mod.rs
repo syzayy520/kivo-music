@@ -1,5 +1,6 @@
 //! Contract and type-level tests for device buffer writer.
 
+pub mod boundary_error_mapping_tests;
 pub mod cross_boundary_contract_tests;
 pub mod device_buffer_writer_contract_tests;
 pub mod device_buffer_writer_frame_bytes_tests;
