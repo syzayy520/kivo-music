@@ -23,6 +23,7 @@ pub(crate) mod pcm_adapter;
 mod pcm_adapter_tests;
 pub mod platform;
 pub mod render_client;
+pub mod render_client_boundary;
 pub mod reset_boundary;
 pub mod ring_buffer;
 pub mod ring_buffer_output_thread;
