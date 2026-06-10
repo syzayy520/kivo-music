@@ -1,21 +1,20 @@
 //! Device buffer writer tests.
+//!
+//! Tests are organized into semantic subfamilies:
+//! - `contract/` — type-level and trait contract tests
+//! - `cursor/` — WriterCursor and WriterState property tests
+//! - `lifecycle/` — BufferLifecycle state machine tests
+//! - `validation/` — invariant guards and request validation tests
+//! - `telemetry/` — health, pressure, streak, and snapshot diff tests
+//! - `runtime_placeholder/` — simulated buffer behavior tests
+//! - `fake_writer/` — FakeDeviceBufferWriter test double tests
+//! - `sink_integration/` — helper function integration tests
 
-pub mod device_buffer_writer_cursor_state_tests;
-pub mod device_buffer_writer_frame_bytes_tests;
-pub mod device_buffer_writer_sink_integration_tests;
-pub mod device_buffer_writer_trait_tests;
-pub mod device_buffer_writer_type_tests;
-pub mod fake_device_buffer_writer_tests;
-pub mod wasapi_writer_buffer_health_tests;
-pub mod wasapi_writer_buffer_lifecycle_tests;
-pub mod wasapi_writer_buffer_pressure_tests;
-pub mod wasapi_writer_circular_buffer_tests;
-pub mod wasapi_writer_cursor_millis_tests;
-pub mod wasapi_writer_cursor_time_tests;
-pub mod wasapi_writer_health_summary_tests;
-pub mod wasapi_writer_invariant_guard_tests;
-pub mod wasapi_writer_request_validation_tests;
-pub mod wasapi_writer_runtime_placeholder_tests;
-pub mod wasapi_writer_snapshot_diff_tests;
-pub mod wasapi_writer_type_tests;
-pub mod wasapi_writer_write_streak_tests;
+pub mod contract;
+pub mod cursor;
+pub mod fake_writer;
+pub mod lifecycle;
+pub mod runtime_placeholder;
+pub mod sink_integration;
+pub mod telemetry;
+pub mod validation;
