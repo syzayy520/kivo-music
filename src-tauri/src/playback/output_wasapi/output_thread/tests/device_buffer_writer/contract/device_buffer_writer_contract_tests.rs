@@ -110,9 +110,10 @@ fn fake_write_when_full_returns_would_block() {
     w.process_request(&WriteRequest::write_packet(100, 44100, 2))
         .unwrap();
     // Next write should WouldBlock
-    let result = w.process_request(&WriteRequest::write_packet(1, 44100, 2));
-    assert!(result.is_err());
-    assert_eq!(result.unwrap_err(), WriteError::WouldBlock);
+    let result = w
+        .process_request(&WriteRequest::write_packet(1, 44100, 2))
+        .unwrap();
+    assert_eq!(result, WriteResult::WouldBlock);
 }
 
 #[test]

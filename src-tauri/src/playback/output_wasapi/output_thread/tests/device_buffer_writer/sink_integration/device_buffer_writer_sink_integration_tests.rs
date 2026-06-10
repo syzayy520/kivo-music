@@ -4,7 +4,7 @@
 
 use crate::playback::output_wasapi::output_thread::runtime::device_buffer_writer::{
     create_empty_writer, create_test_writer, create_writer_with_format, invoke_test_close,
-    invoke_test_flush, invoke_test_write, write_all_packets, DeviceBufferWriter,
+    invoke_test_flush, invoke_test_write, write_all_packets, DeviceBufferWriter, WriteResult,
 };
 
 #[test]
@@ -44,8 +44,8 @@ fn invoke_test_write_would_block() {
     let mut writer = create_test_writer(100);
     invoke_test_write(&mut writer, 50, 44100, 2).unwrap();
     invoke_test_write(&mut writer, 50, 44100, 2).unwrap();
-    let err = invoke_test_write(&mut writer, 10, 44100, 2).unwrap_err();
-    assert!(err.is_would_block());
+    let result = invoke_test_write(&mut writer, 10, 44100, 2).unwrap();
+    assert_eq!(result, WriteResult::WouldBlock);
 }
 
 #[test]

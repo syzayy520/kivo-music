@@ -4,10 +4,12 @@
 //! No real Windows API calls, no COM objects, no audio data processing.
 //! Device-agnostic boundary for future real WASAPI render client integration.
 
+pub mod fake_client;
 pub mod trait_def;
 pub mod types;
 
 // Re-export commonly used types
+pub use fake_client::FakeRenderClientBoundary;
 pub use trait_def::RenderClientBoundary;
 pub use types::{
     AvailableFramesSnapshot, BufferAcquireRequest, BufferAcquireResult, BufferReleaseRequest,

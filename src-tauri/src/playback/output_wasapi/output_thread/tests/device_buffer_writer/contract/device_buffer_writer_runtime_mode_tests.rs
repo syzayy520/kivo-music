@@ -5,7 +5,7 @@
 
 use crate::playback::output_wasapi::output_thread::runtime::device_buffer_writer::wasapi_writer::{
     runtime_mode::{Readiness, RuntimeKind, RuntimeMode},
-    WasapiDeviceBufferWriter, WasapiDeviceBufferWriterConfig,
+    WasapiDeviceBufferWriter,
 };
 use crate::playback::output_wasapi::output_thread::runtime::device_buffer_writer::{
     DeviceBufferWriter, WriterState,

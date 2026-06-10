@@ -3,7 +3,7 @@
 //! Tests for FakeDeviceBufferWriter construction, snapshot, cursor, and basic properties.
 
 use crate::playback::output_wasapi::output_thread::runtime::device_buffer_writer::{
-    DeviceBufferWriter, FakeDeviceBufferWriter, WriteRequest,
+    DeviceBufferWriter, FakeDeviceBufferWriter, WriteRequest, WriteResult,
 };
 
 #[test]
@@ -64,14 +64,14 @@ fn fake_writer_capacity_limit() {
             channel_count: 2,
         })
         .unwrap();
-    let err = writer
+    let result = writer
         .process_request(&WriteRequest::WritePacket {
             frame_count: 10,
             sample_rate: 44100,
             channel_count: 2,
         })
-        .unwrap_err();
-    assert!(err.is_would_block());
+        .unwrap();
+    assert_eq!(result, WriteResult::WouldBlock);
 }
 
 #[test]

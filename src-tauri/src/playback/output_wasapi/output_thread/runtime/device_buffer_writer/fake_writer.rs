@@ -87,12 +87,13 @@ impl FakeDeviceBufferWriter {
             return Err(WriteError::DeviceClosed);
         }
         if !self.ready {
-            self.errors += 1;
-            return Err(WriteError::WouldBlock);
+            // Not ready is treated as WouldBlock (recoverable state)
+            self.would_block_count += 1;
+            return Ok(WriteResult::WouldBlock);
         }
         if self.buffered_frames + frame_count > self.capacity {
             self.would_block_count += 1;
-            return Err(WriteError::WouldBlock);
+            return Ok(WriteResult::WouldBlock);
         }
         let bytes =
             frame_bytes::f32_packet_byte_count(frame_count, channel_count).ok_or_else(|| {

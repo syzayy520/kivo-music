@@ -1,25 +1,41 @@
 //! WASAPI device buffer writer runtime placeholder.
 //!
-//! Simulated buffer behavior for WASAPI device buffer writer.
+//! Struct definition, constructors, accessors, and DeviceBufferWriter trait impl.
+//! Write packet processing is in packet_write.rs.
+//! Request validation is in request_validation.rs.
 //! No real WASAPI calls, no COM objects, no audio data processing.
-//! Simulates buffer fill / WouldBlock / Flush / Close without real device.
 
 use super::super::{
-    frame_bytes, DeviceBufferWriter, WriteError, WriteRequest, WriteResult, WriterCursor,
-    WriterState,
+    DeviceBufferWriter, WriteError, WriteRequest, WriteResult, WriterCursor, WriterState,
 };
 use super::{WasapiDeviceBufferWriterConfig, WasapiDeviceBufferWriterState};
+use crate::playback::output_wasapi::render_client_boundary::RenderClientBoundary;
 
 /// WASAPI device buffer writer runtime placeholder.
 ///
 /// Simulates device buffer write behavior without real WASAPI calls.
 /// Supports WritePacket (with simulated fill/WouldBlock), Flush, Close, Noop.
 /// No real GetBuffer/ReleaseBuffer/IAudioRenderClient.
-#[derive(Debug)]
+///
+/// Can optionally hold a RenderClientBoundary instance for delegation.
+/// When present, buffer operations may be delegated to the render client.
 pub struct WasapiDeviceBufferWriter {
-    config: WasapiDeviceBufferWriterConfig,
-    state: WasapiDeviceBufferWriterState,
+    pub(super) config: WasapiDeviceBufferWriterConfig,
+    pub(super) state: WasapiDeviceBufferWriterState,
+    pub(super) render_client: Option<Box<dyn RenderClientBoundary>>,
 }
+
+impl std::fmt::Debug for WasapiDeviceBufferWriter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("WasapiDeviceBufferWriter")
+            .field("config", &self.config)
+            .field("state", &self.state)
+            .field("has_render_client", &self.render_client.is_some())
+            .finish()
+    }
+}
+
+// ── Constructors ──────────────────────────────────────────────────────────
 
 impl WasapiDeviceBufferWriter {
     /// Creates a new WASAPI device buffer writer with the given configuration.
@@ -27,6 +43,7 @@ impl WasapiDeviceBufferWriter {
         Self {
             config,
             state: WasapiDeviceBufferWriterState::new(),
+            render_client: None,
         }
     }
 
@@ -35,6 +52,22 @@ impl WasapiDeviceBufferWriter {
         Self::new(WasapiDeviceBufferWriterConfig::default())
     }
 
+    /// Creates a new writer with a render client boundary.
+    pub fn with_render_client(
+        config: WasapiDeviceBufferWriterConfig,
+        render_client: Box<dyn RenderClientBoundary>,
+    ) -> Self {
+        Self {
+            config,
+            state: WasapiDeviceBufferWriterState::new(),
+            render_client: Some(render_client),
+        }
+    }
+}
+
+// ── Accessors ─────────────────────────────────────────────────────────────
+
+impl WasapiDeviceBufferWriter {
     /// Returns a reference to the writer configuration.
     pub fn config(&self) -> &WasapiDeviceBufferWriterConfig {
         &self.config
@@ -50,95 +83,28 @@ impl WasapiDeviceBufferWriter {
         &mut self.state
     }
 
-    /// Validates WritePacket request parameters.
-    fn validate_write_packet(
-        &self,
-        frame_count: u64,
-        sample_rate: u32,
-        channel_count: u16,
-    ) -> Result<(), WriteError> {
-        if frame_count == 0 {
-            return Err(WriteError::InvalidRequest {
-                reason: "frame_count must be > 0".to_string(),
-            });
-        }
-        if channel_count == 0 {
-            return Err(WriteError::InvalidRequest {
-                reason: "channel_count must be > 0".to_string(),
-            });
-        }
-        if sample_rate == 0 {
-            return Err(WriteError::InvalidRequest {
-                reason: "sample_rate must be > 0".to_string(),
-            });
-        }
-        Ok(())
+    /// Returns true if this writer has a render client boundary.
+    pub fn has_render_client(&self) -> bool {
+        self.render_client.is_some()
     }
 
-    /// Processes a WritePacket request with simulated buffer behavior.
-    fn process_write_packet(
-        &mut self,
-        frame_count: u64,
-        sample_rate: u32,
-        channel_count: u16,
-    ) -> Result<WriteResult, WriteError> {
-        self.validate_write_packet(frame_count, sample_rate, channel_count)?;
-        self.state.write_attempts += 1;
+    /// Sets the render client boundary.
+    pub fn set_render_client(&mut self, render_client: Box<dyn RenderClientBoundary>) {
+        self.render_client = Some(render_client);
+    }
 
-        // Check simulated buffer capacity
-        let free_frames = self
-            .config
-            .capacity_frames
-            .saturating_sub(self.state.buffer_fill_frames);
-        if frame_count > free_frames {
-            self.state.would_block_count += 1;
-            self.state.consecutive_would_blocks += 1;
-            if self.state.consecutive_would_blocks > self.state.max_consecutive_would_blocks {
-                self.state.max_consecutive_would_blocks = self.state.consecutive_would_blocks;
-            }
-            // Reset write streak on WouldBlock
-            self.state.write_streak = 0;
-            let result = WriteResult::WouldBlock;
-            self.state.last_result = result.clone();
-            return Ok(result);
-        }
+    /// Removes and returns the render client boundary, if any.
+    pub fn take_render_client(&mut self) -> Option<Box<dyn RenderClientBoundary>> {
+        self.render_client.take()
+    }
 
-        let bytes_written = frame_bytes::f32_packet_byte_count(frame_count, channel_count)
-            .ok_or_else(|| WriteError::Internal {
-                description: "device buffer packet byte count overflow".to_string(),
-            })?;
-
-        // Reset consecutive would-block counter on successful write
-        self.state.consecutive_would_blocks = 0;
-
-        // Track write streak
-        self.state.write_streak += 1;
-        if self.state.write_streak > self.state.max_write_streak {
-            self.state.max_write_streak = self.state.write_streak;
-        }
-
-        self.state.buffer_fill_frames += frame_count;
-        self.state.frames_written += frame_count;
-        self.state.bytes_written += bytes_written;
-        self.state.update_lifecycle(self.config.capacity_frames);
-
-        // Update circular buffer position
-        let new_write_head = self.state.write_head + frame_count;
-        if new_write_head >= self.config.capacity_frames {
-            self.state.wrap_count += new_write_head / self.config.capacity_frames;
-            self.state.write_head = new_write_head % self.config.capacity_frames;
-        } else {
-            self.state.write_head = new_write_head;
-        }
-
-        let result = WriteResult::Written {
-            frames_written: frame_count,
-            bytes_written,
-        };
-        self.state.last_result = result.clone();
-        Ok(result)
+    /// Returns a reference to the render client boundary, if any.
+    pub fn render_client(&self) -> Option<&dyn RenderClientBoundary> {
+        self.render_client.as_deref()
     }
 }
+
+// ── DeviceBufferWriter trait implementation ────────────────────────────────
 
 impl DeviceBufferWriter for WasapiDeviceBufferWriter {
     fn process_request(&mut self, request: &WriteRequest) -> Result<WriteResult, WriteError> {
@@ -155,7 +121,6 @@ impl DeviceBufferWriter for WasapiDeviceBufferWriter {
             WriteRequest::Flush => {
                 self.state.buffer_fill_frames = 0;
                 self.state.flush_count += 1;
-                // Reset stall state on flush (buffer is now empty)
                 self.state.consecutive_would_blocks = 0;
                 self.state.update_lifecycle(self.config.capacity_frames);
                 let result = WriteResult::Noop;
@@ -215,7 +180,13 @@ impl DeviceBufferWriter for WasapiDeviceBufferWriter {
     }
 
     fn is_ready(&self) -> bool {
-        !self.state.is_closed
+        if self.state.is_closed {
+            return false;
+        }
+        if let Some(client) = &self.render_client {
+            return client.is_ready();
+        }
+        true
     }
 
     fn is_closed(&self) -> bool {
@@ -224,5 +195,6 @@ impl DeviceBufferWriter for WasapiDeviceBufferWriter {
 
     fn reset(&mut self) {
         self.state = WasapiDeviceBufferWriterState::new();
+        // Note: render_client is preserved across resets
     }
 }

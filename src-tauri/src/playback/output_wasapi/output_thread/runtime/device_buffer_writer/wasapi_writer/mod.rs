@@ -4,6 +4,8 @@
 //! No real WASAPI calls, no COM objects, no audio data.
 
 pub mod config;
+pub mod packet_write;
+pub mod request_validation;
 pub mod runtime_mode;
 pub mod state;
 pub mod writer;

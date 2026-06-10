@@ -39,7 +39,7 @@ impl DeviceBufferWriter for MockWriter {
             return Err(WriteError::DeviceClosed);
         }
         if !self.ready {
-            return Err(WriteError::WouldBlock);
+            return Ok(WriteResult::WouldBlock);
         }
         self.requests.push(request.clone());
         match request {
